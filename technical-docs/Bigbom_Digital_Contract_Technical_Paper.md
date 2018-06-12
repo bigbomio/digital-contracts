@@ -21,7 +21,7 @@ With e-signature, Bob now does not need to spend 30 hours in airplane, and he st
 
 Bigbom Digital Contract is a blockchain-based solution built with the aim of solving the contract signing and contract execution problem using a single platform. By combining the power of blockchain and e-signature, Bigbom Digital Contract will help people doing business together, with less worries about the authenticity of the contract, and the payment part of the contract. Let's take this scenario to see how Bigbom Digital Contract is going to work.
 
-*Mandy is an advertiser, and she wants to run an ads campaign on John's website, https://thefamousjohn.com. Through direct contact, John is offering Mandy a Cost-Per-Click campaign, with the total 100,000 clicks on a banner sitting on top of John's website. The cost per every click is agree at 0.05$, which means it will cost Mandy $5000 for the whole campaign, expected to run in 15 days.**
+***Mandy is an advertiser, and she wants to run an ads campaign on John's website, https://thefamousjohn.com. Through direct contact, John is offering Mandy a Cost-Per-Click campaign, with the total 100,000 clicks on a banner sitting on top of John's website. The cost per every click is agree at 0.05$, which means it will cost Mandy $5000 for the whole campaign, expected to run in 15 days.***
 
 Here is how Bigbom Digital Contract is going to take place.
 
