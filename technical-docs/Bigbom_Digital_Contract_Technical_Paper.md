@@ -27,9 +27,18 @@ Here is how Bigbom Digital Contract is going to take place.
 
 **E-Signing:** John will draft a contract, with all the terms included. After that he will start uploading the contract, using PDF format into Bigbom Digital Contract platform. John then send an invitation to Mandy to her email address, asking Mandy to review and sign the contract. After John and Mandy signed the contract, Bigbom Digital Contract platform will calculate the hash of the document and store it into blockchain using a smart contract. By using this, signed data is permanent, and both John and Mandy can re-check the authenticity of the contract anytime.
 
-############
-Workflow:
-############
+Below is the workflow for signing a document by using smart contract
+![Sign a contract with ethereum private key](images/Digital_Contract_Sign_Workflow.png)
+
+- docHash is a sha256 hash from uploaded pdf. Notes that the hash is not on the file, but on the contents itself. An example code in python  
+
+```python
+with open(‘/path/to/contract.pdf’, ‘rb’) as f:
+    hash = hashlib.sha256(f.read()).hexdigest()
+
+‘7642e521940f38349d3bdec2d129bd7ef9ce620ec525aca6ef892052aa52702a’
+```
+- abc
 
 **Digital Contract Verification & Payment:** For contract execution, there are two key factors: Verifies that the contract has been executed as agreed, and proccessing the payment. Bigbom Digital Contract again utilizes the advantages of Smart Contract technology, to put these terms into the contracts as following
 
