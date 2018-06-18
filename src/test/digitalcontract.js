@@ -37,6 +37,37 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      assert.equal(signed,  true);
   });
 
+  it("user C send B signed should fail", async () => {
+     var userB = accounts[2];
+     var userC = accounts[3];
+     console.log('userB', userB);
+
+     var userSign = await web3.eth.sign(bboDocHash, userB, {from:userB});
+     console.log('contractAddr', contractAddr);
+     let instance = await DigitalContract.at(contractAddr);
+     console.log('userSign', userSign);
+     console.log('bboDocHash', bboDocHash);
+     try
+     {
+     	 await instance.signBBODocument(bboDocHash, userSign, {from:userC});
+     }catch(e){
+     	return true;
+     }
+  });
+
+  it("user C verifyBBODocument should fail", async () => {
+     var userC = accounts[3];
+     console.log('userC', userC);
+
+     var userSign = await web3.eth.sign(bboDocHash, userC, {from:userC});
+     console.log('contractAddr', contractAddr);
+     let instance = await DigitalContract.at(contractAddr);
+     console.log('userSign', userSign);
+     console.log('bboDocHash', bboDocHash);
+     let signed = await instance.verifyBBODocument(bboDocHash, userSign);
+     console.log('signed', signed);
+     assert.equal(signed,  false);
+  });
 
 
 })
