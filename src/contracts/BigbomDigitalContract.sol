@@ -13,69 +13,56 @@ contract BigbomDigitalContract {
   	mapping(address => bytes) signedPersons; // mapping address, userSign
   }
 
-  private uint documentNum;
+  uint private documentNum;
   // mapping document Id, BBODocument
-  private mapping(uint => BBODocument) bboDocuments;
+  mapping(uint => BBODocument) private bboDocuments;
 
   // mapping address, list of document Id
-  private mapping(address => uint[]) userBBODocuments;
+  mapping(address => uint[]) private userBBODocuments;
 
   // mapping document hash, document Id
-  private mapping(bytes32 => uint) bboDocHashIds;
+  mapping(bytes32 => uint) private bboDocHashIds;
 
   // check user not sign this document yet
   modifier userNotSignedYet(bytes32 bboDocHash, bytes userSign) {
-    BBODocument storage bboDoc = getBBODocument(bboDocHash);
-    if(bboDoc){
-    	require(bboDoc.signedPersons[msg.sender] != userSign);
-    }
+  	uint docId = bboDocHashIds[bboDocHash];
+  	if(docId > 0 && docId <= documentNum)
+    	require(keccak256(bboDocuments[docId].signedPersons[msg.sender])==keccak256(userSign));
     _;
   }
   // check the user is owner of his signature
   modifier userIsOwnerSign(bytes32 bboDocHash, bytes userSign){
-  	address userAddr = ECRecovery.recover(bboDocHash, userSign);
-  	require(userAddr === msg.sender);
+  	address userAddr = ECRecovery.recover(ECRecovery.toEthSignedMessageHash(bboDocHash), userSign);
+  	require(userAddr == msg.sender);
   	_;
-  }
-  // init constructor
-  function BigbomDigitalContract() {
-    // constructor
-  }
-
-  // get BBODocument Id by docHash
-  function getBBODocHashId(bytes32 bboDocHash) private returns (uint) {
-  	return bboDocHashIds[bboDocHash];
   }
 
   // get BBODocument by docHash
-  function getBBODocument(bytes32 bboDocHash) public pure returns (BBODocument) {
-  	uint bboDocId = getBBODocHashId(bboDocHash);
-  	if (bboDocId > 0){
-  		return bboDocuments[bboDocId];
-  	}else{
-  		return null;
-  	}
+  function verifyBBODocument(bytes32 bboDocHash, bytes userSign) public view returns (bool) {
+  	BBODocument storage doc = bboDocuments[bboDocHashIds[bboDocHash]];
+  	address userAddr = ECRecovery.recover(ECRecovery.toEthSignedMessageHash(bboDocHash), userSign); 
+  	return keccak256(doc.signedPersons[userAddr]) == keccak256(userSign);
   }
 
-  function createBBODocument(bytes32 bboDocHash) private pure returns(uint bboDocId){
+  function createBBODocument(bytes32 bboDocHash) private  returns(uint bboDocId){
   	bboDocId = documentNum++;
-  	bboDocuments[bboDocId] = BBODocument(docHash, now, now);
+  	bboDocuments[bboDocId] = BBODocument(bboDocHash, now, now);
   	bboDocHashIds[bboDocHash] = bboDocId;
   }
   // user Sign The Document
   event BBODocumentSigned(bytes32 bboDocHash, bytes userSign, uint timestamp, address user);
-  function signBBODocument(bytes32 bboDocHash, bytes userSign) public pure
+  function signBBODocument(bytes32 bboDocHash, bytes userSign) public 
    userIsOwnerSign(bboDocHash, userSign)
    userNotSignedYet(bboDocHash, userSign)
    {
   	 //TODO check input
-  	 BBODocument storage bboDoc = getBBODocument(bboDocHash);
-  	 if(!bboDoc){
-  	 	bboDoc = bboDocuments[createBBODocument(bboDocHash)];
+  	 uint docId = bboDocHashIds[bboDocHash];
+  	 if(!(docId > 0 && docId <= documentNum)){
+  	 	docId = createBBODocument(bboDocHash);
   	 }
-  	 bboDoc.signedPersons[msg.sender] = userSign;
-  	 bboDoc.updated = now;
-  	 BBODocumentSigned(docHash, userSign, timestamp, msg.sender);
+  	 bboDocuments[docId].signedPersons[msg.sender] = userSign;
+  	 bboDocuments[docId].updated = now;
+  	 emit BBODocumentSigned(bboDocHash, userSign, now, msg.sender);
   }
 
 }
