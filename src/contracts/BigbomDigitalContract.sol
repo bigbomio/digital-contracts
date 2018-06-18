@@ -18,10 +18,11 @@ contract BigbomDigitalContract {
   mapping(uint => BBODocument) private bboDocuments;
 
   // mapping address, list of document Id
-  mapping(address => uint[]) private userBBODocuments;
+  mapping(address => bytes32[]) private userBBODocuments;
 
   // mapping document hash, document Id
   mapping(bytes32 => uint) private bboDocHashIds;
+
 
   // check user not sign this document yet
   modifier userNotSignedYet(bytes32 bboDocHash, bytes userSign) {
@@ -43,12 +44,20 @@ contract BigbomDigitalContract {
   	address userAddr = ECRecovery.recover(ECRecovery.toEthSignedMessageHash(bboDocHash), userSign); 
   	return keccak256(doc.signedPersons[userAddr]) == keccak256(userSign);
   }
-
+  // create bboDocuments
   function createBBODocument(bytes32 bboDocHash) private  returns(uint bboDocId){
   	bboDocId = documentNum++;
   	bboDocuments[bboDocId] = BBODocument(bboDocHash, now, now);
   	bboDocHashIds[bboDocHash] = bboDocId;
+  	userBBODocuments[msg.sender].push(bboDocHash);
   }
+
+  // get list signed document of user
+
+  function getUserSignedDocuments() public view returns(bytes32[] docHashes){
+  	docHashes = userBBODocuments[msg.sender];
+  }
+
   // user Sign The Document
   event BBODocumentSigned(bytes32 bboDocHash, bytes userSign, uint timestamp, address user);
   function signBBODocument(bytes32 bboDocHash, bytes userSign) public 
