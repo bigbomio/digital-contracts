@@ -4,13 +4,13 @@ import './zeppelin/ownership/Ownable.sol';
 import './zeppelin/math/SafeMath.sol';
 import './zeppelin/ECRecovery.sol';
 
-contract BigbomDigitalContract {
+contract BigbomDigitalContract is Ownable {
   // BBODocument Struct
   struct BBODocument{
   	bytes32 docHash; //document Hash 
   	uint created; // created timestamp
   	uint updated; // updated timestamp
-  	mapping(address => bytes) signedPersons; // mapping address, userSign
+  	mapping(address => bytes) signedAddresses; // mapping address, userSign
   }
 
   uint private documentNum;
@@ -23,12 +23,12 @@ contract BigbomDigitalContract {
   // mapping document hash, document Id
   mapping(bytes32 => uint) private bboDocHashIds;
 
-
+  mapping(bytes32 => address[]) private bboDocHashAddresses;
   // check user not sign this document yet
   modifier userNotSignedYet(bytes32 bboDocHash, bytes userSign) {
   	uint docId = bboDocHashIds[bboDocHash];
   	if(docId > 0 && docId <= documentNum)
-    	require(keccak256(bboDocuments[docId].signedPersons[msg.sender])==keccak256(userSign));
+    	require(keccak256(bboDocuments[docId].signedAddresses[msg.sender])==keccak256(userSign));
     _;
   }
   // check the user is owner of his signature
@@ -42,7 +42,7 @@ contract BigbomDigitalContract {
   function verifyBBODocument(bytes32 bboDocHash, bytes userSign) public view returns (bool) {
   	BBODocument storage doc = bboDocuments[bboDocHashIds[bboDocHash]];
   	address userAddr = ECRecovery.recover(ECRecovery.toEthSignedMessageHash(bboDocHash), userSign); 
-  	return keccak256(doc.signedPersons[userAddr]) == keccak256(userSign);
+  	return keccak256(doc.signedAddresses[userAddr]) == keccak256(userSign);
   }
   // create bboDocuments
   function createBBODocument(bytes32 bboDocHash) private  returns(uint bboDocId){
@@ -51,10 +51,14 @@ contract BigbomDigitalContract {
   	bboDocHashIds[bboDocHash] = bboDocId;
   	userBBODocuments[msg.sender].push(bboDocHash);
   }
+  // get list address by docHash
+  function getUsersByDocHash(bytes32 bboDocHash) public view onlyOwner returns(address[] userSigneds){
+    userSigneds = bboDocHashAddresses[bboDocHash];
+  }
 
   // get list signed document of user
-
   function getUserSignedDocuments() public view returns(bytes32[] docHashes){
+  	require (msg.sender!= address(0x0));
   	docHashes = userBBODocuments[msg.sender];
   }
 
@@ -69,7 +73,8 @@ contract BigbomDigitalContract {
   	 if(!(docId > 0 && docId <= documentNum)){
   	 	docId = createBBODocument(bboDocHash);
   	 }
-  	 bboDocuments[docId].signedPersons[msg.sender] = userSign;
+  	 bboDocuments[docId].signedAddresses[msg.sender] = userSign;
+  	 bboDocHashAddresses[bboDocHash].push(msg.sender);
   	 bboDocuments[docId].updated = now;
   	 emit BBODocumentSigned(bboDocHash, userSign, now, msg.sender);
   }

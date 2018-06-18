@@ -75,5 +75,33 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      assert.equal(signed,  false);
   });
 
+   it("user owner get List address by bboDocHash", async () => {
+     var userOwner = accounts[0];
+
+     console.log('contractAddr', contractAddr);
+     let instance = await DigitalContract.at(contractAddr);
+     console.log('bboDocHash', bboDocHash);
+     let addresses = await instance.getUsersByDocHash(bboDocHash, {from:userOwner});
+     console.log('addresses', addresses);
+     assert.equal(addresses[0],  accounts[1]);
+     assert.equal(addresses[1],  accounts[2]);
+  });
+
+   it("user not owner get List address by bboDocHash shuold fail", async () => {
+     var userOwner = accounts[5];
+
+     console.log('contractAddr', contractAddr);
+     let instance = await DigitalContract.at(contractAddr);
+     console.log('bboDocHash', bboDocHash);
+      try
+     {
+     let addresses = await instance.getUsersByDocHash(bboDocHash, {from:userOwner});
+     console.log('addresses', addresses);
+     assert.equal(addresses[0],  accounts[1]);
+     assert.equal(addresses[1],  accounts[2]);
+      }catch(e){
+     	return true;
+     }
+  });
 
 })
