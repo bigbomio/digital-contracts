@@ -3,7 +3,7 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const DigitalContract =  artifacts.require("BigbomDigitalContract");
 var contractAddr = '';
-var bboDocHash = web3.utils.soliditySha3('test docs');
+var bboDocHash = web3.utils.sha3('test docs');
 console.log(web3.version)
 contract('BigbomDigitalContract Test', async (accounts) => {
 
@@ -21,7 +21,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      console.log('signed', signed);
      assert.equal(signed,  true);
   });
-  
+
    it("user B sign A's contract", async () => {
      var userB = accounts[2];
      console.log('userB', userB);
