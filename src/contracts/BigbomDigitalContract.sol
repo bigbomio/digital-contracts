@@ -5,6 +5,7 @@ import './zeppelin/math/SafeMath.sol';
 import './zeppelin/ECRecovery.sol';
 
 contract BigbomDigitalContract is Ownable {
+  using ECRecovery for bytes32;
   // BBODocument Struct
   struct BBODocument{
   	bytes32 docHash; //document Hash 
@@ -33,7 +34,7 @@ contract BigbomDigitalContract is Ownable {
   }
   // check the user is owner of his signature
   modifier userIsOwnerSign(bytes32 bboDocHash, bytes userSign){
-  	address userAddr = ECRecovery.recover(ECRecovery.toEthSignedMessageHash(bboDocHash), userSign);
+  	address userAddr = bboDocHash.toEthSignedMessageHash().recover(userSign);
   	require(userAddr == msg.sender);
   	_;
   }
@@ -41,7 +42,7 @@ contract BigbomDigitalContract is Ownable {
   // get BBODocument by docHash
   function verifyBBODocument(bytes32 bboDocHash, bytes userSign) public view returns (bool) {
   	BBODocument storage doc = bboDocuments[bboDocHashIds[bboDocHash]];
-  	address userAddr = ECRecovery.recover(ECRecovery.toEthSignedMessageHash(bboDocHash), userSign); 
+  	address userAddr = bboDocHash.toEthSignedMessageHash().recover(userSign);
   	return keccak256(doc.signedAddresses[userAddr]) == keccak256(userSign);
   }
   // create bboDocuments
