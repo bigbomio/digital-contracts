@@ -38,6 +38,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      console.log('userSign', userSign);
      console.log('bboDocHash', bboDocHash);
      await instance.signBBODocument(bboDocHash, userSign, {from:userB});
+     console.log('signed 2222 sadsa');
      let signed = await instance.verifyBBODocument(bboDocHash, userSign);
      console.log('signed', signed);
      assert.equal(signed,  true);
