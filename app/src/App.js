@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import FileReaderInput from 'react-file-reader-input';
+import Eth from 'ethjs';
+import sigUtil from 'eth-sig-util';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import assert from 'assert';
 import './App.css';
 
 
 const newLocal = global.web3;
 const web3 = newLocal;
+let that;
 // web3.setProvider(new Web3.providers.HttpProvider("https://ropsten.infura.io/bzIe8XXWYWzZGESfBfm1"));
-
+const eth = new Eth(web3.currentProvider);
 const abiArray = [{
   constant: true, inputs: [{ name: 'bboDocHash', type: 'bytes32' }, { name: 'userSign', type: 'bytes' }], name: 'verifyBBODocument', outputs: [{ name: '', type: 'bool' }], payable: false, stateMutability: 'view', type: 'function',
 }, {
@@ -39,6 +43,7 @@ class App extends Component {
       userSign: null,
       signed: false,
       signStt: false,
+      load: false,
       err: '',
     };
     this.handleChange = this.handleChange.bind(this);
@@ -91,23 +96,40 @@ class App extends Component {
   }
 
   async userSign(dochash) {
-    web3.eth.sign(web3.eth.defaultAccount, dochash, (err, result) => {
-      this.signContract(result, dochash);
-      this.setState({ userSign: result });
-    });
-    //
+    eth.personal_sign(dochash, web3.eth.defaultAccount)
+      .then((signed) => {
+        console.log('Signed!  Result is: ', signed);
+        console.log('Recovering...');
+        this.signContract(signed, dochash);
+        this.setState({ userSign: signed });
+        return eth.personal_ecRecover(dochash, signed);
+      })
+      .then((recovered) => {
+        if (recovered === web3.eth.defaultAccount) {
+          console.log('Ethjs recovered the message signer!');
+        } else {
+          console.log('Ethjs failed to recover the message signer!');
+          console.dir({ recovered });
+        }
+      });
   }
 
   async verifyDocumentHashSigned(instance, dochash, usersign) {
-    const signed = instance.verifyBBODocument(dochash, usersign, (err, result) => {
-      this.setState({ signed: result, signStt: true });
-      if (result) {
-        assert.equal(signed, true);
-      }
-    });
+    that = this;
+    this.setState({ load: true });
+    const resultInterval = setInterval(() => {
+      instance.verifyBBODocument(dochash, usersign, (err, result) => {
+        if (result) {
+          that.setState({ signed: result, signStt: true, load: false });
+          assert.equal(result, true);
+          clearInterval(resultInterval);
+        }
+      });
+    }, 10000);
   }
 
-  signContract(usersign, dochash) {
+  async signContract(usersign, dochash) {
+    that = this;
     const contractAddress = '0x88ef6526247a36c130009553213dd678a7e273d8';
     const MyContract = web3.eth.contract(abiArray);
     console.log('MyContract: ', MyContract);
@@ -115,20 +137,23 @@ class App extends Component {
     // sign BBO Document
     contractInstance.signBBODocument(dochash, usersign, { from: web3.eth.defaultAccount }, (err, result) => {
       if (result) {
-        this.verifyDocumentHashSigned(contractInstance, dochash, usersign);
+        that.verifyDocumentHashSigned(contractInstance, dochash, usersign);
       }
     });
     console.log('contractInstance: ', contractInstance);
   }
 
   handleChange(err, results) {
+    that = this;
     results.forEach((result) => {
       const [e, file] = result;
       const textBuff = new Uint8Array(e.target.result);
       const docHash = web3.sha3(JSON.stringify(textBuff));
       // const docHash = Web3.utils.sha3(textBuff); we3 v1
-      this.userSign(docHash);
-      this.setState({ docHash });
+      setTimeout(() => {
+        that.userSign(docHash);
+        that.setState({ docHash });
+      }, 1000);
     });
   }
   render() {
@@ -139,7 +164,8 @@ class App extends Component {
           <p>Your address: {this.state.yourAddress}</p>
           <p className={this.state.docHash ? 'show' : 'hide'}>docHash: {this.state.docHash}</p>
           <p className={this.state.userSign ? 'show' : 'hide'}>userSign: {this.state.userSign}</p>
-          <p className={this.state.signStt ? 'show' : 'hide'}>signed: {this.state.signed ? <span className="success">Success!</span> : <span className="failed">Failed :(</span>}</p>
+          <div className={this.state.load ? 'sign-stt show' : 'hide'}><CircularProgress /></div>
+          <div className={this.state.signStt ? 'sign-stt show' : 'hide'}>signed: {this.state.signed ? <span className="success">Success!</span> : <span className="pendding"> Wait a moment </span>}</div>
         </div>
         <FileReaderInput
           as="buffer"
