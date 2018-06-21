@@ -48,7 +48,7 @@ HexBytes(â€˜0xd7278090a36507640ea6b7a0034b69b0d240766fa3f98e3722be93c613b29d2eâ€
 **Digital Contract Verification & Payment:** 
 For contract execution, there are two key factors: Verifies that the contract has been executed as agreed, and proccessing the payment. For tracking the execution of the contract, Bigbom Digital Contract allows to update the contract progress via different methods, depends on the contract type. The general lifecycle is being describing in below image:
 
-![Digital Advertising Campaign Lifecycle]()
+![Digital Advertising Campaign Lifecycle](images/Ads-contracts-execution-tracking.png)
 
 A vital part for both Advertisers and Ads Platform/Publisher is they have to able to know how much their budget has been spent, and how much the is the progress of the campaign. By using smart contract, both parties will be able to traceback to their historical data through the contract, since all data is immutable and transparent for both sides.
 
