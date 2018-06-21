@@ -25,7 +25,8 @@ Bigbom Digital Contract is a blockchain-based solution built with the aim of sol
 
 Here is how Bigbom Digital Contract is going to take place.
 
-**E-Signing:** John will draft a contract, with all the terms included. After that he will start uploading the contract, using PDF format into Bigbom Digital Contract platform. John then send an invitation to Mandy to her email address, asking Mandy to review and sign the contract. After John and Mandy signed the contract, Bigbom Digital Contract platform will calculate the hash of the document and store it into blockchain using a smart contract. By using this, signed data is permanent, and both John and Mandy can re-check the authenticity of the contract anytime.
+### E-Signing: 
+John will draft a contract, with all the terms included. After that he will start uploading the contract, using PDF format into Bigbom Digital Contract platform. John then send an invitation to Mandy to her email address, asking Mandy to review and sign the contract. After John and Mandy signed the contract, Bigbom Digital Contract platform will calculate the hash of the document and store it into blockchain using a smart contract. By using this, signed data is permanent, and both John and Mandy can re-check the authenticity of the contract anytime.
 
 Below is the workflow for signing a document by using smart contract:
 
@@ -45,35 +46,32 @@ HexBytes(â€˜0xd7278090a36507640ea6b7a0034b69b0d240766fa3f98e3722be93c613b29d2eâ€
 
 - An Ethereum smart contract is responsible for store and query the list of signer. By validating the signer list, we can know if a document has been signed by other parties or not.
 
-**Digital Contract Verification & Payment:** 
+### Digital Contract Verification & Payment:
 For contract execution, there are two key factors: Verifies that the contract has been executed as agreed, and proccessing the payment. For tracking the execution of the contract, Bigbom Digital Contract allows to update the contract progress via different methods, depends on the contract type. The general lifecycle is being describing in below image:
 
 ![Digital Advertising Campaign Lifecycle](images/Ads-contracts-execution-tracking.png)
 
 A vital part for both Advertisers and Ads Platform/Publisher is they have to able to know how much their budget has been spent, and how much the is the progress of the campaign. By using smart contract, both parties will be able to traceback to their historical data through the contract, since all data is immutable and transparent for both sides.
 
-Digital Advertising Campaign type and metrics:
+**Digital Advertising Campaign type and metrics:**
 
-Cost-Per-Click Ads (CPC): A Cost-Per-Click Ad represents the cost to the advertiser everytime someone click to their ads. Most of online ads platforms requires a target cost-per-click for new campaign to run. Following math equation is being use for calculating CPC
+**Cost-Per-Click Ads (CPC):** A Cost-Per-Click Ad represents the cost to the advertiser everytime someone click to their ads. Most of online ads platforms requires a target cost-per-click for new campaign to run. 
 
-![CPC formula](https://latex.codecogs.com/svg.download?%5Cfn_cs%20%5Clarge%20CPC%20%3D%20%5Cfrac%7BCost%7D%7BClicks%7D)
+Cost per Click formula: ![CPC formula](images/CPC_Formula.svg)
 
-Cost-Per-Mile (CPM): The "cost per thousand advertising impressions" metric (CPM) is calculated by dividing the cost of an advertising placement by the number of impressions (expressed in thousands) that it generates. CPM is useful for comparing the relative efficiency of various advertising opportunities or media and in evaluating the overall costs of advertising campaigns
-![source](https://en.wikipedia.org/wiki/Cost_per_mille) 
+**Cost-Per-Mile (CPM):** The "cost per thousand advertising impressions" metric (CPM) is calculated by dividing the cost of an advertising placement by the number of impressions (expressed in thousands) that it generates. CPM is useful for comparing the relative efficiency of various advertising opportunities or media and in evaluating the overall costs of advertising campaigns
+[(definition source)](https://en.wikipedia.org/wiki/Cost_per_mille) 
 
-Following math equation is being use for calculating CPM
+Cost per Mile formula: ![CPM formula](images/CPM_Formula.svg)
 
-![CPM formula](https://latex.codecogs.com/svg.download?%5Cfn_cs%20%5Clarge%20CPM%20%3D%20%5Cfrac%7BCost%7D%7B%5Cfrac%7BImpressions%7D%7B1000%7D%7D)
+**Cost-Per-Install (CPI):** Cost Per Install campaigns are specific to mobile applications. In a Cost Per Install campaign, publishers place digital ads across a range of media in an effort to drive installation of the advertised application. The brand is charged a fixed or bid rate only when the application is installed.
+[(definition source)](http://www.businessofapps.com/guide/cost-per-install/)
 
+Cost per Install formula: ![CPI formula](images/CPI_Formula.svg)
 
-Cost-Per-Install (CPI): Cost Per Install campaigns are specific to mobile applications. In a Cost Per Install campaign, publishers place digital ads across a range of media in an effort to drive installation of the advertised application. The brand is charged a fixed or bid rate only when the application is installed.
-![source](http://www.businessofapps.com/guide/cost-per-install/)
+**Contract-As-Code:**
 
-Following math equation is being use for calculating CPI
-
-![CPI formula](https://latex.codecogs.com/svg.download?%5Cfn_cs%20%5Clarge%20CPM%20%3D%20%5Cfrac%7BCost%7D%7BInstalls%7D)
-
-When an advertiser wants to buy a slot for their campaign, they will have to consider about their *target*  and *budget* , meaning that they will select which network that is able to provide the maxium target with the fixed budget cost. In some other cases, some advertisers just want to reach their *target*, and they're willing to spend the exact amout of budget that is able to reach their target. Let's try to imagine if a digital ad contract is a function with a set with parameters, that function will likely has these parameters:
+When an advertiser wants to buy a slot for their campaign, they will have to consider about their ***target***  and ***budget*** , meaning that they will select which network that is able to provide the maxium target with the fixed budget cost. In some other cases, some advertisers just want to reach their ***target***, and they're willing to spend the exact amout of budget that is able to reach their target. Let's try to imagine if a digital ad contract is a computer software function with a set of parameters, that function will likely has these parameters:
 
 1. Signed copy of the contract terms (as legal material)
 2. Contract start date
@@ -84,10 +82,11 @@ When an advertiser wants to buy a slot for their campaign, they will have to con
 7. Current milestone (current amount of clicks, impressions or installs)
 8. Current spending
 
-With a contract-as-a-code design, it's very easy to both advertisers and ads platforms/publisher to track and viewing the progress. In practice, many ads platform and publisher is already implementing their own system to tracking and updating their progress to their customers. However not all system is bullet-proof with cybersecurity crime, and the cost of keeping data availability is not cheap at all. For a long time, most of enterprises is depending into expensive systems/storages in order to achieving this. 
+With a contract-as-code design, it's very easy to both advertisers and ads platforms/publisher to track and viewing the progress. In practice, many ads platform and publisher is already implementing their own system to tracking and updating their progress to their customers. However not all system is bullet-proof with cybersecurity crime, and the cost of keeping data availability is not cheap at all. For a long time, most of enterprises is depending into expensive systems/storages in order to achieving this. 
 
->Whereas most technologies tend to automate workers on the periphery doing menial tasks, blockchains automate away the center. Instead of putting the taxi driver out of a job, blockchain puts Uber out of a job and lets the taxi drivers work with the customer directly. 
-> - Vitalik Butterin
+>Whereas most technologies tend to automate workers on the periphery doing menial tasks, blockchains automate away the center. Instead of putting the taxi driver out of a job, blockchain puts Uber out of a job and lets the taxi drivers work with the customer directly.  
+
+>Vitalik Butterin
 
 By using smart contract, all of these parameters will be stored inside the smart contract. Since blockchain is immutable by itself, it's very easy for both parties to query all the historical data (through the transaction id) and validates with the actual results. Bigbom Digital Contract provides a set of contract templates that suits to each scenario, whether you want to run your campaign with a specific *target*, or you want to join to a real-time bidding system with a specific amount of *budget*. 
 
