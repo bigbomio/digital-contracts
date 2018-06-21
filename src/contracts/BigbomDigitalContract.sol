@@ -8,8 +8,6 @@ contract BigbomDigitalContract is Ownable {
   // BBODocument Struct
   struct BBODocument{
   	bytes32 docHash; //document Hash 
-  	uint256 created; // created timestamp
-  	uint256 updated; // updated timestamp
   	address[] addresses;
   	mapping(address => bytes) signedAddresses; // mapping address, userSign
   }
@@ -37,7 +35,6 @@ contract BigbomDigitalContract is Ownable {
   function createBBODocument(bytes32 bboDocHash) private {
   	require(bboDocuments[bboDocHash].docHash != bboDocHash);
   	bboDocuments[bboDocHash].docHash = bboDocHash;
-  	bboDocuments[bboDocHash].created = block.timestamp;
   }
   // get list address by docHash
   function getUsersByDocHash(bytes32 bboDocHash) public view onlyOwner returns(address[] userSigneds){
@@ -51,7 +48,7 @@ contract BigbomDigitalContract is Ownable {
   }
 
   // user Sign The Document
-  event BBODocumentSigned(bytes32 bboDocHash, bytes userSign, uint256 timestamp, address user);
+  event BBODocumentSigned(bytes32 bboDocHash, address indexed user);
   function signBBODocument(bytes32 bboDocHash, bytes userSign) public 
    userIsOwnerSign(bboDocHash, userSign)
    {
@@ -64,9 +61,8 @@ contract BigbomDigitalContract is Ownable {
   	 }
   	 bboDocuments[bboDocHash].signedAddresses[msg.sender] = userSign;
   	 bboDocuments[bboDocHash].addresses.push(msg.sender);
-  	 bboDocuments[bboDocHash].updated = block.timestamp;
   	 userBBODocuments[msg.sender].push(bboDocHash);
-  	 emit BBODocumentSigned(bboDocHash, userSign, block.timestamp, msg.sender);
+  	 emit BBODocumentSigned(bboDocHash, msg.sender);
   }
 
 }
