@@ -12,8 +12,6 @@ import './App.css';
 const newLocal = global.web3;
 const web3 = newLocal;
 let that;
-window.Eth = Eth;
-// web3.setProvider(new Web3.providers.HttpProvider("https://ropsten.infura.io/bzIe8XXWYWzZGESfBfm1"));
 const eth = new Eth(web3.currentProvider);
 const abiArray = [{"constant":true,"inputs":[{"name":"_bboDocHash","type":"bytes"}],"name":"getUsersByDocHash","outputs":[{"name":"userSigneds","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getUserSignedDocuments","outputs":[{"name":"docHashes","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_bboDocHash","type":"bytes"},{"name":"userSign","type":"bytes"}],"name":"signBBODocument","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_bboDocHash","type":"bytes"},{"name":"userSign","type":"bytes"}],"name":"verifyBBODocument","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":false,"name":"bboDocHash","type":"bytes32"},{"indexed":true,"name":"user","type":"address"}],"name":"BBODocumentSigned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"}],"name":"OwnershipRenounced","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"previousOwner","type":"address"},{"indexed":true,"name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"}];
 
@@ -108,77 +106,6 @@ class App extends Component {
     });
   }
 
-  ethjsSignTypedDataButton(dochash) {
-
-    const msgParams = [
-      {
-        type: 'bytes32',
-        name: 'Message',
-        value: dochash
-      }
-    ]
-
-    var from = web3.eth.defaultAccount;
-    console.log('CLICKED, SENDING PERSONAL SIGN REQ')
-    var params = [msgParams, from]
-    var eth = new Eth(web3.currentProvider)
-    eth.signTypedData(msgParams, from)
-    .then((signed) => {
-      console.log('Signed!  Result is: ', signed);
-      console.log('Recovering...');
-      this.signContract(signed, dochash);
-      this.setState({ userSign: signed });
-      const recovered = sigUtil.recoverTypedSignature({ data: msgParams, sig: signed })
-      if (recovered === from ) {
-        console.log('Successfully ecRecovered signer as ' + from)
-      } else {
-        console.log('Failed to verify signer when comparing ' + signed + ' to ' + from)
-      }
-    })
-  };
-
-
-  signTypedData(dochash) {
-    const msgParams = [
-      {
-        type: 'bytes32',
-        name: 'A number',
-        data: dochash
-      }
-    ]
-  
-    var from = web3.eth.defaultAccount;
-    console.log('CLICKED, SENDING PERSONAL SIGN REQ')
-    var params = [msgParams, from]
-    console.dir(params)
-    var method = 'eth_signTypedData'
-    that = this;
-    web3.currentProvider.sendAsync({
-      method,
-      params,
-      from,
-    }, function (err, result) {
-      if (err) return console.dir(err)
-      if (result.error) {
-        alert(result.error.message)
-      }
-      if (result.error) return console.error(result)
-      console.log('PERSONAL SIGNED:' + JSON.stringify(result.result))
-      that.signContract(result.result, dochash);
-      that.setState({ userSign: result.result });
-      const recovered = sigUtil.recoverTypedSignature({ data: msgParams, sig: result.result })
-  
-      if (recovered === from ) {
-        alert('Successfully ecRecovered signer as ' + from)
-      } else {
-        alert('Failed to verify signer when comparing ' + result + ' to ' + from)
-      }
-  
-    })
-  
-  }
-
-
   async verifyDocumentHashSigned(instance, dochash, usersign) {
     that = this;
     this.setState({ load: true });
@@ -220,11 +147,8 @@ class App extends Component {
       var msg = ethUtil.bufferToHex(new Buffer(docHash.substring(2), 'utf8'))
       // const docHash = Web3.utils.sha3(textBuff); we3 v1
       setTimeout(() => {
-       // that.ethSign(msg);
-        //that.ethSign(msg);
-        //that.signTypedData(docHash);
+        // that.ethSign(msg);
         that.personalSign(msg);
-        // that.ethjsSignTypedDataButton(docHash);
         that.setState({ docHash });
       }, 1000);
     });

@@ -8,8 +8,6 @@ contract BigbomDigitalContract is Ownable {
   // BBODocument Struct
   struct BBODocument{
   	bytes32 docHash; //document Hash 
-  	uint256 created; // created timestamp
-  	uint256 updated; // updated timestamp
   	address[] addresses;
   	mapping(address => bytes) signedAddresses; // mapping address, userSign
   }
@@ -21,26 +19,26 @@ contract BigbomDigitalContract is Ownable {
   mapping(address => bytes32[]) private userBBODocuments;
 
   // check the user is owner of his signature
-  modifier userIsOwnerSign(bytes32 bboDocHash, bytes userSign){
-  	require(bboDocHash.toEthSignedMessageHash().recover(userSign) == msg.sender);
+  modifier userIsOwnerSign(bytes bboDocHash, bytes userSign){
+  	require(toEthSignedMessageHashBytes(bboDocHash).recover(userSign) == msg.sender);
   	_;
   }
 
   // get BBODocument by docHash
-  function verifyBBODocument(bytes32 bboDocHash, bytes userSign) public view returns (bool) {
-  	require(bboDocHash.length == 32);
+  function verifyBBODocument(bytes _bboDocHash, bytes userSign) public view returns (bool) {
+    bytes32 bboDocHash = fromBytesToBytes32(_bboDocHash);
   	BBODocument storage doc = bboDocuments[bboDocHash];
-  	address userAddr = bboDocHash.toEthSignedMessageHash().recover(userSign);
-  	return keccak256(doc.signedAddresses[userAddr]) == keccak256(userSign);
+  	address userAddr = toEthSignedMessageHashBytes(_bboDocHash).recover(userSign);
+  	return toEthSignedMessageHashBytes(_bboDocHash).recover(doc.signedAddresses[userAddr]) == toEthSignedMessageHashBytes(_bboDocHash).recover(userSign);
   }
   // create bboDocuments
   function createBBODocument(bytes32 bboDocHash) private {
   	require(bboDocuments[bboDocHash].docHash != bboDocHash);
   	bboDocuments[bboDocHash].docHash = bboDocHash;
-  	bboDocuments[bboDocHash].created = block.timestamp;
   }
   // get list address by docHash
-  function getUsersByDocHash(bytes32 bboDocHash) public view onlyOwner returns(address[] userSigneds){
+  function getUsersByDocHash(bytes _bboDocHash) public view onlyOwner returns(address[] userSigneds){
+    bytes32 bboDocHash = fromBytesToBytes32(_bboDocHash);
     userSigneds = bboDocuments[bboDocHash].addresses;
   }
 
@@ -50,12 +48,51 @@ contract BigbomDigitalContract is Ownable {
   	docHashes = userBBODocuments[msg.sender];
   }
 
+  // Convert an hexadecimal character to their value
+  function fromHexChar(uint c) internal pure returns (uint) {
+      if (byte(c) >= byte('0') && byte(c) <= byte('9')) {
+          return c - uint(byte('0'));
+      }
+      if (byte(c) >= byte('a') && byte(c) <= byte('f')) {
+          return 10 + c - uint(byte('a'));
+      }
+      if (byte(c) >= byte('A') && byte(c) <= byte('F')) {
+          return 10 + c - uint(byte('A'));
+      }
+  }
+  // Convert an hexadecimal string to raw bytes
+  function fromBytesToBytes32(bytes s) internal pure returns (bytes32 result) {
+      bytes memory ss = bytes(s);
+      require(ss.length%2 == 0); // length must be even
+      bytes memory r = new bytes(ss.length/2);
+      for (uint i=0; i<ss.length/2; ++i) {
+          r[i] = byte(fromHexChar(uint(ss[2*i])) * 16 +
+                      fromHexChar(uint(ss[2*i+1])));
+      }
+      assembly {
+        result := mload(add(r, 32))
+      }
+  }
+
+  //
+  function toEthSignedMessageHashBytes(bytes hash)
+    internal
+    pure
+    returns (bytes32)
+  {
+    // 64 is the length in bytes of hash,
+    // enforced by the type signature above
+    return keccak256(
+      abi.encodePacked("\x19Ethereum Signed Message:\n64", hash)
+    );
+  }
+
   // user Sign The Document
-  event BBODocumentSigned(bytes32 bboDocHash, bytes userSign, uint256 timestamp, address user);
-  function signBBODocument(bytes32 bboDocHash, bytes userSign) public 
-   userIsOwnerSign(bboDocHash, userSign)
+  event BBODocumentSigned(bytes32 bboDocHash, address indexed user);
+  function signBBODocument(bytes _bboDocHash, bytes userSign) public 
+   userIsOwnerSign(_bboDocHash, userSign)
    {
-  	 require(bboDocHash.length == 32);
+     bytes32 bboDocHash = fromBytesToBytes32(_bboDocHash);
   	 if(bboDocuments[bboDocHash].docHash == bboDocHash){
   	 	// check user not sign this document yet
   	 	require(keccak256(bboDocuments[bboDocHash].signedAddresses[msg.sender])!=keccak256(userSign));
@@ -64,9 +101,8 @@ contract BigbomDigitalContract is Ownable {
   	 }
   	 bboDocuments[bboDocHash].signedAddresses[msg.sender] = userSign;
   	 bboDocuments[bboDocHash].addresses.push(msg.sender);
-  	 bboDocuments[bboDocHash].updated = block.timestamp;
   	 userBBODocuments[msg.sender].push(bboDocHash);
-  	 emit BBODocumentSigned(bboDocHash, userSign, block.timestamp, msg.sender);
+  	 emit BBODocumentSigned(bboDocHash, msg.sender);
   }
 
 }
