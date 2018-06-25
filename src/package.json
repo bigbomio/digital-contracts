@@ -1,0 +1,21 @@
+{
+  "name": "bigbom-digital-contract",
+  "version": "1.0.0",
+  "description": "Bigbom digital contract",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "author": "Chris Nguyen",
+  "license": "MIT",
+  "dependencies": {
+    "truffle": "^4.1.11",
+    "web3": "^1.0.0-beta.34"
+  },
+  "devDependencies": {
+    "sol-merger": "^0.1.2"
+  }
+}
