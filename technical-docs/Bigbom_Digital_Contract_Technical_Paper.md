@@ -1,6 +1,7 @@
-# Bigbom Digital Contracts, Why and How
+# Bigbom Digital Contract Platform Technical Paper
+This technical paper describes how a contract is being established between parties, and how Bigbom Digital Contract Platform will implement it's idea to implement a decentralized digital advertising ecosystem via smart contracts.  
 
-## A brief history on contracts signing
+## A brief history on contract signing
 
 **Paper Contract:** The oldest, most popular method for establishing business relationship. Usually it requires two people, representing their organization or themselves, in order to sign the contract. Some contracts requires a 3rd-party as the validator. 
 Once signed, both parties is obliged to follow their duties, written in the contract. Whether a dispute happens, it will be resolve using the law of country that is designated in the contract.
@@ -9,7 +10,7 @@ One of the biggest problem with a paper contract is geography distance. Imagine 
 
 With the development of internet communication, paper contract is less and less importance for a business, since it's show its weakness in cost and execution. That's why Digital Contract was invented
 
-**Digital Contract aka Docusign and friends:** With the development of internet applications and cryptographic algorithm, e-signature solutions was developed to give users the capability of signing contract without having physical presence. One of the leading solution of e-signature is Docusign, which provides a Software-as-a-Service signing solution. Signing a contract now requires just a few steps:
+**Electronic Contract aka Docusign and friends:** With the development of internet applications and cryptographic algorithm, e-signature solutions was developed to give users the capability of signing contract without having physical presence. One of the leading solution of e-signature is Docusign, which provides a Software-as-a-Service signing solution. Signing a contract now requires just a few steps:
 
 1. Uploading a contract under digital format, eg PDF or word format
 2. Send an invitation link to signers. Each signer requires to create an e-signature
@@ -92,7 +93,7 @@ By using smart contract, all of these parameters will be stored inside the smart
 
 Once these terms has been put into the smart contract. Bigbom Digital Contract platform will start to monitor the campaign, and consequentaly update the campaign into the smart contract, until it ends. At this point, both Mandy and John is aware about how well the campaign was, and what should be the actual cost.
 
-Following workflow is describing how contract-as-code works:
+Following workflow is describing how contract-as-code works:  
 ![contract-as-code](images/digital-contract-code-flow.png)
 
 **Payment:** Payment is a very complex topic. With a Digital Advertising Campaign, the actual bill is depends on various factor, like the actual amount of clicks or installations. 
@@ -113,8 +114,7 @@ Bigbom Digital Contract is able to adapt with all these scenarios. Before the co
 
 Even if Mandy keeps the commitment and send the security deposit, there is a possibility that John is not able to fulfill the contract terms, for example he cannot deliver more than 10,000 clicks after 15 days. In this case, since all the security deposit is being kept by the Digital Contract, John will receive any money, and at the end of the campaign, Mandy will get a refund, if the refund condition is met. 
 
-A demonstration for this payment process is as following:
-
+A demonstration for this payment process is as following:  
 ![ads-payment-workflow](images/ads-payment-flow.png)
 
 **Fiat/Token conversion:** One of the biggest obstacle for people when using blockchain products is volatility in price. Imagine a token with a price $0.02 today become $0.05 tomorrow, and then drops back to $0.01 the day after. With the majority of people still using fiat currencies for daily trading, this volatility is unacceptable and prevent them to adopting blockchain products. With the aim to create an entrance for fiat users, Bigbom Digital Contract Platform is developing a method that calibrates the amount of actual BBO Token should be paid before the actual payment happens, so people will be kept away from the volatility in price. Here's how it works
