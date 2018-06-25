@@ -4,6 +4,8 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const DigitalContract =  artifacts.require("BigbomDigitalContract");
 var contractAddr = '';
 var bboDocHash = web3.utils.sha3('test docs');
+bboDocHash  = bboDocHash.toString().substring(2);
+//bboDocHash = web3.utils.toHex(bboDocHash);
 console.log(web3.version)
 contract('BigbomDigitalContract Test', async (accounts) => {
 
@@ -12,10 +14,9 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      contractAddr = instance.address;
      var userA = accounts[1];
      console.log('userA', userA);
-     var userSign = await web3.eth.sign(bboDocHash, userA, {from:userA});
-     console.log('contractAddr', contractAddr);
-     console.log('userSign', userSign);
      console.log('bboDocHash', bboDocHash);
+     var userSign = await web3.eth.sign(bboDocHash, userA, {from:userA});
+    
      await instance.signBBODocument(bboDocHash, userSign, {from:userA});
      let signed = await instance.verifyBBODocument(bboDocHash, userSign);
      console.log('signed', signed);
@@ -25,7 +26,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
 
      var docHash = await instance.getUserSignedDocuments({from:userA});
      console.log('docHash', docHash);
-     assert.equal(bboDocHash, docHash[0]);
+     assert.equal('0x'+bboDocHash, docHash[0]);
   });
 
    it("user B sign A's contract", async () => {
