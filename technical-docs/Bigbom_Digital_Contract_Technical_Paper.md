@@ -30,7 +30,7 @@ John will draft a contract, with all the terms included. After that he will star
 
 Below is the workflow for signing a document by using smart contract:
 
-![Sign a contract with ethereum private key](images/Digital_Contract_Sign_Workflow.png)
+![Sign a contract with ethereum private key](images/digital_contract_sign_workflow.png)
 
 - docHash is a sha3 hash from uploaded pdf. Notes that the hash is not on the file, but on the contents itself. An example code in python  
 
@@ -49,7 +49,7 @@ HexBytes(â€˜0xd7278090a36507640ea6b7a0034b69b0d240766fa3f98e3722be93c613b29d2eâ€
 ### Digital Contract Verification & Payment:
 For contract execution, there are two key factors: Verifies that the contract has been executed as agreed, and proccessing the payment. For tracking the execution of the contract, Bigbom Digital Contract allows to update the contract progress via different methods, depends on the contract type. The general lifecycle is being describing in below image:
 
-![Digital Advertising Campaign Lifecycle](images/Ads-contracts-execution-tracking.png)
+![Digital Advertising Campaign Lifecycle](images/ads-contracts-execution-tracking.png)
 
 A vital part for both Advertisers and Ads Platform/Publisher is they have to able to know how much their budget has been spent, and how much the is the progress of the campaign. By using smart contract, both parties will be able to traceback to their historical data through the contract, since all data is immutable and transparent for both sides.
 
@@ -57,17 +57,17 @@ A vital part for both Advertisers and Ads Platform/Publisher is they have to abl
 
 **Cost-Per-Click Ads (CPC):** A Cost-Per-Click Ad represents the cost to the advertiser everytime someone click to their ads. Most of online ads platforms requires a target cost-per-click for new campaign to run. 
 
-Cost per Click formula: ![CPC formula](images/CPC_Formula.svg)
+Cost per Click formula: ![CPC formula](images/cpc_formula.svg)
 
 **Cost-Per-Mile (CPM):** The "cost per thousand advertising impressions" metric (CPM) is calculated by dividing the cost of an advertising placement by the number of impressions (expressed in thousands) that it generates. CPM is useful for comparing the relative efficiency of various advertising opportunities or media and in evaluating the overall costs of advertising campaigns
 [(definition source)](https://en.wikipedia.org/wiki/Cost_per_mille) 
 
-Cost per Mile formula: ![CPM formula](images/CPM_Formula.svg)
+Cost per Mile formula: ![CPM formula](images/cpm_formula.svg)
 
 **Cost-Per-Install (CPI):** Cost Per Install campaigns are specific to mobile applications. In a Cost Per Install campaign, publishers place digital ads across a range of media in an effort to drive installation of the advertised application. The brand is charged a fixed or bid rate only when the application is installed.
 [(definition source)](http://www.businessofapps.com/guide/cost-per-install/)
 
-Cost per Install formula: ![CPI formula](images/CPI_Formula.svg)
+Cost per Install formula: ![CPI formula](images/cpi_formula.svg)
 
 **Contract-As-Code:**
 
@@ -92,10 +92,21 @@ By using smart contract, all of these parameters will be stored inside the smart
 
 Once these terms has been put into the smart contract. Bigbom Digital Contract platform will start to monitor the campaign, and consequentaly update the campaign into the smart contract, until it ends. At this point, both Mandy and John is aware about how well the campaign was, and what should be the actual cost.
 
-**Payment:** Payment is a very complex topic. With a Digital Advertising Campaign, the actual bill is depends on various factor, like the actual amount of clicks or installations. Generally speaking, the contract will end up in these scenarios:
+Following workflow is describing how contract-as-code works:
+![contract-as-code](images/digital-contract-code-flow.png)
 
-a. John get paid based on what he delivered, for example $3500 for 70,000 clicks after 15 days
-b. John get paid full amount of $5000, if he able to deliver 100,000 clicks or more after 15 days
+**Payment:** Payment is a very complex topic. With a Digital Advertising Campaign, the actual bill is depends on various factor, like the actual amount of clicks or installations. 
+
+We're currently developing our smart contract in order to support following payment method:
+
+Due Date Payment: The final payment amount will be determine at the contract end date. Based on the current result, Our smart contract will determine the exact amount of payment for the seller side.
+
+Pay as you go: A prefer payment method for most online platform is charging their customer based on the progress. Currently our smart contract is supporting daily payment. The amount of payment is determined by using the progress of previous day, for calculating how much the seller side will get.
+
+Generally speaking, the contract will end up in these scenarios:
+
+a. John get paid based on what he delivered, for example $3500 for 70,000 clicks after 15 days  
+b. John get paid full amount of $5000, if he able to deliver 100,000 clicks or more after 15 days  
 c. John does not get paid at all, since he's only able to deliver 9,000 clicks, and in the contract they both agreed that if the target dropped below 10%, Mandy won't have to pay anything.
 
 Bigbom Digital Contract is able to adapt with all these scenarios. Before the contract goes into effective, it is required that Mandy needs to make a security deposit into the contract. The amount of security deposit is negotiable between Mandy and John. Bigbom Digital Contract will evaluate the amount of deposit and calculate the worth of clicks or installations that is equal to the amount of desposit. Since the campaign stats is constanly being monitored by Bigbom Digital Contract Platform, Mandy and John is able to see how much money has spent for the campaign. Before the deposit is being depleted, Bigbom Digital Contract Platform will notify Mandy for making another deposit, in order to keep the campaign running. If Mandy refuses to make the deposit, John will get a notification, suggesting him to suspend the campaign.
@@ -104,17 +115,15 @@ Even if Mandy keeps the commitment and send the security deposit, there is a pos
 
 A demonstration for this payment process is as following:
 
-##############
-Worlflow:
-#############
+![ads-payment-workflow](images/ads-payment-flow.png)
 
 **Fiat/Token conversion:** One of the biggest obstacle for people when using blockchain products is volatility in price. Imagine a token with a price $0.02 today become $0.05 tomorrow, and then drops back to $0.01 the day after. With the majority of people still using fiat currencies for daily trading, this volatility is unacceptable and prevent them to adopting blockchain products. With the aim to create an entrance for fiat users, Bigbom Digital Contract Platform is developing a method that calibrates the amount of actual BBO Token should be paid before the actual payment happens, so people will be kept away from the volatility in price. Here's how it works
 
 Scenario 1: Mandy is a BBO hodler, and John acccept BBO for his payment. This is a very straight-forward case, Mandy will make the deposit by BBO, and John will get paid by BBO as well. 
 
-Scenario 2: Mandy and John is not BBO holder, and they want to settle the contract in fiat, for example USD Dollar. Bigbom Digital Contract Platform will ask Mandy for making the deposit in fiat, by sending money via a payment gateway. After receiving the deposit, Bigbom Digital Contract Platform will calculate it to the actual BBO Token amount based on the market price, and took that amount of BBO from the Bigbom Reserve, then sending it to the Digital Contract as the deposit.
+Scenario 2: Mandy and John is not BBO holder, and they want to settle the contract in fiat, for example USD Dollar. Bigbom Digital Contract Platform will ask Mandy for making the deposit in fiat, by sending money via a payment gateway. After receiving the deposit, Bigbom Digital Contract Platform will calculate it to the actual BBO Token amount based on the market price, and took an amount of BBO equivalent to the original amount, multiplying with a factor of 2 from the Bigbom Reserve, then sending it to the Digital Contract as the deposit. The reason behind multiplying to a factor to ensuring that Bigbom Digital Contract platform is able to endure the price changes up to two times on market price each time payment term is being triggered. 
 
-Once the contract finished, Bigbom Digital Contract Platform will re-calculate the actual amount of BBO needed to pay, based on John's performance and current market price. If there is insufficient of BBO for the payment, Bigbom Digital Contract Platform will took another BBO amount from the Bigbom Reserve, and make the payment to John. At the end of the day, John will receive the amount of BBO with similar value into USD Dollar that he supposed to get from Mandy. By integrating with other exchange platform, John will have the capability to swap BBO into Ethereum/Bitcoin, or even Fiat currencies after he received it. 
+Once the contract finished, Bigbom Digital Contract Platform will re-calculate the actual amount of BBO needed to pay, based on John's performance and current market price. At the end of the day, John will receive the amount of BBO with similar value into USD Dollar that he supposed to get from Mandy. By integrating with other exchange platform, John will have the capability to swap BBO into Ethereum/Bitcoin, or even Fiat currencies after he received it. 
 
 At current phase, we will support USD and SGD as accepted fiat currencies, and will integrate with Kyber Network for swapping BBO to ETH. More currencies and swapping method will come in the future.
 
