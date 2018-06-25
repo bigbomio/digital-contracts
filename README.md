@@ -18,6 +18,9 @@ var docHash = web3.utils.sha3(textBuff);
 - Generate signature from document hash
 
 ```javascript
+// remove 0x prefix
+bboDocHash  = bboDocHash.toString().substring(2);
+
 // use private key to sign data
 var userSign = await web3.eth.sign(docHash, user_address, {from:user_address});
 
