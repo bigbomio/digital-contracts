@@ -4,8 +4,11 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^1.2.3",
+    "arraybuffer-to-string": "^1.0.2",
     "assert": "^1.4.1",
     "eth-sig-util": "^1.4.2",
+    "ethereumjs-util": "^5.2.0",
+    "ethereumjs-abi": "^0.6.5",
     "ethjs": "^0.4.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
