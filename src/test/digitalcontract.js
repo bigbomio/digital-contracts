@@ -12,21 +12,24 @@ contract('BigbomDigitalContract Test', async (accounts) => {
   it("user A sign first contract", async () => {
      let instance = await DigitalContract.new({from: accounts[0]});
      contractAddr = instance.address;
+     console.log('contractAddr', contractAddr);
      var userA = accounts[1];
      console.log('userA', userA);
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+     console.log('expiredTime', expiredTime);
      console.log('bboDocHash', bboDocHash);
      var userSign = await web3.eth.sign(bboDocHash, userA, {from:userA});
-    
-     await instance.signBBODocument(bboDocHash, userSign, {from:userA});
+     var assignAddress = [accounts[2]];
+     await instance.createAndSignBBODocument(bboDocHash, userSign,  assignAddress, expiredTime, {from:userA});
      let signed = await instance.verifyBBODocument(bboDocHash, userSign);
      console.log('signed', signed);
      
 
      assert.equal(signed,  true);
 
-     var docHash = await instance.getUserSignedDocuments({from:userA});
-     console.log('docHash', docHash);
-     assert.equal('0x'+bboDocHash, docHash[0]);
+     // var docHash = await instance.getDocuments({from:userA});
+     // console.log('docHash', docHash);
+     // assert.equal('0x'+bboDocHash, docHash[0]);
   });
 
    it("user B sign A's contract", async () => {
@@ -43,6 +46,24 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      let signed = await instance.verifyBBODocument(bboDocHash, userSign);
      console.log('signed', signed);
      assert.equal(signed,  true);
+  });
+
+  it("user C send C signed should fail", async () => {
+     var userC = accounts[3];
+     console.log('userC', userC);
+
+     var userSign = await web3.eth.sign(bboDocHash, userC, {from:userC});
+     console.log('contractAddr', contractAddr);
+     let instance = await DigitalContract.at(contractAddr);
+     console.log('userSign', userSign);
+     console.log('bboDocHash', bboDocHash);
+     try
+     {
+         await instance.signBBODocument(bboDocHash, userSign, {from:userC});
+         return false;
+     }catch(e){
+        return true;
+     }
   });
 
   it("user C send B signed should fail", async () => {
@@ -64,7 +85,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
   });
 
   it("user C verifyBBODocument should fail", async () => {
-     var userC = accounts[3];
+     var userC = accounts[6];
      console.log('userC', userC);
 
      var userSign = await web3.eth.sign(bboDocHash, userC, {from:userC});
@@ -78,7 +99,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
   });
 
    it("user owner get List address by bboDocHash", async () => {
-     var userOwner = accounts[0];
+     var userOwner = accounts[1];
 
      console.log('contractAddr', contractAddr);
      let instance = await DigitalContract.at(contractAddr);
