@@ -27,9 +27,10 @@ contract('BigbomDigitalContract Test', async (accounts) => {
 
      assert.equal(signed,  true);
 
-     // var docHash = await instance.getDocuments({from:userA});
-     // console.log('docHash', docHash);
-     // assert.equal('0x'+bboDocHash, docHash[0]);
+     var docHashes = await instance.getDocuments(userA, {from:userA});
+     console.log('docHash', docHashes);
+     assert.equal('0x'+bboDocHash, docHashes[0][0]);
+     assert.equal(expiredTime, docHashes[1][0]);
   });
 
    it("user B sign A's contract", async () => {
@@ -79,6 +80,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      try
      {
      	 await instance.signBBODocument(bboDocHash, userSign, {from:userC});
+         return false;
      }catch(e){
      	return true;
      }
@@ -104,27 +106,13 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      console.log('contractAddr', contractAddr);
      let instance = await DigitalContract.at(contractAddr);
      console.log('bboDocHash', bboDocHash);
-     let addresses = await instance.getUsersByDocHash(bboDocHash, {from:userOwner});
+     let addresses = await instance.getAddressesByDocHash(bboDocHash, {from:userOwner});
      console.log('addresses', addresses);
-     assert.equal(addresses[0],  accounts[1]);
-     assert.equal(addresses[1],  accounts[2]);
+     assert.equal(addresses[0][0],  accounts[2]);
+     assert.equal(addresses[0][1],  accounts[1]);
+     assert.equal(addresses[1][0],  true);
+     assert.equal(addresses[1][1],  true);
   });
 
-   it("user not owner get List address by bboDocHash shuold fail", async () => {
-     var userOwner = accounts[5];
-
-     console.log('contractAddr', contractAddr);
-     let instance = await DigitalContract.at(contractAddr);
-     console.log('bboDocHash', bboDocHash);
-      try
-     {
-     let addresses = await instance.getUsersByDocHash(bboDocHash, {from:userOwner});
-     console.log('addresses', addresses);
-     assert.equal(addresses[0],  accounts[1]);
-     assert.equal(addresses[1],  accounts[2]);
-      }catch(e){
-     	return true;
-     }
-  });
 
 })

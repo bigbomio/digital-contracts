@@ -12,7 +12,6 @@ contract BigbomDigitalContract is Ownable {
   	mapping(address => bytes) signedAddresses; // mapping address, userSign
     uint expiredTimestamp;
   }
-
   // mapping document Id, BBODocument
   mapping(bytes32 => BBODocument) private bboDocuments;
 
@@ -38,22 +37,25 @@ contract BigbomDigitalContract is Ownable {
   	bboDocuments[bboDocHash].docHash = bboDocHash;
     bboDocuments[bboDocHash].expiredTimestamp = expiredTimestamp;
   }
-  // get list address by docHash
-  function getUsersByDocHash(bytes _bboDocHash) public view returns(address[] userSigneds){
-    
+  // TODO get list address & status by docHash
+  function getAddressesByDocHash(bytes _bboDocHash) public view returns(address[], bool[]){
     bytes32 bboDocHash = fromBytesToBytes32(_bboDocHash);
-    address[] storage userSignedPres = bboDocuments[bboDocHash].addresses;
-    for(uint i=0;i<userSignedPres.length;i++){
-      if(userSignedPres[i] == msg.sender){
-        userSigneds = userSignedPres;
-      }
+    address[] memory addresses = bboDocuments[bboDocHash].addresses;
+    bool[] memory status = new bool[](addresses.length);
+    for(uint i=0;i<addresses.length;i++){
+      status[i] = (keccak256(bboDocuments[bboDocHash].signedAddresses[addresses[i]])!=keccak256(""));
     }
+    return (addresses, status);
   }
 
-  // get list signed document of user
-  function getDocuments() public view returns(bytes32[] docHashes){
-  	require (msg.sender!= address(0x0));
-  	docHashes = userBBODocuments[msg.sender];
+  // TODO get list signed document of user
+  function getDocuments(address user) public view returns(bytes32[], uint[]){
+  	bytes32[] memory docHashes = userBBODocuments[user];
+    uint[] memory expiredTimestamps = new uint[] (docHashes.length);
+    for(uint i=0;i<docHashes.length;i++){
+      expiredTimestamps[i] = bboDocuments[docHashes[i]].expiredTimestamp;
+    }
+    return (docHashes, expiredTimestamps);
   }
 
   // Convert an hexadecimal character to their value
@@ -95,7 +97,7 @@ contract BigbomDigitalContract is Ownable {
     );
   }
 
-
+  
   // user Sign The Document
   event BBODocumentSigned(bytes32 bboDocHash, address indexed user);
   function createAndSignBBODocument(bytes _bboDocHash, bytes userSign, address[] pendingAddresses, uint expiredTimestamp) public 
@@ -114,6 +116,7 @@ contract BigbomDigitalContract is Ownable {
        if(msg.sender!=pendingAddresses[i]){
         // add docHash to Pending sign address
         userBBODocuments[pendingAddresses[i]].push(bboDocHash);
+        bboDocuments[bboDocHash].addresses.push(pendingAddresses[i]);
         pendingAddressesIsValid = true;
        }
      }
@@ -141,7 +144,6 @@ contract BigbomDigitalContract is Ownable {
      }
      require(userHasDocHash==true);
      bboDocuments[bboDocHash].signedAddresses[msg.sender] = userSign;
-     bboDocuments[bboDocHash].addresses.push(msg.sender);
      emit BBODocumentSigned(bboDocHash, msg.sender);
   }
 
