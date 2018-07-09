@@ -1,16 +1,45 @@
 var Web3 = require('web3');
+var ipfsAPI = require('ipfs-api')
+
+var ipfs = ipfsAPI('ipfs.infura.io', '5001', {protocol: 'https'});
+
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const DigitalContract =  artifacts.require("BigbomDigitalContract");
+const BBStorage =  artifacts.require("BBStorage");
+
+
 var contractAddr = '';
-var bboDocHash = web3.utils.sha3('test docs');
+fs = require('fs');
+var text = fs.readFileSync('../README.md');
+
+var bboDocHash = web3.utils.sha3(text);
 bboDocHash  = bboDocHash.toString().substring(2);
-//bboDocHash = web3.utils.toHex(bboDocHash);
+
+const files = [
+  {
+    path: 'README.md',
+    content: text,
+  }
+]
+
+
 console.log(web3.version)
 contract('BigbomDigitalContract Test', async (accounts) => {
 
   it("user A sign first contract", async () => {
+
+     // var filesrs = await ipfs.files.add(files);
+     // console.log('filesrs', filesrs);
+     
+     // bboDocHash = filesrs[0].hash;
+     bboDocHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
+     console.log('bboDocHash', bboDocHash);
+     let storage = await BBStorage.new({from: accounts[0]});
+     console.log('storage address', storage.address);
      let instance = await DigitalContract.new({from: accounts[0]});
+     
+     await instance.setStorage(storage.address, {from: accounts[0]});
      contractAddr = instance.address;
      console.log('contractAddr', contractAddr);
      var userA = accounts[1];
@@ -29,7 +58,9 @@ contract('BigbomDigitalContract Test', async (accounts) => {
 
      var docHashes = await instance.getDocuments(userA, {from:userA});
      console.log('docHash', docHashes);
-     assert.equal('0x'+bboDocHash, docHashes[0][0]);
+     docs = web3.utils.hexToUtf8(docHashes[0]).slice(0,-1).split(","); // remove last item
+     console.log('docs', docs);
+     assert.equal(bboDocHash, docs[0]);
      assert.equal(expiredTime, docHashes[1][0]);
   });
 
@@ -108,8 +139,8 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      console.log('bboDocHash', bboDocHash);
      let addresses = await instance.getAddressesByDocHash(bboDocHash, {from:userOwner});
      console.log('addresses', addresses);
-     assert.equal(addresses[0][0],  accounts[2]);
-     assert.equal(addresses[0][1],  accounts[1]);
+     assert.equal(addresses[0][0],  accounts[1]);
+     assert.equal(addresses[0][1],  accounts[2]);
      assert.equal(addresses[1][0],  true);
      assert.equal(addresses[1][1],  true);
   });
