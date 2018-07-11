@@ -7,8 +7,8 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const DigitalContract =  artifacts.require("BigbomDigitalContract");
 const BBStorage =  artifacts.require("BBStorage");
-
-
+const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
+const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 var contractAddr = '';
 fs = require('fs');
 var text = fs.readFileSync('../README.md');
@@ -23,6 +23,24 @@ const files = [
   }
 ]
 
+var abi = require('ethereumjs-abi')
+var BN = require( 'bignumber.js')
+
+function formatValue(value) {
+  if (typeof(value) === 'number' || BN.isBigNumber(value)) {
+    return value.toString();
+  } else {
+    return value;
+  }
+}
+
+function encodeCall(name, args = [], rawValues = []) {
+  const values = rawValues.map(formatValue)
+  const methodId = abi.methodID(name, args).toString('hex');
+  const params = abi.rawEncode(args, values).toString('hex');
+  return '0x' + methodId + params;
+}
+
 
 console.log(web3.version)
 contract('BigbomDigitalContract Test', async (accounts) => {
@@ -35,21 +53,52 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      // bboDocHash = filesrs[0].hash;
      bboDocHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
      console.log('bboDocHash', bboDocHash);
+     // create storage
+      console.log('owner', accounts[0]);
      let storage = await BBStorage.new({from: accounts[0]});
      console.log('storage address', storage.address);
-     let instance = await DigitalContract.new({from: accounts[0]});
+     // create bb contract
+     let diginstance = await DigitalContract.new({from: accounts[0]});
+     // create proxyfactory
+     let proxyFact = await ProxyFactory.new({from: accounts[0]});
+     console.log('diginstance.address',diginstance.address);
+    
+     // set admin to storage
+     await storage.addAdmin(diginstance.address, {from: accounts[0]} );
+     console.log('set storage admin done')
+
      
-     await instance.setStorage(storage.address, {from: accounts[0]});
+     // create proxy to storage
+     const { logs } = await proxyFact.createProxy(accounts[8], diginstance.address, {from: accounts[0]});
+     const proxyAddress = logs.find(l => l.event === 'ProxyCreated').args.proxy
+     console.log('proxyAddress', proxyAddress)
+
+
+     let instance = await DigitalContract.at(proxyAddress);
+     
+     await diginstance.setStorage(storage.address, {from:accounts[0]});
+     
+     var bbs = await instance.bbs();
+     var bbs2 = await diginstance.bbs();
+     console.log('bbs', bbs);
+     console.log('bbs2', bbs2);
+
      contractAddr = instance.address;
      console.log('contractAddr', contractAddr);
+
      var userA = accounts[1];
      console.log('userA', userA);
      var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
      console.log('expiredTime', expiredTime);
      console.log('bboDocHash', bboDocHash);
      var userSign = await web3.eth.sign(bboDocHash, userA, {from:userA});
+     console.log('userSign', userSign);
+
      var assignAddress = [accounts[2]];
+     console.log('assignAddress', assignAddress);
+    
      await instance.createAndSignBBODocument(bboDocHash, userSign,  assignAddress, expiredTime, {from:userA});
+     console.log('createAndSignBBODocument done ')
      let signed = await instance.verifyBBODocument(bboDocHash, userSign);
      console.log('signed', signed);
      

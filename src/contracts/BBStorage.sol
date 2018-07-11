@@ -14,15 +14,29 @@ contract BBStorage is Ownable {
     mapping(bytes32 => bytes)      private bytesStorage;
     mapping(bytes32 => bool)       private boolStorage;
     mapping(bytes32 => int256)     private intStorage;
+    mapping(bytes32 => bool)       private admins;
 
 
     /*** Modifiers ************/
-
+   
     /// @dev Only allow access from the latest version of a contract in the network after deployment
-    modifier onlyLatestContract() {
-        // The owner is only allowed to set the storage upon deployment to register the initial contracts, afterwards their direct access is disabled
-        //TODO
+    modifier onlyAdminStorage() {
+        // // The owner is only allowed to set the storage upon deployment to register the initial contracts, afterwards their direct access is disabled
+        require(admins[keccak256(abi.encodePacked('admin:',msg.sender))] == true);
         _;
+    }
+
+    function addAdmin(address adm) public onlyOwner {
+        require(adm!=address(0x0));
+        require(admins[keccak256(abi.encodePacked('admin:',adm))]!=true);
+
+        admins[keccak256(abi.encodePacked('admin:',adm))] = true;
+    }
+    function removeAdmin(address adm) public onlyOwner {
+        require(adm!=address(0x0));
+        require(admins[keccak256(abi.encodePacked('admin:',adm))]==true);
+
+        admins[keccak256(abi.encodePacked('admin:',adm))] = false;
     }
 
     /**** Get Methods ***********/
@@ -62,32 +76,32 @@ contract BBStorage is Ownable {
 
 
     /// @param _key The key for the record
-    function setAddress(bytes32 _key, address _value) onlyLatestContract external {
+    function setAddress(bytes32 _key, address _value) onlyAdminStorage external {
         addressStorage[_key] = _value;
     }
 
     /// @param _key The key for the record
-    function setUint(bytes32 _key, uint _value) onlyLatestContract external {
+    function setUint(bytes32 _key, uint _value) onlyAdminStorage external {
         uIntStorage[_key] = _value;
     }
 
     /// @param _key The key for the record
-    function setString(bytes32 _key, string _value) onlyLatestContract external {
+    function setString(bytes32 _key, string _value) onlyAdminStorage external {
         stringStorage[_key] = _value;
     }
 
     /// @param _key The key for the record
-    function setBytes(bytes32 _key, bytes _value) onlyLatestContract external {
+    function setBytes(bytes32 _key, bytes _value) onlyAdminStorage external {
         bytesStorage[_key] = _value;
     }
     
     /// @param _key The key for the record
-    function setBool(bytes32 _key, bool _value) onlyLatestContract external {
+    function setBool(bytes32 _key, bool _value) onlyAdminStorage external {
         boolStorage[_key] = _value;
     }
     
     /// @param _key The key for the record
-    function setInt(bytes32 _key, int _value) onlyLatestContract external {
+    function setInt(bytes32 _key, int _value) onlyAdminStorage external {
         intStorage[_key] = _value;
     }
 
@@ -95,32 +109,32 @@ contract BBStorage is Ownable {
     /**** Delete Methods ***********/
     
     /// @param _key The key for the record
-    function deleteAddress(bytes32 _key) onlyLatestContract external {
+    function deleteAddress(bytes32 _key) onlyAdminStorage external {
         delete addressStorage[_key];
     }
 
     /// @param _key The key for the record
-    function deleteUint(bytes32 _key) onlyLatestContract external {
+    function deleteUint(bytes32 _key) onlyAdminStorage external {
         delete uIntStorage[_key];
     }
 
     /// @param _key The key for the record
-    function deleteString(bytes32 _key) onlyLatestContract external {
+    function deleteString(bytes32 _key) onlyAdminStorage external {
         delete stringStorage[_key];
     }
 
     /// @param _key The key for the record
-    function deleteBytes(bytes32 _key) onlyLatestContract external {
+    function deleteBytes(bytes32 _key) onlyAdminStorage external {
         delete bytesStorage[_key];
     }
     
     /// @param _key The key for the record
-    function deleteBool(bytes32 _key) onlyLatestContract external {
+    function deleteBool(bytes32 _key) onlyAdminStorage external {
         delete boolStorage[_key];
     }
     
     /// @param _key The key for the record
-    function deleteInt(bytes32 _key) onlyLatestContract external {
+    function deleteInt(bytes32 _key) onlyAdminStorage external {
         delete intStorage[_key];
     }
 

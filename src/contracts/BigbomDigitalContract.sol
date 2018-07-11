@@ -6,15 +6,14 @@ import './zeppelin/ECRecovery.sol';
 
 contract BigbomDigitalContract is Ownable {
   using ECRecovery for *;
-  BBStorage bbs = BBStorage(0x0);
-  
-  function setStorage(address storageAddress) public {
+  BBStorage public bbs = BBStorage(0x0);
+  function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
 
   // check the user is owner of his signature
   modifier userIsOwnerSign(bytes bboDocHash, bytes userSign){
-  	require(bboDocHash.toEthSignedMessageHashBytes().recover(userSign) == msg.sender);
+  	require(bboDocHash.toEthSignedMessageHashBytes().recover(userSign) == tx.origin);
   	_;
   }
 
@@ -41,7 +40,7 @@ contract BigbomDigitalContract is Ownable {
     return (addresses, status);
   }
   
-  event Debug(string text);
+  
   //get list signed document of user
   function getDocuments(address addr) public view returns(bytes, uint[]){
     // get number of doc already
@@ -76,17 +75,17 @@ contract BigbomDigitalContract is Ownable {
      // set time
      bbs.setUint(keccak256(abi.encodePacked(bboDocHash, 'expiredTimestamp')), expiredTimestamp);
      // save first address is owner of the docs
-     bbs.setAddress(keccak256(abi.encodePacked(bboDocHash,'address')), msg.sender);
+     bbs.setAddress(keccak256(abi.encodePacked(bboDocHash,'address')), tx.origin);
      // save owner sign
-     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', msg.sender)), userSign);
+     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', tx.origin)), userSign);
      // todo save bboDocHash to user address
-     setDocToAddress(msg.sender, bboDocHash);
+     setDocToAddress(tx.origin, bboDocHash);
 
      bool pendingAddressesIsValid = true;
 
      // loop & save in pendingAddresses 
      for(uint i=0;i<pendingAddresses.length;i++){
-        if(msg.sender==pendingAddresses[i]){
+        if(tx.origin==pendingAddresses[i]){
          pendingAddressesIsValid = false;
          require(pendingAddressesIsValid==true);
         }
@@ -95,7 +94,7 @@ contract BigbomDigitalContract is Ownable {
         setDocToAddress(pendingAddresses[i], bboDocHash);
 
      }
-     emit BBODocumentSigned(bboDocHash, msg.sender);
+     emit BBODocumentSigned(bboDocHash, tx.origin);
      
   }
 
@@ -115,12 +114,12 @@ contract BigbomDigitalContract is Ownable {
      // check already docHash
      require(bbs.getUint(keccak256(abi.encodePacked(bboDocHash)))!=0x0);
      // check already sign
-     require(keccak256(bbs.getBytes(keccak256(abi.encodePacked(bboDocHash,'signature', msg.sender))))!=keccak256(userSign));
+     require(keccak256(bbs.getBytes(keccak256(abi.encodePacked(bboDocHash,'signature', tx.origin))))!=keccak256(userSign));
      // check expired 
      require(bbs.getUint(keccak256(abi.encodePacked(bboDocHash, 'expiredTimestamp'))) > now);
      // save signature
-     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', msg.sender)), userSign);
-     emit BBODocumentSigned(bboDocHash, msg.sender);
+     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', tx.origin)), userSign);
+     emit BBODocumentSigned(bboDocHash, tx.origin);
   }
 
 }
