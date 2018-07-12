@@ -77,11 +77,6 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      let instance = await DigitalContract.at(proxyAddress);
      
      await diginstance.setStorage(storage.address, {from:accounts[0]});
-     
-     var bbs = await instance.bbs();
-     var bbs2 = await diginstance.bbs();
-     console.log('bbs', bbs);
-     console.log('bbs2', bbs2);
 
      contractAddr = instance.address;
      console.log('contractAddr', contractAddr);

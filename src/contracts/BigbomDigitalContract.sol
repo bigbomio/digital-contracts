@@ -6,11 +6,14 @@ import './zeppelin/ECRecovery.sol';
 
 contract BigbomDigitalContract is Ownable {
   using ECRecovery for *;
-  BBStorage public bbs = BBStorage(0x0);
+  BBStorage bbs = BBStorage(0x0);
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
 
+  function getStorage() onlyOwner public returns(address){
+    return bbs;
+  }
   // check the user is owner of his signature
   modifier userIsOwnerSign(bytes bboDocHash, bytes userSign){
   	require(bboDocHash.toEthSignedMessageHashBytes().recover(userSign) == tx.origin);
