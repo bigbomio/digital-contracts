@@ -7,6 +7,8 @@ module.exports = function(deployer) {
    var storageaddress;
    var storageinstance;
    var dinstance;
+   var proxyaddress;
+   
    return BBStorage.new().then(function(storage){
    	 storageaddress = storage.address;
        storageinstance = storage;
@@ -15,11 +17,7 @@ module.exports = function(deployer) {
    	console.log('storage address', storageaddress)
       console.log('digital address', instance.address)
       dinstance = instance;
-   	return instance.setStorage(storageaddress);
-   }).then(function(rs){
-      return storageinstance.addAdmin(dinstance.address);
-   
-   }).then(function(rs){
+   	
       return ProxyFactory.new();
    }).then(function(proxyFactory){
       console.log('proxyFactory ', proxyFactory.address);
@@ -27,10 +25,23 @@ module.exports = function(deployer) {
      
    }).then(function(logs){
       const proxyAddress = logs.logs.find(l => l.event === 'ProxyCreated').args.proxy
-      console.log('proxyAddress', proxyAddress)
-
-
-      process.exit(1);
+      
+      return proxyAddress;
+   })
+   .then(function(proxyAddress){
+      proxyaddress = proxyAddress;
+      return storageinstance.addAdmin(proxyAddress);
+     
+   }).then(function(){
+      return DigitalContract.at(proxyaddress).transferOwnership('0xb10ca39dfa4903ae057e8c26e39377cfb4989551');
+   }).then(function(rs){
+      console.log('re', rs.logs[0].args)
+      console.log('proxyAddress', proxyaddress)
+      return DigitalContract.at(proxyaddress).setStorage(storageaddress);
+   }).then(function(rs){
+       console.log('Set admin storage to the Proxy done ' , rs.logs)
+       process.exit(1);
+  
    }).catch(function(err){
       console.log(err);
        process.exit(1);

@@ -63,20 +63,25 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      let proxyFact = await ProxyFactory.new({from: accounts[0]});
      console.log('diginstance.address',diginstance.address);
     
-     // set admin to storage
-     await storage.addAdmin(diginstance.address, {from: accounts[0]} );
-     console.log('set storage admin done')
-
-     
-     // create proxy to storage
+   
+     //const initializeData = encodeCall('transferOwnership', ['address'], [accounts[0]]);
+     // create proxy to docsign
      const { logs } = await proxyFact.createProxy(accounts[8], diginstance.address, {from: accounts[0]});
+     //const { logs } = await proxyFact.createProxyAndCall(accounts[8], diginstance.address, initializeData, {from: accounts[0]});
+
      const proxyAddress = logs.find(l => l.event === 'ProxyCreated').args.proxy
      console.log('proxyAddress', proxyAddress)
 
+       // set admin to storage
+     await storage.addAdmin(proxyAddress, {from: accounts[0]} );
+     console.log('set storage admin done')
+
 
      let instance = await DigitalContract.at(proxyAddress);
-     
-     await diginstance.setStorage(storage.address, {from:accounts[0]});
+     await instance.transferOwnership(accounts[0], {from:accounts[0]});
+     let storageadr = await instance.getStorage({from:accounts[0]});
+     console.log(storageadr.logs)
+     await instance.setStorage(storage.address, {from:accounts[0]});
 
      contractAddr = instance.address;
      console.log('contractAddr', contractAddr);

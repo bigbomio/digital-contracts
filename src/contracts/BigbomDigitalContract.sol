@@ -10,13 +10,13 @@ contract BigbomDigitalContract is Ownable {
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
-
-  function getStorage() onlyOwner public returns(address){
+  function getStorage()  onlyOwner public returns(address){
+   
     return bbs;
   }
   // check the user is owner of his signature
   modifier userIsOwnerSign(bytes bboDocHash, bytes userSign){
-  	require(bboDocHash.toEthSignedMessageHashBytes().recover(userSign) == tx.origin);
+  	require(bboDocHash.toEthSignedMessageHashBytes().recover(userSign) == msg.sender);
   	_;
   }
 
@@ -78,17 +78,17 @@ contract BigbomDigitalContract is Ownable {
      // set time
      bbs.setUint(keccak256(abi.encodePacked(bboDocHash, 'expiredTimestamp')), expiredTimestamp);
      // save first address is owner of the docs
-     bbs.setAddress(keccak256(abi.encodePacked(bboDocHash,'address')), tx.origin);
+     bbs.setAddress(keccak256(abi.encodePacked(bboDocHash,'address')), msg.sender);
      // save owner sign
-     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', tx.origin)), userSign);
+     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', msg.sender)), userSign);
      // todo save bboDocHash to user address
-     setDocToAddress(tx.origin, bboDocHash);
+     setDocToAddress(msg.sender, bboDocHash);
 
      bool pendingAddressesIsValid = true;
 
      // loop & save in pendingAddresses 
      for(uint i=0;i<pendingAddresses.length;i++){
-        if(tx.origin==pendingAddresses[i]){
+        if(msg.sender==pendingAddresses[i]){
          pendingAddressesIsValid = false;
          require(pendingAddressesIsValid==true);
         }
@@ -97,7 +97,7 @@ contract BigbomDigitalContract is Ownable {
         setDocToAddress(pendingAddresses[i], bboDocHash);
 
      }
-     emit BBODocumentSigned(bboDocHash, tx.origin);
+     emit BBODocumentSigned(bboDocHash, msg.sender);
      
   }
 
@@ -117,12 +117,12 @@ contract BigbomDigitalContract is Ownable {
      // check already docHash
      require(bbs.getUint(keccak256(abi.encodePacked(bboDocHash)))!=0x0);
      // check already sign
-     require(keccak256(bbs.getBytes(keccak256(abi.encodePacked(bboDocHash,'signature', tx.origin))))!=keccak256(userSign));
+     require(keccak256(bbs.getBytes(keccak256(abi.encodePacked(bboDocHash,'signature', msg.sender))))!=keccak256(userSign));
      // check expired 
      require(bbs.getUint(keccak256(abi.encodePacked(bboDocHash, 'expiredTimestamp'))) > now);
      // save signature
-     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', tx.origin)), userSign);
-     emit BBODocumentSigned(bboDocHash, tx.origin);
+     bbs.setBytes(keccak256(abi.encodePacked(bboDocHash,'signature', msg.sender)), userSign);
+     emit BBODocumentSigned(bboDocHash, msg.sender);
   }
 
 }
