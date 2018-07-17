@@ -29,7 +29,18 @@ contract Ownable {
    * @dev Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {
+    // modify by chris to make sure the proxy contract can set the first owner
     require(msg.sender == owner);
+    _;
+  }
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwnerProxyCall() {
+    // modify by chris to make sure the proxy contract can set the first owner
+    if(owner!=address(0)){
+      require(msg.sender == owner);
+    }
     _;
   }
 
@@ -48,7 +59,7 @@ contract Ownable {
    * @dev Allows the current owner to transfer control of the contract to a newOwner.
    * @param _newOwner The address to transfer ownership to.
    */
-  function transferOwnership(address _newOwner) public onlyOwner {
+  function transferOwnership(address _newOwner) public onlyOwnerProxyCall {
     _transferOwnership(_newOwner);
   }
 
