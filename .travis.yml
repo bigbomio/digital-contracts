@@ -25,6 +25,5 @@ install:
 script:
   - ganache-cli -p 8545 > /dev/null &
   - sleep 5 
-  - cd ./src
   - truffle migrate 
   - truffle test
