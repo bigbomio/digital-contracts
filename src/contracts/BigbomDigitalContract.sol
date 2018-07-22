@@ -7,6 +7,10 @@ import './zeppelin/ECRecovery.sol';
 contract BigbomDigitalContract is Ownable {
   using ECRecovery for *;
   BBStorage bbs = BBStorage(0x0);
+
+  mapping(bytes32=>bool) uniqueTemp;
+
+
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
@@ -20,6 +24,20 @@ contract BigbomDigitalContract is Ownable {
   	_;
   }
 
+  //
+  modifier isUniqueAddress(bytes bboDocHash, address[] addresses){
+     for(uint i=0;i<addresses.length;i++){
+       // not include msg.sender
+       require(msg.sender!=addresses[i]);
+       // check addresses is unique
+       if(!uniqueTemp[keccak256(bboDocHash,addresses[i])]){
+         uniqueTemp[keccak256(bboDocHash,addresses[i])] = true;
+       }else{
+         revert();
+       }
+     }
+    _;
+  }
   // get BBODocument by docHash
   function verifyBBODocument(bytes bboDocHash, bytes userSign) public view returns (bool) {
   	address userAddr = bboDocHash.toEthSignedMessageHashBytes().recover(userSign);
@@ -62,6 +80,7 @@ contract BigbomDigitalContract is Ownable {
   event BBODocumentSigned(bytes bboDocHash, address indexed user);
   function createAndSignBBODocument(bytes bboDocHash, bytes userSign, address[] pendingAddresses, uint expiredTimestamp) public 
    userIsOwnerSign(bboDocHash, userSign)
+   isUniqueAddress(bboDocHash, pendingAddresses)
    {
      // expiredTimestamp must > now
      require(expiredTimestamp > now);
@@ -71,6 +90,8 @@ contract BigbomDigitalContract is Ownable {
      // list pendingAddresses 
      require(pendingAddresses.length > 0);
   	 
+     // maximum is 5 addresses
+     require(pendingAddresses.length <=5);
 
      //new storage implements
      // save number user of this docs
@@ -86,16 +107,11 @@ contract BigbomDigitalContract is Ownable {
 
      bool pendingAddressesIsValid = true;
 
-     // loop & save in pendingAddresses 
+     // loop & save in pendingAddresses 2^8
      for(uint i=0;i<pendingAddresses.length;i++){
-        if(msg.sender==pendingAddresses[i]){
-         pendingAddressesIsValid = false;
-         require(pendingAddressesIsValid==true);
-        }
         bbs.setAddress(keccak256(abi.encodePacked(bboDocHash, 'address', i+1)), pendingAddresses[i]);
         // save bboDocHash to user address
         setDocToAddress(pendingAddresses[i], bboDocHash);
-
      }
      emit BBODocumentSigned(bboDocHash, msg.sender);
      
