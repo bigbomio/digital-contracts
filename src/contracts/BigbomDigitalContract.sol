@@ -105,8 +105,6 @@ contract BigbomDigitalContract is Ownable {
      // todo save bboDocHash to user address
      setDocToAddress(msg.sender, bboDocHash);
 
-     bool pendingAddressesIsValid = true;
-
      // loop & save in pendingAddresses 2^8
      for(uint i=0;i<pendingAddresses.length;i++){
         bbs.setAddress(keccak256(abi.encodePacked(bboDocHash, 'address', i+1)), pendingAddresses[i]);
