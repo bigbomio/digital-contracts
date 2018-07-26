@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test"
+    "test": "truffle test --compile-all"
   },
   "author": "Chris Nguyen",
   "license": "MIT",
