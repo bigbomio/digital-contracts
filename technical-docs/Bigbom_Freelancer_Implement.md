@@ -89,7 +89,7 @@ BBFreelancerJob.at(proxyAddressJob).getPastEvents('JobCreated', {
 	});
 ```
 
-* Event lists:
+### Event lists:
 
 - event JobCreated(bytes jobHash, address indexed owner, uint created, string category);
 - event JobCanceled(bytes jobHash);
