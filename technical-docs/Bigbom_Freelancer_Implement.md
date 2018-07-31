@@ -74,3 +74,30 @@ var jobLog  = await job.createJob(jobHash, expiredTime, 500e18, 'banner', {from:
 ```javascript
      var jobLog  = await payment.acceptPayment(jobHash, {from:userA});
 ```
+
+* view list job
+
+```javascript
+//  event JobCreated(bytes jobHash, address indexed owner, uint created, string category);
+
+BBFreelancerJob.at(proxyAddressJob).getPastEvents('JobCreated', {
+    filter: {owner: '0x123', category: ['banner','it']},  // filter by owner, category
+    fromBlock: 0, // should use recent number
+    toBlock: 'latest'
+}, function(error, events){
+	//TODO
+	});
+```
+
+* Event lists:
+
+- event JobCreated(bytes jobHash, address indexed owner, uint created, string category);
+- event JobCanceled(bytes jobHash);
+- event JobStarted(bytes jobHash);
+- event JobFinished(bytes jobHash);
+- event BidCreated(bytes jobHash, address indexed owner, uint256 bid, uint created);
+- event BidCanceled(bytes jobHash, address indexed owner);
+- event BidAccepted(bytes jobHash, address indexed freelancer);
+- event PaymentClaimed(bytes jobHash, address indexed sender);
+- event PaymentAccepted(bytes jobHash, address indexed sender);
+- event PaymentRejected(bytes jobHash, address indexed sender);
