@@ -205,5 +205,11 @@ contract('BBFreelancer Test', async (accounts) => {
      const jobHashRs = jobHashRs1.jobHash
      assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
-  
+   it("get job", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var jobLog  = await job.getJob(jobHash);
+     console.log(jobLog);
+     
+     assert.equal(jobLog[0], accounts[0]);
+  });
 })

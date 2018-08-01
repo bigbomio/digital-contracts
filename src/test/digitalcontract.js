@@ -11,18 +11,18 @@ const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 var contractAddr = '';
 fs = require('fs');
-var text = fs.readFileSync('../README.md');
+// var text = fs.readFileSync('../README.md');
 
-var bboDocHash = web3.utils.sha3(text);
-bboDocHash  = bboDocHash.toString().substring(2);
+// var bboDocHash = web3.utils.sha3(text);
+// bboDocHash  = bboDocHash.toString().substring(2);
 
-const files = [
-  {
-    path: 'README.md',
-    content: text,
-  }
-]
-
+// const files = [
+//   {
+//     path: 'README.md',
+//     content: text,
+//   }
+// ]
+var bboDocHash='';
 var abi = require('ethereumjs-abi')
 var BN = require( 'bignumber.js')
 

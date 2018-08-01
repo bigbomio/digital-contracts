@@ -3,12 +3,22 @@ import './BBFreelancer.sol';
 
 contract BBFreelancerJob is BBFreelancer {
 
-  event JobCreated(bytes jobHash, address indexed owner, uint created, string category);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, string category, uint256 budget);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
 
-   // hirer create & deposit 
+  function getJob(bytes jobHash) public view returns(address, uint256, uint256, bool, uint256, address){
+    address owner = bbs.getAddress(keccak256(jobHash));
+    uint256 expired = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'expired')));
+    uint256 budget = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'budget')));
+    bool cancel = bbs.getBool(keccak256(abi.encodePacked(jobHash, 'cancel')));
+    uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'status')));
+    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'freelancer')));
+    return (owner, expired, budget, cancel, status, freelancer);
+  }
+
+
   function createJob(bytes jobHash, uint expired, uint256 budget, string category) public 
   jobNotExist(jobHash)
   {
@@ -26,7 +36,7 @@ contract BBFreelancerJob is BBFreelancer {
     // save budget 
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'budget')), budget);
  
-    emit JobCreated(jobHash, msg.sender, now, category);
+    emit JobCreated(jobHash, msg.sender, expired, category, budget);
   }
     // hirer  cancel job
   function cancelJob(bytes jobHash) public 
