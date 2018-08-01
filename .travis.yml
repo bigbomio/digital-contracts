@@ -7,6 +7,7 @@ node_js:
 branches:
   only:
   - master
+  - development
 matrix:
   include:
     - os: linux
@@ -29,4 +30,4 @@ script:
   - ganache-cli -p 8545 > /dev/null &
   - sleep 5 
   - truffle migrate 
-  - truffle test
+  - truffle test --compile-all
