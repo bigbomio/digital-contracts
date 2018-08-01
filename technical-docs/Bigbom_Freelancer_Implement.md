@@ -74,6 +74,12 @@ var jobLog  = await job.createJob(jobHash, expiredTime, 500e18, 'banner', {from:
 ```javascript
      var jobLog  = await payment.acceptPayment(jobHash, {from:userA});
 ```
+* get job by Hash
+```javascript
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var jobLog  = await job.getJob(jobHash);
+    // return [owner, expired, budget, cancel, status, freelancer]
+```
 
 * view list job
 
