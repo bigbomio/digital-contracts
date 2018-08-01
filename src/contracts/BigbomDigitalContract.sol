@@ -30,8 +30,8 @@ contract BigbomDigitalContract is Ownable {
        // not include msg.sender
        require(msg.sender!=addresses[i]);
        // check addresses is unique
-       if(!uniqueTemp[keccak256(bboDocHash,addresses[i])]){
-         uniqueTemp[keccak256(bboDocHash,addresses[i])] = true;
+       if(!uniqueTemp[keccak256(abi.encodePacked(bboDocHash,addresses[i]))]){
+         uniqueTemp[keccak256(abi.encodePacked(bboDocHash,addresses[i]))] = true;
        }else{
          revert();
        }

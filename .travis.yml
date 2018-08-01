@@ -27,7 +27,8 @@ install:
   - npm install -g ganache-cli truffle
 
 script:
-  - ganache-cli -p 8545 > /dev/null &
+  - testrpc-sc --gasLimit 0xfffffffffff --gasPrice 0x01 --network-id 777 -p 8545 > /dev/null &
   - sleep 5 
-  - truffle migrate 
-  - truffle test --compile-all
+  - npm test
+after_script:
+  - npm run coverage && cat coverage/lcov.info | coveralls
