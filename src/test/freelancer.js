@@ -1,5 +1,6 @@
 var Web3 = require('web3');
 var ipfsAPI = require('ipfs-api')
+var Helpers = require('./../helpers/helpers.js');
 
 var ipfs = ipfsAPI('ipfs.infura.io', '5001', {protocol: 'https'});
 
@@ -17,6 +18,8 @@ const BBOTest = artifacts.require("BBOTest");
 var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
 var jobHashWilcancel = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr2';
+var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
+
 const files = [
   {
     path: 'README.md',
@@ -187,15 +190,8 @@ contract('BBFreelancer Test', async (accounts) => {
      const jobHashRs = jobHashRs1.jobHash
      assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
-  it("claime payment", async() => {
-     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-     var userB = accounts[1];
-     var jobLog  = await payment.claimePayment(jobHash, {from:userB});
-     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentClaimed').args
-     //console.log(jobLog.logs[0].blockNumber);
-     const jobHashRs = jobHashRs1.jobHash
-     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
-  });
+  
+  
   it("acceept payment", async() => {
      let payment = await BBFreelancerPayment.at(proxyAddressPayment);
      var userA = accounts[0];
@@ -212,4 +208,48 @@ contract('BBFreelancer Test', async (accounts) => {
      
      assert.equal(jobLog[0], accounts[0]);
   });
+   it("set timeout payment", async() => {
+     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+      await payment.setPaymentLimitTimestamp(24*3600, {from:accounts[0]});
+
+      var rs= await payment.getPaymentLimitTimestamp( {from:accounts[0]});
+     assert.equal(rs, 24*3600);
+  });
+   it("start other job for claime payment", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+     await job.createJob(jobHash3, expiredTime, 500e18, 'banner', {from:userA});
+     var userB = accounts[2];
+     let bid = await BBFreelancerBid.at(proxyAddressBid);
+     await bid.createBid(jobHash3, 400e18, {from:userB});
+     let bbo = await BBOTest.at(bboAddress);
+     await bbo.approve(bid.address, 400e18, {from:userA});
+     await bid.acceptBid(jobHash3, userB, {from:userA});
+
+     await job.startJob(jobHash3, {from:userB});
+     await job.finishJob(jobHash3, {from:userB});
+
+  });
+   it("fast forward to 24h after locked", function() {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise( 'evm_increaseTime', [fastForwardTime] ).then(function(){
+        return Helpers.sendPromise( 'evm_mine', [] ).then(function(){
+
+        });
+    });
+  });
+
+   it("claime payment", async() => {
+     var userB = accounts[2];
+    
+     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+     var jobLog  = await payment.claimePayment(jobHash3, {from:userB});
+     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentClaimed').args
+     //console.log(jobLog.logs[0].blockNumber);
+     const jobHashRs = jobHashRs1.jobHash
+     assert.equal(jobHash3, web3.utils.hexToUtf8(jobHashRs));
+
+  });
+
 })

@@ -62,6 +62,7 @@ contract BBFreelancerJob is BBFreelancer {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) ==1);
 
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'status')), 2);
+    bbs.setUint(keccak256(abi.encodePacked(jobHash,'finishedTimestamp')), now);
     emit JobFinished(jobHash);
   }
 
