@@ -157,7 +157,8 @@ contract('BBFreelancer Test', async (accounts) => {
     var userA = accounts[0];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(bid.address, 400e18, {from:userA});
+    await bbo.approve(bid.address, 0, {from:userA});
+    await bbo.approve(bid.address, Math.pow(2, 255), {from:userA});
     var jobLog  = await bid.acceptBid(jobHash, accounts[1], {from:userA});
     //console.log(jobLog.logs[0].blockNumber);
      const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.jobHash
@@ -204,7 +205,6 @@ contract('BBFreelancer Test', async (accounts) => {
    it("get job", async() => {
      let job = await BBFreelancerJob.at(proxyAddressJob);
      var jobLog  = await job.getJob(jobHash);
-     console.log(jobLog);
      
      assert.equal(jobLog[0], accounts[0]);
   });
@@ -224,7 +224,8 @@ contract('BBFreelancer Test', async (accounts) => {
      let bid = await BBFreelancerBid.at(proxyAddressBid);
      await bid.createBid(jobHash3, 400e18, {from:userB});
      let bbo = await BBOTest.at(bboAddress);
-     await bbo.approve(bid.address, 400e18, {from:userA});
+     await bbo.approve(bid.address, 0, {from:userA});
+     await bbo.approve(bid.address, Math.pow(2, 255), {from:userA});
      await bid.acceptBid(jobHash3, userB, {from:userA});
 
      await job.startJob(jobHash3, {from:userB});
