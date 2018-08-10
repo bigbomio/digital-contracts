@@ -1,12 +1,24 @@
+/**
+ * Created on 2018-08-10 14:57
+ * @summary: Payment Contract for Marketplace DApp 
+ * @author: Chris Nguyen
+ */
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 
+/**
+ * @title: Smart contract for handling payment between the Hirer and the Freelancer
+ */
 contract BBFreelancerPayment is BBFreelancer{
   event PaymentClaimed(bytes jobHash, address indexed sender);
   event PaymentAccepted(bytes jobHash, address indexed sender);
   event PaymentRejected(bytes jobHash, address indexed sender);
 
   // hirer ok with finish Job
+  /**
+   * @dev: 
+   * @param jobHash
+   */
   function acceptPayment(bytes jobHash)  public 
   isOwnerJob(jobHash) {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) >= 2);
@@ -20,6 +32,10 @@ contract BBFreelancerPayment is BBFreelancer{
     emit PaymentAccepted(jobHash, msg.sender);
   }
   // hirer not ok with finish Job
+  /**
+   * @dev: 
+   * @param jobHash
+   */
   function rejectPayment(bytes jobHash) public 
   isOwnerJob(jobHash) {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) == 2);
@@ -28,6 +44,10 @@ contract BBFreelancerPayment is BBFreelancer{
   }
   // freelancer claimeJob with finish Job but hirer not accept payment 
   // need proof of work
+  /**
+   * @dev: 
+   * @param jobHash
+   */
   function claimePayment(bytes jobHash) public isFreelancerOfJob(jobHash)
   {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) == 2);
@@ -41,10 +61,18 @@ contract BBFreelancerPayment is BBFreelancer{
     require(bbo.transfer(msg.sender, bid));
     emit PaymentClaimed(jobHash, msg.sender);
   }
+  /**
+   * @dev: 
+   * @param timestamp
+   */
   function setPaymentLimitTimestamp(uint256 timestamp) public onlyOwner {
     require(timestamp > 0);
     bbs.setUint(keccak256('PaymentLimitTimestamp'), timestamp);
   }
+  /**
+   * @dev: 
+   * @return time
+   */
   function getPaymentLimitTimestamp () public view onlyOwner returns(uint256 time) {
     time = bbs.getUint(keccak256('PaymentLimitTimestamp'));
   }

@@ -1,3 +1,8 @@
+/**
+ * Created on 2018-08-10 14:52
+ * @summary: Storage Contract for Freelancer DApp
+ * @author: Chris Nguyen
+ */
 pragma solidity ^0.4.24;
 
 import './BBStorage.sol';
@@ -6,18 +11,32 @@ import './zeppelin/math/SafeMath.sol';
 import './zeppelin/token/ERC20/ERC20.sol';
 
 
+/**
+ * @title: A Key-Value storage contract
+ */
 contract BBFreelancer is Ownable{
   using SafeMath for uint256;
   BBStorage bbs = BBStorage(0x0);
   ERC20 public bbo = ERC20(0x0);
 
+  /**
+   * @dev: 
+   * @param storageAddress
+   */
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
+  /**
+   * @dev: 
+   */
   function getStorage() onlyOwner public returns(address){
     return bbs;
   }
 
+  /**
+   * @dev: 
+   * @param BBOAddress
+   */
   function setBBO(address BBOAddress) onlyOwner public {
     bbo = ERC20(BBOAddress);
   }

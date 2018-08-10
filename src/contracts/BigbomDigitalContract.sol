@@ -1,9 +1,17 @@
+/**
+ * Created on 2018-08-10 15:00
+ * @summary: Smart Contract for signing a document between multiple parties using Ethereum private key
+ * @author: tuanco
+ */
 pragma solidity ^0.4.24;
 
 import './BBStorage.sol';
 import './zeppelin/ownership/Ownable.sol';
 import './zeppelin/ECRecovery.sol';
 
+/**
+ * @title: Contract for signing documents
+ */
 contract BigbomDigitalContract is Ownable {
   using ECRecovery for *;
   BBStorage bbs = BBStorage(0x0);
@@ -11,9 +19,16 @@ contract BigbomDigitalContract is Ownable {
   mapping(bytes32=>bool) uniqueTemp;
 
 
+  /**
+   * @dev: 
+   * @param storageAddress
+   */
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
+  /**
+   * @dev: 
+   */
   function getStorage()  onlyOwner public returns(address){
    
     return bbs;
@@ -39,12 +54,23 @@ contract BigbomDigitalContract is Ownable {
     _;
   }
   // get BBODocument by docHash
+  /**
+   * @dev: 
+   * @param bboDocHash
+   * @param userSign
+   */
   function verifyBBODocument(bytes bboDocHash, bytes userSign) public view returns (bool) {
   	address userAddr = bboDocHash.toEthSignedMessageHashBytes().recover(userSign);
   	return keccak256(bbs.getBytes(keccak256(abi.encodePacked(bboDocHash,'signature', userAddr))))==keccak256(userSign);
   }
 
   // get list address & status by docHash
+  /**
+   * @dev: 
+   * @param bboDocHash
+   * @return address[]
+   * @return bool[]
+   */
   function getAddressesByDocHash(bytes bboDocHash) public view returns(address[], bool[]){
 
     uint docNum = bbs.getUint(keccak256(abi.encodePacked(bboDocHash)));
@@ -63,6 +89,11 @@ contract BigbomDigitalContract is Ownable {
   
   
   //get list signed document of user
+  /**
+   * @dev: 
+   * @param addr
+   * @return uint[]
+   */
   function getDocuments(address addr) public view returns(bytes, uint[]){
     // get number of doc already
     bytes memory docReturn = '';
@@ -78,6 +109,13 @@ contract BigbomDigitalContract is Ownable {
   
   // user Sign The Document
   event BBODocumentSigned(bytes bboDocHash, address indexed user);
+  /**
+   * @dev: 
+   * @param bboDocHash
+   * @param userSign
+   * @param pendingAddresses
+   * @param expiredTimestamp
+   */
   function createAndSignBBODocument(bytes bboDocHash, bytes userSign, address[] pendingAddresses, uint expiredTimestamp) public 
    userIsOwnerSign(bboDocHash, userSign)
    isUniqueAddress(bboDocHash, pendingAddresses)
@@ -115,6 +153,11 @@ contract BigbomDigitalContract is Ownable {
      
   }
 
+  /**
+   * @dev: 
+   * @param adr
+   * @param docHash
+   */
   function setDocToAddress(address adr, bytes docHash) internal {
     // get number of doc already
      uint256 docNumber = bbs.getUint(keccak256(abi.encodePacked(adr)));
@@ -125,6 +168,11 @@ contract BigbomDigitalContract is Ownable {
      bbs.setBytes(keccak256(abi.encodePacked(adr, docNumber)), docHash);
   }
 
+  /**
+   * @dev: 
+   * @param bboDocHash
+   * @param userSign
+   */
   function signBBODocument(bytes bboDocHash, bytes userSign)public 
    userIsOwnerSign(bboDocHash, userSign)
    {
