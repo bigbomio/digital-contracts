@@ -1,8 +1,16 @@
+/**
+ * Created on 2018-08-13 10:14
+ * @summary: key-value storage
+ * @author: Chris Nguyen
+ */
 pragma solidity 0.4.24;
 
 import "./zeppelin/ownership/Ownable.sol";
 
 
+/**
+ * @title key-value storage contract
+ */
 contract BBStorage is Ownable {
 
 
@@ -26,12 +34,20 @@ contract BBStorage is Ownable {
         _;
     }
 
+    /**
+     * @dev 
+     * @param adm Admin of the contract
+     */
     function addAdmin(address adm) public onlyOwner {
         require(adm!=address(0x0));
         require(admins[keccak256(abi.encodePacked('admin:',adm))]!=true);
 
         admins[keccak256(abi.encodePacked('admin:',adm))] = true;
     }
+    /**
+     * @dev 
+     * @param adm Admin of the contract
+     */
     function removeAdmin(address adm) public onlyOwner {
         require(adm!=address(0x0));
         require(admins[keccak256(abi.encodePacked('admin:',adm))]==true);

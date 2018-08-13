@@ -1,3 +1,8 @@
+/**
+ * Created on 2018-08-13 10:20
+ * @summary: 
+ * @author: Chris Nguyen
+ */
 pragma solidity ^0.4.24;
 
 import './BBStorage.sol';
@@ -6,18 +11,32 @@ import './zeppelin/math/SafeMath.sol';
 import './zeppelin/token/ERC20/ERC20.sol';
 
 
+/**
+ * @title Freelancer contract 
+ */
 contract BBFreelancer is Ownable{
   using SafeMath for uint256;
   BBStorage bbs = BBStorage(0x0);
   ERC20 public bbo = ERC20(0x0);
 
+  /**
+   * @dev set storage contract address
+   * @param storageAddress Address of the Storage Contract
+   */
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
+  /**
+   * @dev get storage contract address
+   */
   function getStorage() onlyOwner public returns(address){
     return bbs;
   }
 
+  /**
+   * @dev set BBO contract address
+   * @param BBOAddress Address of the BBO token
+   */
   function setBBO(address BBOAddress) onlyOwner public {
     bbo = ERC20(BBOAddress);
   }
