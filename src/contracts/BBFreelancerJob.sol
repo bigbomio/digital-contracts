@@ -1,6 +1,14 @@
+/**
+ * Created on 2018-08-13 10:31
+ * @summary: 
+ * @author: Chris Nguyen
+ */
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 
+/**
+ * @title BBFreelancerJob
+ */
 contract BBFreelancerJob is BBFreelancer {
 
   event JobCreated(bytes jobHash, address indexed owner, uint expired, string category, uint256 budget);
@@ -8,6 +16,10 @@ contract BBFreelancerJob is BBFreelancer {
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
 
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   */
   function getJob(bytes jobHash) public view returns(address, uint256, uint256, bool, uint256, address){
     address owner = bbs.getAddress(keccak256(jobHash));
     uint256 expired = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'expired')));
@@ -19,6 +31,13 @@ contract BBFreelancerJob is BBFreelancer {
   }
 
 
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   * @param expired Time 
+   * @param budget Buget
+   * @param category Tag category
+   */
   function createJob(bytes jobHash, uint expired, uint256 budget, string category) public 
   jobNotExist(jobHash)
   {
@@ -39,6 +58,10 @@ contract BBFreelancerJob is BBFreelancer {
     emit JobCreated(jobHash, msg.sender, expired, category, budget);
   }
     // hirer  cancel job
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   */
   function cancelJob(bytes jobHash) public 
   isOwnerJob(jobHash) 
   jobNotStarted(jobHash) {
@@ -46,6 +69,10 @@ contract BBFreelancerJob is BBFreelancer {
     emit JobCanceled(jobHash);
   }
   // freelancer start Job
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   */
   function startJob(bytes jobHash) public 
   isNotCanceled(jobHash)
   jobNotStarted(jobHash)
@@ -55,6 +82,10 @@ contract BBFreelancerJob is BBFreelancer {
     emit JobStarted(jobHash);
   }
   // freelancer finish Job
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   */
   function finishJob(bytes jobHash) public 
   isNotOwnerJob(jobHash) 
   isFreelancerOfJob(jobHash) {

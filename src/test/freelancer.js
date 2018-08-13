@@ -19,6 +19,7 @@ var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
 var jobHashWilcancel = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr2';
 var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
+var jobHash4 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr4';
 
 const files = [
   {
@@ -49,6 +50,7 @@ var proxyAddressJob = '';
 var proxyAddressBid = '';
 var proxyAddressPayment = '';
 var bboAddress = '';
+var storageAddress = '';
 contract('BBFreelancer Test', async (accounts) => {
 
   it("initialize contract", async () => {
@@ -64,6 +66,7 @@ contract('BBFreelancer Test', async (accounts) => {
      console.log('bboAddress', bboAddress);
      let storage = await BBStorage.new({from: accounts[0]});
      console.log('storage address', storage.address);
+     storageAddress = storage.address;
      // create bb contract
      let jobInstance = await BBFreelancerJob.new({from: accounts[0]});
      let bidInstance = await BBFreelancerBid.new({from: accounts[0]});
@@ -122,6 +125,42 @@ contract('BBFreelancer Test', async (accounts) => {
      //console.log(jobLog.logs[0].blockNumber);
      const jobHashRs =jobHashRs1.jobHash
      assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+  });
+  it("[Fail] create new job with exist jobHash", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+    try{
+       var jobLog  = await job.createJob(jobHash, expiredTime, 500e18, 'banner', {from:userA});
+        return false;
+    }catch(e){
+      return true;
+    }
+    
+  });
+  it("[Fail] create new job with budget =0", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+    try{
+       var jobLog  = await job.createJob(jobHash+'0', expiredTime, 0, 'banner', {from:userA});
+        return false;
+    }catch(e){
+      return true;
+    }
+    
+  });
+  it("[Fail] create new job with expired < now ", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) - 7 * 24 * 3600; // expired after 7 days
+    try{
+       var jobLog  = await job.createJob(jobHash+'1', expiredTime, 500e18, 'banner', {from:userA});
+        return false;
+    }catch(e){
+      return true;
+    }
+    
   });
   it("cancel job", async() => {
      let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -250,6 +289,44 @@ contract('BBFreelancer Test', async (accounts) => {
      //console.log(jobLog.logs[0].blockNumber);
      const jobHashRs = jobHashRs1.jobHash
      assert.equal(jobHash3, web3.utils.hexToUtf8(jobHashRs));
+
+  });
+
+   it("start other job for finalize payment", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+     await job.createJob(jobHash4, expiredTime, 500e18, 'banner', {from:userA});
+     var userB = accounts[2];
+     let bid = await BBFreelancerBid.at(proxyAddressBid);
+     await bid.createBid(jobHash4, 400e18, {from:userB});
+     let bbo = await BBOTest.at(bboAddress);
+     await bbo.approve(bid.address, 0, {from:userA});
+     await bbo.approve(bid.address, Math.pow(2, 255), {from:userA});
+     await bid.acceptBid(jobHash4, userB, {from:userA});
+
+     await job.startJob(jobHash4, {from:userB});
+     await job.finishJob(jobHash4, {from:userB});
+     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+     await payment.rejectPayment(jobHash4, {from:userA});
+
+     // set the dispute winner 
+     let bbs = await BBStorage.at(storageAddress);
+     await bbs.addAdmin(userA, {from:userA});
+     await bbs.setAddress(web3.utils.sha3(jobHash4+'disputedWinner'), userB, {from:userA});
+     let u = await bbs.getAddress(web3.utils.sha3(jobHash4+'disputedWinner'));
+     assert.equal(userB, u);
+  });
+   it("finalize payment", async() => {
+     var userB = accounts[2];
+    
+     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+     var jobLog  = await payment.finalizeDispute(jobHash4, {from:userB});
+     const jobHashRs1 = jobLog.logs.find(l => l.event === 'DisputeFinalized').args
+     //console.log(jobLog.logs[0].blockNumber);
+     const jobHashRs = jobHashRs1.jobHash
+     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+     assert.equal(userB, jobHashRs1.winner);
 
   });
 

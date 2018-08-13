@@ -1,14 +1,29 @@
+/**
+ * Created on 2018-08-13 10:29
+ * @summary: Biding contract
+ * @author: Chris Nguyen
+ */
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 
+/**
+ * @title BBFreelancerBid
+ */
 contract BBFreelancerBid is BBFreelancer{
 
   BBFreelancerPayment payment = BBFreelancerPayment(0x0);
 
+  /**
+   * @dev 
+   * @param paymentAddress address of the Payment Contract
+   */
   function setPaymentContract(address paymentAddress) onlyOwner public {
     payment = BBFreelancerPayment(paymentAddress);
   }
+  /**
+   * @dev 
+   */
   function getPaymentContract() onlyOwner public returns (address)  {
     return payment;
   }
@@ -18,6 +33,11 @@ contract BBFreelancerBid is BBFreelancer{
   event BidAccepted(bytes jobHash, address indexed freelancer);
 
    // freelancer bid job
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   * @param bid value of bid amount
+   */
   function createBid(bytes jobHash, uint256 bid) public 
    isNotOwnerJob(jobHash)
    isNotCanceled(jobHash)
@@ -38,6 +58,10 @@ contract BBFreelancerBid is BBFreelancer{
     emit BidCreated(jobHash, msg.sender, bid, now);
   }
   // freelancer cancel bid
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   */
   function cancelBid(bytes jobHash) public isNotOwnerJob(jobHash) {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash, msg.sender)))!=0x0);
 
@@ -50,6 +74,11 @@ contract BBFreelancerBid is BBFreelancer{
   }
 
   // hirer accept bid
+  /**
+   * @dev 
+   * @param jobHash Job Hash
+   * @param freelancer address of the freelancer
+   */
   function acceptBid(bytes jobHash, address freelancer) public {
 
     require(bbs.getAddress(keccak256(jobHash))==msg.sender);
