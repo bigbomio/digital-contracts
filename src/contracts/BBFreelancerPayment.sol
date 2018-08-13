@@ -13,6 +13,7 @@ contract BBFreelancerPayment is BBFreelancer{
   event PaymentClaimed(bytes jobHash, address indexed sender);
   event PaymentAccepted(bytes jobHash, address indexed sender);
   event PaymentRejected(bytes jobHash, address indexed sender);
+  event DisputeFinalized(bytes jobHash, address indexed winner);
 
   // hirer ok with finish Job
   /**
@@ -76,4 +77,23 @@ contract BBFreelancerPayment is BBFreelancer{
   function getPaymentLimitTimestamp () public view onlyOwner returns(uint256 time) {
     time = bbs.getUint(keccak256('PaymentLimitTimestamp'));
   }
+
+  /**
+   * @dev finalize Dispute
+   * @param jobHash The job Hash 
+   */
+  function finalizeDispute(bytes jobHash)  public {
+    require(bbs.getAddress(keccak256(jobHash)) != 0x0);
+    require(bbs.getBool(keccak256(abi.encodePacked(jobHash, 'isFinalized')))!=true);
+
+    address winner = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'disputedWinner')));
+    require(winner!=address(0x0));
+    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
+    address jobOwner = bbs.getAddress(keccak256(jobHash));
+    uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
+    require(winner==freelancer||winner==jobOwner);
+    bbs.setBool(keccak256(abi.encodePacked(jobHash, 'isFinalized')), true);
+    require(bbo.transfer(winner, bid));
+    emit DisputeFinalized(jobHash, winner);
+  } 
 }
