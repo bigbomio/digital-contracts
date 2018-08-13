@@ -126,6 +126,42 @@ contract('BBFreelancer Test', async (accounts) => {
      const jobHashRs =jobHashRs1.jobHash
      assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
+  it("[Fail] create new job with exist jobHash", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+    try{
+       var jobLog  = await job.createJob(jobHash, expiredTime, 500e18, 'banner', {from:userA});
+        return false;
+    }catch(e){
+      return true;
+    }
+    
+  });
+  it("[Fail] create new job with budget =0", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
+    try{
+       var jobLog  = await job.createJob(jobHash+'0', expiredTime, 0, 'banner', {from:userA});
+        return false;
+    }catch(e){
+      return true;
+    }
+    
+  });
+  it("[Fail] create new job with expired < now ", async() => {
+     let job = await BBFreelancerJob.at(proxyAddressJob);
+     var userA = accounts[0];
+     var expiredTime = parseInt(Date.now()/1000) - 7 * 24 * 3600; // expired after 7 days
+    try{
+       var jobLog  = await job.createJob(jobHash+'1', expiredTime, 500e18, 'banner', {from:userA});
+        return false;
+    }catch(e){
+      return true;
+    }
+    
+  });
   it("cancel job", async() => {
      let job = await BBFreelancerJob.at(proxyAddressJob);
      var userA = accounts[0];

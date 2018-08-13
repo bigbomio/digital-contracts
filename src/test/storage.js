@@ -64,4 +64,9 @@ contract('BBStorage Test', async (accounts) => {
    assert.equal(0x0, intVal);
 
   });
+  it("add/remove admin", async() => {
+   let storage = await BBStorage.at(storageAddress);
+   await storage.addAdmin(accounts[2]);
+   await storage.removeAdmin(accounts[2]);
+  });
 })

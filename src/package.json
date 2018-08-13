@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "truffle test --compile-all",
+    "testrpc": "testrpc-sc --gasLimit 0xfffffffffff --gasPrice 0x01 --network-id 777 -p 8545",
     "coverage": "./node_modules/.bin/solidity-coverage"
   },
   "author": "Chris Nguyen",
