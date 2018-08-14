@@ -11,7 +11,7 @@ import './BBFreelancer.sol';
  */
 contract BBFreelancerJob is BBFreelancer {
 
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, string category, uint256 budget);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, uint startBid, uint timeBid, string category, uint256 budget);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -27,7 +27,7 @@ contract BBFreelancerJob is BBFreelancer {
     bool cancel = bbs.getBool(keccak256(abi.encodePacked(jobHash, 'cancel')));
     uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'status')));
     address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'freelancer')));
-    return (owner, expired, budget, cancel, status, freelancer);
+    return (owner, expired,budget, cancel, status, freelancer);
   }
 
 
@@ -38,7 +38,7 @@ contract BBFreelancerJob is BBFreelancer {
    * @param budget Buget
    * @param category Tag category
    */
-  function createJob(bytes jobHash, uint expired, uint256 budget, string category) public 
+  function createJob(bytes jobHash, uint expired ,uint timeBid, uint256 budget, string category) public 
   jobNotExist(jobHash)
   {
     // check jobHash not null
@@ -46,16 +46,29 @@ contract BBFreelancerJob is BBFreelancer {
     // expired > now
     require(expired > now);
     // budget
-    require(budget>0);
+    require(budget > 0);
+
+    require(timeBid > 0);
+
+    require(expired > now + timeBid);
 
     // save jobHash owner
     bbs.setAddress(keccak256(jobHash), msg.sender);
     // save expired timestamp
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'expired')), expired);
+
+    //Set start time begin to bid = now 
+    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'timeStartBid')), now);
+
+
+    // save time freelancer can bid
+    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'timeBid')), timeBid);
+
+    
     // save budget 
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'budget')), budget);
  
-    emit JobCreated(jobHash, msg.sender, expired, category, budget);
+    emit JobCreated(jobHash, msg.sender, expired, now, timeBid, category, budget);
   }
     // hirer  cancel job
   /**

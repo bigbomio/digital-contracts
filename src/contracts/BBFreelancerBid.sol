@@ -44,7 +44,13 @@ contract BBFreelancerBid is BBFreelancer{
    jobNotStarted(jobHash) {
     
     // bid must in range budget
-    require(bid <= bbs.getUint(keccak256(abi.encodePacked(jobHash, 'budget'))));
+    require(bid <= bbs.getUint(keccak256(abi.encodePacked(jobHash, 'budget' ))));
+
+    uint timeStartBid = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeStartBid' )));
+    uint timeBid = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeBid' )));
+
+    require(now < timeStartBid + timeBid);
+
     if(bbs.getBool(keccak256(abi.encodePacked(jobHash, msg.sender, 'cancel'))) != true){
       // get number of bid total
       uint256 jobBidCounter = bbs.getUint(keccak256(abi.encodePacked(jobHash,'bidCount')));
