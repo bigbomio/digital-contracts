@@ -39,6 +39,7 @@ contract BBFreelancerPayment is BBFreelancer{
    */
   function rejectPayment(bytes jobHash) public 
   isOwnerJob(jobHash) {
+    uint timeJob =  bbs.getUint(keccak256(abi.encodePacked(jobHash,'timeDone')));
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) == 2);
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'status')), 4);
    emit PaymentRejected(jobHash, msg.sender);

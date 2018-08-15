@@ -37,8 +37,9 @@ contract BBFreelancerBid is BBFreelancer{
    * @dev 
    * @param jobHash Job Hash
    * @param bid value of bid amount
+   * @param timeDone time to do this job
    */
-  function createBid(bytes jobHash, uint256 bid) public 
+  function createBid(bytes jobHash, uint256 bid, uint timeDone) public 
    isNotOwnerJob(jobHash)
    isNotCanceled(jobHash)
    jobNotStarted(jobHash) {
@@ -46,10 +47,7 @@ contract BBFreelancerBid is BBFreelancer{
     // bid must in range budget
     require(bid <= bbs.getUint(keccak256(abi.encodePacked(jobHash, 'budget' ))));
 
-    uint timeStartBid = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeStartBid' )));
-    uint timeBid = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeBid' )));
-
-    require(now < timeStartBid + timeBid);
+    require(timeDone > 0);
 
     if(bbs.getBool(keccak256(abi.encodePacked(jobHash, msg.sender, 'cancel'))) != true){
       // get number of bid total
@@ -60,6 +58,8 @@ contract BBFreelancerBid is BBFreelancer{
     }
     // set user bid value
     bbs.setUint(keccak256(abi.encodePacked(jobHash,msg.sender)), bid);
+    //set user timeDone value
+    bbs.setUint(keccak256(abi.encodePacked(jobHash,'timeDone',msg.sender)), timeDone);
 
     emit BidCreated(jobHash, msg.sender, bid, now);
   }

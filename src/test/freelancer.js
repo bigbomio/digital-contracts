@@ -172,8 +172,9 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
-    var jobLog = await job.createJob(jobHash, expiredTime, timeBid,500e18, 'banner', {
+    var timeBid = 3 * 24 * 3600;
+    3 //days
+    var jobLog = await job.createJob(jobHash, expiredTime, timeBid, 500e18, 'banner', {
       from: userA
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'JobCreated').args
@@ -185,7 +186,8 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
+    var timeBid = 3 * 24 * 3600;
+    3 //days
 
     try {
       var jobLog = await job.createJob(jobHash, expiredTime, timeBid, 500e18, 'banner', {
@@ -201,9 +203,10 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
+    var timeBid = 3 * 24 * 3600;
+    3 //days
     try {
-      var jobLog = await job.createJob(jobHash + '0', expiredTime, timeBid,0, 'banner', {
+      var jobLog = await job.createJob(jobHash + '0', expiredTime, timeBid, 0, 'banner', {
         from: userA
       });
       return false;
@@ -216,7 +219,8 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) - 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
+    var timeBid = 3 * 24 * 3600;
+    3 //days
     try {
       var jobLog = await job.createJob(jobHash + '1', expiredTime, timeBid, 500e18, 'banner', {
         from: userA
@@ -232,9 +236,10 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
+    var timeBid = 3 * 24 * 3600;
+    3 //days
     try {
-      var jobLog = await job.createJob(jobHash + 'x', expiredTime, timeBid,-1, 'banner', {
+      var jobLog = await job.createJob(jobHash + 'x', expiredTime, timeBid, -1, 'banner', {
         from: userA
       });
       return false;
@@ -244,12 +249,12 @@ contract('BBFreelancer Test', async (accounts) => {
 
   });
 
-  it("[Fail] create new job with timeBid + startTime > expiredTime", async () => {
+  it("[Fail] create new job with time progess = 0", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 6 * 24 * 3600;  //8 days
-   
+    var timeBid = 0; //8 days
+
     try {
       var jobLog = await job.createJob(jobHash + 'xk', expiredTime, timeBid, 100e18, 'banner', {
         from: userA
@@ -257,7 +262,7 @@ contract('BBFreelancer Test', async (accounts) => {
       console.log('createJob OK');
       return false;
     } catch (e) {
-      console.log(e);
+      //console.log(e);
       console.log('createJob FALSE');
       return true;
     }
@@ -270,10 +275,10 @@ contract('BBFreelancer Test', async (accounts) => {
     var userA = accounts[0];
     var userB = accounts[1];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600;  // 3 days
+    var timeBid = 3 * 24 * 3600; // 3 days
 
     try {
-      var jobLog = await job.createJob(jobHash + 'z', expiredTime, timeBid,500e18, 'banner', {
+      var jobLog = await job.createJob(jobHash + 'z', expiredTime, timeBid, 500e18, 'banner', {
         from: userA
       });
       var jobLog1 = await job.startJob(jobHash + 'z', {
@@ -289,8 +294,10 @@ contract('BBFreelancer Test', async (accounts) => {
   it("[Fail] bid > buget", async () => {
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 3 * 24 * 3600; //days
+
     try {
-      var jobLog = await bid.createBid(jobHash, 501e18, {
+      var jobLog = await bid.createBid(jobHash, 501e18, timeDone, {
         from: userB
       });
       return false;
@@ -303,8 +310,10 @@ contract('BBFreelancer Test', async (accounts) => {
   it("[Fail] owner bid themself job", async () => {
     var userA = accounts[0];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 3 * 24 * 3600;
+    3 //days
     try {
-      var jobLog = await bid.createBid(jobHash, 500e18, {
+      var jobLog = await bid.createBid(jobHash, 500e18, timeDone, {
         from: userA
       });
       return false;
@@ -314,42 +323,14 @@ contract('BBFreelancer Test', async (accounts) => {
 
   });
 
-  it("[Fail] bid out of timeBid ", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var userB = accounts[2];
-    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 1;  //8 days
-    await job.createJob(jobHash + 'xx', expiredTime, timeBid,300e18, 'banner', {
-      from: userA
-    });
-    
-    setTimeout(async function() {
 
-      let bid = await BBFreelancerBid.at(proxyAddressBid);
-    try {
-      var jobLog = await bid.createBid(jobHash + 'xx', 200e18, {
-        from: userB
-      });
-      console.log('Bid OK');
-      return false;
-    } catch (e) {
-      console.log('Bid FALSE');
-      return true;
-    }
-
-    }, 1000);
-
-    
-
-  });
 
   it("cancel job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600;  //3 days
-    await job.createJob(jobHashWilcancel, expiredTime, timeBid,500e18, 'banner', {
+    var timeBid = 3 * 24 * 3600; //3 days
+    await job.createJob(jobHashWilcancel, expiredTime, timeBid, 500e18, 'banner', {
       from: userA
     });
     var jobLog = await job.cancelJob(jobHashWilcancel, {
@@ -358,35 +339,38 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobLog.logs.find(l => l.event === 'JobCanceled').args.jobHash
     //console.log(jobLog.logs[0].blockNumber);
     assert.equal(jobHashWilcancel, web3.utils.hexToUtf8(jobHashRs));
-    
 
   });
+
   it("create bid", async () => {
     var userB = accounts[1];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
-    
-    var jobLog = await bid.createBid(jobHash+'z', 400e18, {
+    var timeDone = 1; //days
+    console.log('adress bid ' + userB);
+    var jobLog = await bid.createBid(jobHash, 400e18, timeDone, {
       from: userB
     });
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidCreated').args.jobHash
-    assert.equal(jobHash+'z', web3.utils.hexToUtf8(jobHashRs));
-
-  });
-  it("cancel bid", async () => {
-    var userB = accounts[2];
-    let bid = await BBFreelancerBid.at(proxyAddressBid);
-    await bid.createBid(jobHash, 300e18, {
-      from: userB
-    });
-    var jobLog = await bid.cancelBid(jobHash, {
-      from: userB
-    });
-    //console.log(jobLog.logs[0].blockNumber);
-    const jobHashRs = jobLog.logs.find(l => l.event === 'BidCanceled').args.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
 
   });
+  // it("cancel bid", async () => {
+  //   var userB = accounts[2];
+  //   let bid = await BBFreelancerBid.at(proxyAddressBid);
+  //   var timeDone = 1 * 24 * 3600;  //days
+
+  //   await bid.createBid(jobHash, 300e18, timeDone,{
+  //     from: userB
+  //   });
+  //   var jobLog = await bid.cancelBid(jobHash, {
+  //     from: userB
+  //   });
+  //   //console.log(jobLog.logs[0].blockNumber);
+  //   const jobHashRs = jobLog.logs.find(l => l.event === 'BidCanceled').args.jobHash
+  //   assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+
+  // });
   it("acceept bid", async () => {
     var userA = accounts[0];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
@@ -415,6 +399,31 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
+
+
+  it("[Fail] cancel job when freelancer don't work", async () => {
+
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    try {
+      var jobLog = await job.cancelJob(jobHash, {
+        from: userA
+      });
+      console.log(JSON.stringify(jobLog));
+      console.log("cancel job True");
+      return false;
+    } catch (e) {
+      console.log("cancel job False xxxxxxxxxxxxxxxxxxxx ");
+
+      return true;
+    }
+
+
+
+
+  });
+
   it("finish job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userB = accounts[1];
@@ -470,13 +479,16 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
-    await job.createJob(jobHash3, expiredTime, timeBid,500e18, 'banner', {
+    var timeBid = 3 * 24 * 3600;
+    3 //days
+    await job.createJob(jobHash3, expiredTime, timeBid, 500e18, 'banner', {
       from: userA
     });
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
-    await bid.createBid(jobHash3, 400e18, {
+    var timeDone = 3 * 24 * 3600;
+    3 //days
+    await bid.createBid(jobHash3, 400e18, timeDone, {
       from: userB
     });
     let bbo = await BBOTest.at(bboAddress);
@@ -525,13 +537,16 @@ contract('BBFreelancer Test', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var timeBid = 3 * 24 * 3600; 3 //days
-    await job.createJob(jobHash4, expiredTime, timeBid,500e18, 'banner', {
+    var timeBid = 3 * 24 * 3600;
+    3 //days
+    await job.createJob(jobHash4, expiredTime, timeBid, 500e18, 'banner', {
       from: userA
     });
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
-    await bid.createBid(jobHash4, 400e18, {
+    var timeDone = 3 * 24 * 3600;
+    3 //days
+    await bid.createBid(jobHash4, 400e18, timeDone, {
       from: userB
     });
     let bbo = await BBOTest.at(bboAddress);
