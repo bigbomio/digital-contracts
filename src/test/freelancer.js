@@ -355,22 +355,22 @@ contract('BBFreelancer Test', async (accounts) => {
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
 
   });
-  // it("cancel bid", async () => {
-  //   var userB = accounts[2];
-  //   let bid = await BBFreelancerBid.at(proxyAddressBid);
-  //   var timeDone = 1 * 24 * 3600;  //days
+  it("cancel bid", async () => {
+    var userB = accounts[2];
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 1 * 24 * 3600;  //days
 
-  //   await bid.createBid(jobHash, 300e18, timeDone,{
-  //     from: userB
-  //   });
-  //   var jobLog = await bid.cancelBid(jobHash, {
-  //     from: userB
-  //   });
-  //   //console.log(jobLog.logs[0].blockNumber);
-  //   const jobHashRs = jobLog.logs.find(l => l.event === 'BidCanceled').args.jobHash
-  //   assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+    await bid.createBid(jobHash, 300e18, timeDone,{
+      from: userB
+    });
+    var jobLog = await bid.cancelBid(jobHash, {
+      from: userB
+    });
+    //console.log(jobLog.logs[0].blockNumber);
+    const jobHashRs = jobLog.logs.find(l => l.event === 'BidCanceled').args.jobHash
+    assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
 
-  // });
+  });
   it("acceept bid", async () => {
     var userA = accounts[0];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
@@ -402,8 +402,6 @@ contract('BBFreelancer Test', async (accounts) => {
 
 
   it("[Fail] cancel job when freelancer don't work", async () => {
-
-
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     try {
@@ -419,9 +417,6 @@ contract('BBFreelancer Test', async (accounts) => {
       return true;
     }
 
-
-
-
   });
 
   it("finish job", async () => {
@@ -435,6 +430,22 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
+
+  it("[Fail] cancel job after finish job", async () => {
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    try {
+      var jobLog = await job.cancelJob(jobHash, {
+        from: userA
+      });
+      return false;
+    } catch (e) {
+      return true;
+    }
+
+  });
+
   it("reject payment", async () => {
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     var userA = accounts[0];
@@ -445,6 +456,23 @@ contract('BBFreelancer Test', async (accounts) => {
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+  });
+
+  it("[Fail] cancel job after reject payment", async () => {
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    try {
+      var jobLog = await job.cancelJob(jobHash, {
+        from: userA
+      });
+      console.log('reject payment OK');
+      return false;
+    } catch (e) {
+      console.log('reject payment FALSE');
+      return true;
+    }
+
   });
 
 
@@ -459,6 +487,50 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
+
+  it("get payment", async () => {
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var userA = accounts[0];
+    var jobLog = await bid.getPaymentContract( {
+      from: userA
+    });
+   
+    console.log(JSON.stringify(jobLog));
+
+  });
+
+  it("[Fail] userB get userA's payment ", async () => {
+
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var userB = accounts[1];
+    try {
+      var jobLog = await bid.getPaymentContract( {
+        from: userB
+      });
+      return false;
+    } catch (e) {
+      return true;
+    }
+
+  });
+
+  it("[Fail] cancel job after acceept payment", async () => {
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    try {
+      var jobLog = await job.cancelJob(jobHash, {
+        from: userA
+      });
+      console.log('acceept payment OK');
+      return false;
+    } catch (e) {
+      console.log('acceept payment FALSE');
+      return true;
+    }
+
+  });
+
   it("get job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var jobLog = await job.getJob(jobHash);

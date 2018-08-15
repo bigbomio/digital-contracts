@@ -11,7 +11,7 @@ import './BBFreelancer.sol';
  */
 contract BBFreelancerJob is BBFreelancer {
 
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, uint timeBid, string category, uint256 budget);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, string category, uint256 budget);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -61,7 +61,7 @@ contract BBFreelancerJob is BBFreelancer {
     // save budget 
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'budget')), budget);
  
-    emit JobCreated(jobHash, msg.sender, expired, totalTime, category, budget);
+    emit JobCreated(jobHash, msg.sender, expired, category, budget);
   }
     // hirer  cancel job
   /**
@@ -72,6 +72,7 @@ contract BBFreelancerJob is BBFreelancer {
   isOwnerJob(jobHash)  {
 
     uint status = bbs.getUint(keccak256(abi.encodePacked(jobHash,'status')));
+    require(status == 0 || status == 1);
     if(status == 1) {
       address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'freelancer')));
       uint timeDone = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeDone', freelancer)));
