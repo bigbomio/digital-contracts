@@ -11,7 +11,7 @@ import './BBFreelancer.sol';
  */
 contract BBFreelancerJob is BBFreelancer {
 
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, string category, uint256 budget);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -38,7 +38,7 @@ contract BBFreelancerJob is BBFreelancer {
    * @param budget Buget
    * @param category Tag category
    */
-  function createJob(bytes jobHash, uint expired ,uint totalTime, uint256 budget, string category) public 
+  function createJob(bytes jobHash, uint expired ,uint totalTime, uint256 budget, bytes32 category) public 
   jobNotExist(jobHash)
   {
     // check jobHash not null
