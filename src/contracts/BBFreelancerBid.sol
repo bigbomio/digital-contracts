@@ -46,6 +46,8 @@ contract BBFreelancerBid is BBFreelancer{
     
     // bid must in range budget
     require(bid <= bbs.getUint(keccak256(abi.encodePacked(jobHash, 'budget' ))));
+    //check job expired
+    require(now < bbs.getUint(keccak256(abi.encodePacked(jobHash, 'expired'))));
 
     require(timeDone > 0);
 

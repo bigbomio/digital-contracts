@@ -94,7 +94,19 @@ contract('BBStorage Test', async (accounts) => {
   } catch (e) {
 
     return true;
-  }
-});
+  }});
 
+  it("remove double admin", async() => {
+    try {
+    let storage = await BBStorage.at(storageAddress);
+    await storage.addAdmin(accounts[2]);
+    await storage.removeAdmin(accounts[0]);
+    await storage.removeAdmin(accounts[2]);
+    console.log('OKKKK');
+    return false;
+ 
+  } catch (e) {
+    console.log('FAILSEEEEE');
+    return true;
+  }});
 })
