@@ -233,6 +233,32 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash + 'dddd', web3.utils.hexToUtf8(jobHashRs));
   });
+
+  it("[Fail] create new job with long category", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var timeBid = 3 * 24 * 3600;
+    //days
+
+    var longCa = '';
+    for(var i = 0; i < 33; i++) {
+      longCa += 'a';
+    }
+    console.log('longCa : ' + longCa);
+    try {
+      var jobLog = await job.createJob(jobHash + '21', expiredTime, timeBid, 500e18, longCa, {
+        from: userA
+      });
+      console.log('Can create new job with long category');
+      return false;
+    } catch (e) {
+      console.log('Can not create new job with long category');
+      return true;
+    }
+
+  });
+
   it("[Fail] create new job with exist jobHash", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
