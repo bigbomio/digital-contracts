@@ -462,7 +462,57 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidCreated').args.jobHash
-    assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+    console.log('BidCreated ' + web3.utils.sha3(jobHash));
+    console.log(JSON.stringify(jobLog));
+    assert.equal(web3.utils.sha3(jobHash),jobHashRs);
+
+  });
+
+  it("[Fail] Check function bid", async () => {
+    var userB = accounts[2];
+    var userA = accounts[0];
+    var userC = accounts[3];
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+  
+    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var timeBid = 3 * 24 * 3600; //3 days
+    await job.createJob(jobHash + 'xv', expiredTime, timeBid, 500e18, 'banner', {
+      from: userA
+    });
+
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 1 * 24 * 3600; //days
+
+    await bid.createBid(jobHash + 'xv', 300e18, timeDone, {
+      from: userB
+    });
+
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(bid.address, 0, {
+      from: userA
+    });
+    await bbo.approve(bid.address, Math.pow(2, 255), {
+      from: userA
+    });
+
+    await bid.acceptBid(jobHash + 'xv', accounts[1], {
+      from: userA
+    });
+
+    try {
+    //  await bid.cancelBid(jobHash + 'xv', {
+    //     from: userB
+    //   });
+    await bid.createBid(jobHash + 'xv', 300e18, timeDone, {
+      from: userC
+    });
+      console.log('C Bid OK');
+      return false;
+    } catch (e) {
+      console.log("C Bid FAIL");
+      return true;
+    }
 
   });
 
@@ -499,6 +549,8 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userB
     });
 
+    
+
     try {
       var jobLog = await bid.cancelBid(jobHash, {
         from: userC
@@ -525,7 +577,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidCanceled').args.jobHash
-    assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+    assert.equal(web3.utils.sha3(jobHash), jobHashRs);
 
   });
   it("acceept bid", async () => {
@@ -543,7 +595,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.jobHash
-    assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
+    assert.equal(web3.utils.sha3(jobHash),jobHashRs);
   });
   it("start working job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);

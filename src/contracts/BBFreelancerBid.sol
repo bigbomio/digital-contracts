@@ -28,9 +28,9 @@ contract BBFreelancerBid is BBFreelancer{
     return payment;
   }
 
-  event BidCreated(bytes jobHash, address indexed owner, uint256 bid, uint created);
-  event BidCanceled(bytes jobHash, address indexed owner);
-  event BidAccepted(bytes jobHash, address indexed freelancer);
+  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint created);
+  event BidCanceled(bytes32 indexed jobHash, address indexed owner);
+  event BidAccepted(bytes32 indexed jobHash, address indexed freelancer);
 
    // freelancer bid job
   /**
@@ -49,6 +49,8 @@ contract BBFreelancerBid is BBFreelancer{
     //check job expired
     require(now < bbs.getUint(keccak256(abi.encodePacked(jobHash, 'expired'))));
 
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer'))) == 0x0);
+
     require(timeDone > 0);
 
     if(bbs.getBool(keccak256(abi.encodePacked(jobHash, msg.sender, 'cancel'))) != true){
@@ -63,8 +65,11 @@ contract BBFreelancerBid is BBFreelancer{
     //set user timeDone value
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'timeDone',msg.sender)), timeDone);
 
-    emit BidCreated(jobHash, msg.sender, bid, now);
+    emit BidCreated(keccak256(jobHash), msg.sender, bid, now);
   }
+
+
+  
   // freelancer cancel bid
   /**
    * @dev 
@@ -78,7 +83,7 @@ contract BBFreelancerBid is BBFreelancer{
     // set user bid value to 0
     bbs.setUint(keccak256(abi.encodePacked(jobHash,msg.sender)), 0);
     bbs.setBool(keccak256(abi.encodePacked(jobHash,msg.sender, 'cancel')), true);
-    emit BidCanceled(jobHash, msg.sender);
+    emit BidCanceled(keccak256(jobHash), msg.sender);
   }
 
   // hirer accept bid
@@ -96,7 +101,7 @@ contract BBFreelancerBid is BBFreelancer{
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'freelancer')), freelancer);
     uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
     require(bbo.transferFrom(msg.sender, address(payment), bid));
-    emit BidAccepted(jobHash, freelancer);
+    emit BidAccepted(keccak256(jobHash), freelancer);
   }
   
 }

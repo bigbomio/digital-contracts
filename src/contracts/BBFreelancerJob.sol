@@ -34,11 +34,12 @@ contract BBFreelancerJob is BBFreelancer {
   /**
    * @dev 
    * @param jobHash Job Hash
-   * @param expired Time 
+   * @param expired Time
+   * @param estimateTime Time do the job
    * @param budget Buget
    * @param category Tag category
    */
-  function createJob(bytes jobHash, uint expired ,uint totalTime, uint256 budget, bytes32 category) public 
+  function createJob(bytes jobHash, uint expired ,uint estimateTime, uint256 budget, bytes32 category) public 
   jobNotExist(jobHash)
   {
     // check jobHash not null
@@ -48,7 +49,7 @@ contract BBFreelancerJob is BBFreelancer {
     // budget
     require(budget > 0);
 
-    require(totalTime > 0);
+    require(estimateTime > 0);
 
     // save jobHash owner
     bbs.setAddress(keccak256(jobHash), msg.sender);
@@ -56,7 +57,7 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'expired')), expired);
 
     // save time freelancer can done this job
-    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'totalTime')), totalTime);
+    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'totalTime')), estimateTime);
 
     // save budget 
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'budget')), budget);
