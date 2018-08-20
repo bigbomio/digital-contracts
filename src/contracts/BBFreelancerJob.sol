@@ -57,7 +57,7 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'expired')), expired);
 
     // save time freelancer can done this job
-    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'totalTime')), estimateTime);
+    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'estimateTime')), estimateTime);
 
     // save budget 
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'budget')), budget);
