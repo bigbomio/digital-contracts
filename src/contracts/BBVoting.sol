@@ -1,4 +1,4 @@
-/**
+  /**
  * Created on 2018-08-13 10:20
  * @summary: 
  * @author: Chris Nguyen
@@ -24,7 +24,10 @@ contract BBVoting is Ownable{
   event VoteCommitted(address indexed voter, bytes jobHash);
   event VoteRevealed(address indexed voter, bytes jobHash);
   event PollStarted(bytes jobHash, address indexed creator, uint commitEndDate, uint revealEndDate, uint voteQuorum);
-
+  modifier pollNotStarted(bytes jobHash){
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))==0x0);
+    _;
+  }
   modifier canCreatePoll(bytes jobHash){
     address jobOwner = bbs.getAddress(keccak256(jobHash));
     address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
@@ -45,6 +48,16 @@ contract BBVoting is Ownable{
     require(lockedTokens>amountHolder);
     _;
   }
+
+  function bytesToBytes32(bytes b) private pure returns (bytes32) {
+    bytes32 out;
+
+    for (uint i = 0; i < 32; i++) {
+      out |= bytes32(b[i] & 0xFF) >> (i * 8);
+    }
+    return out;
+  }
+
   /**
    * @dev set storage contract address
    * @param storageAddress Address of the Storage Contract
@@ -83,16 +96,32 @@ contract BBVoting is Ownable{
    * @dev withdraw voting rights
    * 
    */
-  function withdrawVotingRights() public
-  hasVotingRights 
+  function cancelVotingRights() public 
   {
-    //TODO
+    uint256 lockedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingLockedTokens')));
+    require (lockedTokens > 0);
+    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'cancelVotingRights')), block.timestamp.add(24*60*60));
+    emit VotingRightsWithdrawn(msg.sender);
+  }
+  /**
+   * @dev withdraw voting rights
+   * 
+   */
+  function withdrawVotingRights() public 
+  {
+    uint256 lockedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingLockedTokens')));
+    require (lockedTokens > 0);
+    // allow withdraw after 24h cancel voting rights
+    uint cancelVotingRightsDate = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'cancelVotingRights')));
+    require(cancelVotingRightsDate<=now);
+    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingLockedTokens')), 0);
+    require(bbo.transfer(msg.sender, lockedTokens));
     emit VotingRightsWithdrawn(msg.sender);
   }
   /**
    * @dev commitVote for poll
    * @param jobHash Job Hash
-   * @param secretHash Hash of Choice and salt
+   * @param secretHash Hash of Choice address and salt uint
    */
   function commitVote(bytes jobHash, bytes32 secretHash) public 
   hasVotingRights
@@ -100,9 +129,16 @@ contract BBVoting is Ownable{
   {
     require(secretHash != 0);
     // add secretHash
-    bbs.setBytes(keccak256(abi.encodePacked(jobHash,'vote',msg.sender)), secretHash);
+    bbs.setBytes(keccak256(abi.encodePacked(jobHash,'vote',msg.sender)), abi.encodePacked(secretHash));
 
     emit VoteCommitted(msg.sender, jobHash);
+  }
+
+
+  function checkHash(bytes jobHash, address choice, uint salt) public view returns(bool){
+    bytes32 choiceHash = keccak256(abi.encodePacked(choice,salt));
+    bytes32 secretHash = bytesToBytes32(bbs.getBytes(keccak256(abi.encodePacked(jobHash,'vote',msg.sender))));
+    return (choiceHash==secretHash);
   }
   /**
   * @dev revealVote for poll
@@ -118,11 +154,38 @@ contract BBVoting is Ownable{
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'revealEndDate')))>now);
 
     bytes32 choiceHash = keccak256(abi.encodePacked(choice,salt));
-    bytes32 secretHash = bytes32(bbs.getBytes(keccak256(abi.encodePacked(jobHash,'vote',msg.sender))));
+    bytes32 secretHash = bytesToBytes32(bbs.getBytes(keccak256(abi.encodePacked(jobHash,'vote',msg.sender))));
     require(choiceHash == secretHash);
     uint256 numVote = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',choice)));
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'voteFor',choice)), numVote+1);
+   
+    uint256 rewardedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')));
+    // rewards 100 BBO
+    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')), rewardedTokens.add(100));
     emit VoteRevealed(msg.sender, jobHash);
+  }
+  /**
+  * @dev revealVote for poll
+  * @param jobHash Job Hash
+  * 
+  */
+  function finalizePoll(bytes jobHash) public
+  isDisputeJob(jobHash)
+  canCreatePoll(jobHash)
+  {
+    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'revealEndDate')))<=now);
+    address jobOwner = bbs.getAddress(keccak256(jobHash));
+    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
+    uint jobOwnerVotes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',jobOwner)));
+    uint freelancerVotes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',freelancer)));
+    uint voteQuorum = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteQuorum')));
+
+    if(jobOwnerVotes == freelancerVotes || voteQuorum<(jobOwnerVotes+freelancerVotes)){
+      // cancel poll
+      bbs.setAddress(keccak256(abi.encodePacked(jobHash,'startPoll')), address(0x0));
+    }else{
+      bbs.setAddress(keccak256(abi.encodePacked(jobHash, 'disputedWinner')), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
+    }
   }
   /**
   * @dev startPoll
@@ -130,13 +193,15 @@ contract BBVoting is Ownable{
   * @param proofHash Hash of Proof 
   * 
   */
-  function startPoll(bytes jobHash, bytes proofHash, uint commitDuration, uint revealDuration, uint voteQuorum) public 
+  function startPoll(bytes jobHash, bytes proofHash, uint evidenceDuration, uint commitDuration, uint revealDuration, uint voteQuorum) public 
   isDisputeJob(jobHash)
   canCreatePoll(jobHash)
   {
-    require(keccak256(abi.encodePacked(jobHash,'startPoll'))==0x0);
+
+    // evidenceEndDate
+    uint evidenceEndDate = block.timestamp.add(evidenceDuration);
     // commitEndDate
-    uint commitEndDate = block.timestamp.add(commitDuration);
+    uint commitEndDate = evidenceEndDate.add(commitDuration);
     // revealEndDate
     uint revealEndDate = commitEndDate.add(revealDuration);
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'startPoll')), msg.sender);
@@ -158,14 +223,40 @@ contract BBVoting is Ownable{
   isDisputeJob(jobHash)
   canCreatePoll(jobHash)
   {
-    require(keccak256(abi.encodePacked(jobHash,'startPoll'))!=0x0);
-    require(keccak256(abi.encodePacked(jobHash,'startPoll'))!=msg.sender);
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))!=0x0);
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))!=msg.sender);
     bbs.setBytes(keccak256(abi.encodePacked(jobHash,'againstProofHash')), againstProofHash);
 
   }
-  function getPoll(bytes jobHash) public view returns (uint256, uint256) {
+  /**
+  * @dev getPoll:
+  * @param jobHash Job Hash
+  * returns uint ownerVotes, uint freelancerVotes
+  * 
+  */
+  function getPoll(bytes jobHash) public view returns (uint256, uint256, uint256) {
     address jobOwner = bbs.getAddress(keccak256(jobHash));
     address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
-    return (bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',jobOwner))), bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',freelancer))));
+    return (bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',jobOwner))), bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',freelancer))),  bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteQuorum'))));
+  }
+  /**
+  * @dev withdrawTokens:
+  * @param anyToken token address
+  * 
+  * 
+  */
+  function withdrawTokens(ERC20 anyToken) public onlyOwner{
+      if(address(this).balance > 0 ) {
+        owner.transfer( address(this).balance );
+      }
+      if( anyToken != address(0x0) ) {
+          require( anyToken.transfer(owner, anyToken.balanceOf(this)) );
+      }
+  }
+  function withdrawRewards() public {
+    uint256 amount = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')));
+    require(amount > 0);
+    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')), 0);
+    require(bbo.transfer(msg.sender, amount));
   }
 }
