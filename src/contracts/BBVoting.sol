@@ -22,8 +22,9 @@ contract BBVoting is Ownable{
   event VotingRightsGranted(address indexed voter);
   event VotingRightsWithdrawn(address indexed voter);
   event VoteCommitted(address indexed voter, bytes jobHash);
-  event VoteRevealed(address indexed voter, bytes jobHash);
+  event VoteRevealed(address indexed voter, bytes jobHash, bytes32 secretHash, bytes32 cHash);
   event PollStarted(bytes jobHash, address indexed creator, uint commitEndDate, uint revealEndDate, uint voteQuorum);
+  event PollAgainsted(bytes jobHash, address indexed creator);
   modifier pollNotStarted(bytes jobHash){
     require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))==0x0);
     _;
@@ -45,7 +46,7 @@ contract BBVoting is Ownable{
     uint256 lockedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingLockedTokens')));
     uint256 amountHolder = bbs.getUint(keccak256('freelancerVotingHolderTokens'));
     require(lockedTokens>0);
-    require(lockedTokens>amountHolder);
+    require(lockedTokens>=amountHolder);
     _;
   }
 
@@ -162,7 +163,7 @@ contract BBVoting is Ownable{
     uint256 rewardedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')));
     // rewards 100 BBO
     bbs.setUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')), rewardedTokens.add(100));
-    emit VoteRevealed(msg.sender, jobHash);
+    emit VoteRevealed(msg.sender, jobHash, secretHash,choiceHash);
   }
   /**
   * @dev revealVote for poll
@@ -205,6 +206,7 @@ contract BBVoting is Ownable{
     // revealEndDate
     uint revealEndDate = commitEndDate.add(revealDuration);
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'startPoll')), msg.sender);
+    bbs.setUint(keccak256(abi.encodePacked(jobHash,'evidenceEndDate')), evidenceEndDate);
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'commitEndDate')), commitEndDate);
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'revealEndDate')), revealEndDate);
     // voteQuorum
@@ -225,8 +227,9 @@ contract BBVoting is Ownable{
   {
     require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))!=0x0);
     require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))!=msg.sender);
+    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'evidenceEndDate'))) > now);
     bbs.setBytes(keccak256(abi.encodePacked(jobHash,'againstProofHash')), againstProofHash);
-
+    emit PollAgainsted(jobHash, msg.sender);
   }
   /**
   * @dev getPoll:
