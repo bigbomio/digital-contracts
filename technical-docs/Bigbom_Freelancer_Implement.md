@@ -111,7 +111,7 @@ BBFreelancerJob.at(proxyAddressJob).getPastEvents('JobCreated', {
 - event JobCanceled(bytes jobHash);
 - event JobStarted(bytes jobHash);
 - event JobFinished(bytes jobHash);
-- event BidCreated(bytes jobHash, address indexed owner, uint256 bid, uint created);
+- event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint created);
 - event BidCanceled(bytes jobHash, address indexed owner);
 - event BidAccepted(bytes jobHash, address indexed freelancer);
 - event PaymentClaimed(bytes jobHash, address indexed sender);
