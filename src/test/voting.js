@@ -129,14 +129,139 @@ contract('Voting Test', async (accounts) => {
      await bid.setPaymentContract(proxyAddressPayment, {from:accounts[0]});
      
   });
+  it("[Fail] start voting poll without dispute", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var estimatedTime = 3 * 24 * 3600; // 3 days
+    //Create Job
+    await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+      from: userA
+    });
+    //Bid Job
+    var userB = accounts[2];
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 3 * 24 * 3600; // 3 days
+    await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
+      from: userB
+    });
+
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(bid.address, 0, {
+      from: userA
+    });
+    await bbo.approve(bid.address, Math.pow(2, 255), {
+      from: userA
+    });
+    await bid.acceptBid(jobHash4 + 'd', userB, {
+      from: userA
+    });
+
+    await job.startJob(jobHash4 + 'd', {
+      from: userB
+    });
+    await job.finishJob(jobHash4 + 'd', {
+      from: userB
+    });
+
+    //Create poll 
+    try {
+      let voting = await BBVoting.at(proxyAddressVoting);
+      let proofHash = 'proofHashc';
+      let l = await voting.startPoll(jobHash4 + 'd', proofHash, 24 * 3600, 24 * 3600, 24 * 3600, 1, {
+        from: userB
+      });
+
+      console.log('create poll ok');
+      return false;
+
+    } catch (e) {
+      console.log('create poll false');
+      return true;
+
+    }
+
+  });
+
+  it("[Fail] start double voting poll", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    let jobHash4 = 'vcxzbcvxzcnxzcvxnc';
+    var userA = accounts[0];
+    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var estimatedTime = 3 * 24 * 3600; // 3 days
+    //Create Job
+    await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+      from: userA
+    });
+    //Bid Job
+    var userB = accounts[2];
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 3 * 24 * 3600; // 3 days
+    await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
+      from: userB
+    });
+
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(bid.address, 0, {
+      from: userA
+    });
+    await bbo.approve(bid.address, Math.pow(2, 255), {
+      from: userA
+    });
+    await bid.acceptBid(jobHash4 + 'd', userB, {
+      from: userA
+    });
+
+    await job.startJob(jobHash4 + 'd', {
+      from: userB
+    });
+    await job.finishJob(jobHash4 + 'd', {
+      from: userB
+    });
+
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    await payment.rejectPayment(jobHash4 + 'd', {
+      from: userA
+    });
+
+    //Create poll 
+    let voting = await BBVoting.at(proxyAddressVoting);
+    let proofHash = 'proofHashcx';
+    let l = await voting.startPoll(jobHash4 + 'd', proofHash, 24 * 3600, 24 * 3600, 24 * 3600, 1, {
+      from: userB
+    });
+
+    try {
+      //Create poll again
+      await voting.startPoll(jobHash4 + 'd', proofHash, 24 * 3600, 24 * 3600, 24 * 3600, 1, {
+        from: userB
+      });
+
+
+      console.log('create poll again ok');
+      return false;
+
+    } catch (e) {
+      console.log('create poll agian false');
+      return true;
+
+    }
+
+  });
+
+ 
   it("start other job for dispute voting", async() => {
      let job = await BBFreelancerJob.at(proxyAddressJob);
      var userA = accounts[0];
      var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
-     await job.createJob(jobHash4, expiredTime, 500e18, 'banner', {from:userA});
+     var estimatedTime = 3 * 24 * 3600; // 3 days
+
+     await job.createJob(jobHash4, expiredTime, estimatedTime,500e18, 'banner', {from:userA});
      var userB = accounts[2];
      let bid = await BBFreelancerBid.at(proxyAddressBid);
-     await bid.createBid(jobHash4, 400e18, {from:userB});
+
+     var timeDone = 3 * 24 * 3600; // 3 days
+     await bid.createBid(jobHash4, 400e18, timeDone,{from:userB});
      let bbo = await BBOTest.at(bboAddress);
      await bbo.approve(bid.address, 0, {from:userA});
      await bbo.approve(bid.address, Math.pow(2, 255), {from:userA});

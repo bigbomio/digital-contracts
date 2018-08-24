@@ -27,6 +27,9 @@ contract BBVoting is Ownable{
   event PollAgainsted(bytes jobHash, address indexed creator);
   modifier pollNotStarted(bytes jobHash){
     require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'startPoll')))==0x0);
+     uint256 jobStatus = bbs.getUint(keccak256(abi.encodePacked(jobHash,'status')));
+    require(jobStatus == 4);
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'disputedWinner')))==address(0x0));
     _;
   }
   modifier canCreatePoll(bytes jobHash){
@@ -195,7 +198,7 @@ contract BBVoting is Ownable{
   * 
   */
   function startPoll(bytes jobHash, bytes proofHash, uint evidenceDuration, uint commitDuration, uint revealDuration, uint voteQuorum) public 
-  isDisputeJob(jobHash)
+  pollNotStarted(jobHash)
   canCreatePoll(jobHash)
   {
 
