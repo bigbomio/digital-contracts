@@ -204,14 +204,16 @@ contract('BBFreelancer Test', async (accounts) => {
    // console.log(job.abi);
    // console.log(myContract);
    var key0 = web3.utils.toHex('banner');
-   var key1 = web3.utils.toHex('bottom');
+   var key1 = web3.utils.toHex('topp');
 
     try {
       await myContract.getPastEvents('JobCreated', {
-          filter: {category: [key0, key1],owner : userA},  // filter by owner, category
+          filter: {category: [key0, key1],owner : userB},  // filter by owner, category
           fromBlock: 0, // should use recent number
           toBlock: 'latest'
        }, function(error, events){
+      //  console.log('events1');
+        //console.log(events)  
            //TODO
            if(error) {
            console.log('error filter');
@@ -219,7 +221,8 @@ contract('BBFreelancer Test', async (accounts) => {
            }
           // console.log(JSON.stringify( events)); 
            }).then(function(events){
-            console.log(events) // same results as the optional callback above
+            //console.log('events2');
+            //console.log(events) // same results as the optional callback above
         });
 
     
@@ -245,15 +248,15 @@ contract('BBFreelancer Test', async (accounts) => {
     for(var i = 0; i < 33; i++) {
       longCa += 'a';
     }
-    console.log('longCa : ' + longCa);
+    //console.log('longCa : ' + longCa);
     try {
       var jobLog = await job.createJob(jobHash + '21', expiredTime, timeBid, 500e18, longCa, {
         from: userA
       });
-      console.log('Can create new job with long category');
+      //console.log('Can create new job with long category');
       return false;
     } catch (e) {
-      console.log('Can not create new job with long category');
+      //console.log('Can not create new job with long category');
       return true;
     }
 
@@ -462,8 +465,8 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidCreated').args.jobHash
-    console.log('BidCreated ' + web3.utils.sha3(jobHash));
-    console.log(JSON.stringify(jobLog));
+    //console.log('BidCreated ' + web3.utils.sha3(jobHash));
+    //console.log(JSON.stringify(jobLog));
     assert.equal(web3.utils.sha3(jobHash),jobHashRs);
 
   });
@@ -507,10 +510,10 @@ contract('BBFreelancer Test', async (accounts) => {
     await bid.createBid(jobHash + 'xv', 300e18, timeDone, {
       from: userC
     });
-      console.log('C Bid OK');
+      //console.log('C Bid OK');
       return false;
     } catch (e) {
-      console.log("C Bid FAIL");
+      //console.log("C Bid FAIL");
       return true;
     }
 
@@ -656,44 +659,46 @@ contract('BBFreelancer Test', async (accounts) => {
     }
   });
 
-  it("[Fail] bird with job expired", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var userB = accounts[1];
+  // it("[Fail] bird with job expired", async () => {
+  //   let job = await BBFreelancerJob.at(proxyAddressJob);
+  //   var userA = accounts[0];
+  //   var userB = accounts[1];
 
 
+  //   var expiredTime = parseInt(Date.now() / 1000) + 1; // expired after 7 days
+  //   var timeBid = 1 * 24 * 3600;
+  //   try {
+  //   //Hirer create job
+  //   await job.createJob(jobHash + 'jxccc', expiredTime, timeBid, 100e18, 'banner', {
+  //     from: userA
+  //   });
 
-    var expiredTime = parseInt(Date.now() / 1000) + 1; // expired after 7 days
-    var timeBid = 1 * 24 * 3600;
+  //   console.log("expiredTime " + expiredTime);
+   
 
-    //Hirer create job
-    await job.createJob(jobHash + 'jxcc', expiredTime, timeBid, 100e18, 'banner', {
-      from: userA
-    });
+  //   //UserB bid
+  //   // setTimeout(async function () {
+  //   //   console.log('Now ' + parseInt(Date.now() / 1000));
+     
+  //   //     let bid = await BBFreelancerBid.at(proxyAddressBid);
+  //   //     var timeDone = 1; //days
+  //   //     await bid.createBid(jobHash + 'jxccc', 100e18, timeDone, {
+  //   //       from: userB
+  //   //     });
 
-    console.log("expiredTime " + expiredTime);
+  //   //     console.log("User can bid job expired");
+  //   //     return false;
 
-    //UserB bid
-    setTimeout(async function () {
-      console.log('Now ' + parseInt(Date.now() / 1000));
-      try {
-        let bid = await BBFreelancerBid.at(proxyAddressBid);
-        var timeDone = 1; //days
-        await bid.createBid(jobHash + 'jxcc', 100e18, timeDone, {
-          from: userB
-        });
+     
 
-        console.log("User can bid job expired");
-        return false;
+  //   // }, 1200);
+  // } catch (e) {
+  //   console.log("User can not bid job expired ");
+  //   return true;
+  // }
 
-      } catch (e) {
-        console.log("User can not bid job expired ");
-        return true;
-      }
-
-    }, 1200);
-
-  });
+  // });
+  
 
   it("[Fail] hirer accept 2 bid", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
