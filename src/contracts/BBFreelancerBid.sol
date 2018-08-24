@@ -28,7 +28,7 @@ contract BBFreelancerBid is BBFreelancer{
     return payment;
   }
 
-  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint created);
+  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint256 timeDone, uint created);
   event BidCanceled(bytes32 indexed jobHash, address indexed owner);
   event BidAccepted(bytes32 indexed jobHash, address indexed freelancer);
 
@@ -65,7 +65,7 @@ contract BBFreelancerBid is BBFreelancer{
     //set user timeDone value
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'timeDone',msg.sender)), timeDone);
 
-    emit BidCreated(keccak256(jobHash), msg.sender, bid, now);
+    emit BidCreated(keccak256(jobHash), msg.sender, bid, timeDone, now);
   }
 
 
