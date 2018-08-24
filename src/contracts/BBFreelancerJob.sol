@@ -11,7 +11,7 @@ import './BBFreelancer.sol';
  */
 contract BBFreelancerJob is BBFreelancer {
 
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, string category, uint256 budget);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -27,18 +27,19 @@ contract BBFreelancerJob is BBFreelancer {
     bool cancel = bbs.getBool(keccak256(abi.encodePacked(jobHash, 'cancel')));
     uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'status')));
     address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'freelancer')));
-    return (owner, expired, budget, cancel, status, freelancer);
+    return (owner, expired,budget, cancel, status, freelancer);
   }
 
 
   /**
    * @dev 
    * @param jobHash Job Hash
-   * @param expired Time 
+   * @param expired Time
+   * @param estimateTime Time do the job
    * @param budget Buget
    * @param category Tag category
    */
-  function createJob(bytes jobHash, uint expired, uint256 budget, string category) public 
+  function createJob(bytes jobHash, uint expired ,uint estimateTime, uint256 budget, bytes32 category) public 
   jobNotExist(jobHash)
   {
     // check jobHash not null
@@ -46,12 +47,18 @@ contract BBFreelancerJob is BBFreelancer {
     // expired > now
     require(expired > now);
     // budget
-    require(budget>0);
+    require(budget > 0);
+
+    require(estimateTime > 0);
 
     // save jobHash owner
     bbs.setAddress(keccak256(jobHash), msg.sender);
     // save expired timestamp
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'expired')), expired);
+
+    // save time freelancer can done this job
+    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'estimateTime')), estimateTime);
+
     // save budget 
     bbs.setUint(keccak256(abi.encodePacked(jobHash, 'budget')), budget);
  
@@ -63,8 +70,17 @@ contract BBFreelancerJob is BBFreelancer {
    * @param jobHash Job Hash
    */
   function cancelJob(bytes jobHash) public 
-  isOwnerJob(jobHash) 
-  jobNotStarted(jobHash) {
+  isOwnerJob(jobHash)  {
+
+    uint status = bbs.getUint(keccak256(abi.encodePacked(jobHash,'status')));
+    require(status == 0 || status == 1);
+    if(status == 1) {
+      address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'freelancer')));
+      uint timeDone = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeDone', freelancer)));
+      uint timeStartJob = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'timeJobStart')));
+      require(now > timeStartJob + timeDone);
+    }
+    
     bbs.setBool(keccak256(abi.encodePacked(jobHash,'cancel')), true);
     emit JobCanceled(jobHash);
   }
@@ -79,6 +95,8 @@ contract BBFreelancerJob is BBFreelancer {
   isFreelancerOfJob(jobHash) {
     // set status to 1
     bbs.setUint(keccak256(abi.encodePacked(jobHash,'status')), 1);
+    //Begin set time start job
+    bbs.setUint(keccak256(abi.encodePacked(jobHash,'timeJobStart')), now);
     emit JobStarted(jobHash);
   }
   // freelancer finish Job

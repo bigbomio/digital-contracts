@@ -9,14 +9,23 @@
 
 ### Example
 
+* Job Status
+	0 : init 
+	1 : start 
+	2 : finish 
+	4 : reject
+	5 : claim Payment
+	9 : accept Payment
+
 * Create new job
 
 ```javascript
 let job = await BBFreelancerJob.at(proxyAddressJob);
 var userA = '0x12312321';
 var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
-// createJob: jobHash, expiredTime, budget, category
-var jobLog  = await job.createJob(jobHash, expiredTime, 500e18, 'banner', {from:userA});
+var totalTime = 3 * 24 * 3600;// requirement job done in 3 days 
+// createJob: jobHash, expiredTime, totalTime,budget, category
+var jobLog  = await job.createJob(jobHash, expiredTime, totalTime, 500e18, 'banner', {from:userA});
 // check event logs
 
     
@@ -31,7 +40,8 @@ var jobLog  = await job.createJob(jobHash, expiredTime, 500e18, 'banner', {from:
 ```javascript
     var userB = '0x98988997897';
     let bid = await BBFreelancerBid.at(proxyAddressBid);
-    var jobLog  = await bid.createBid(jobHash, 400e18, {from:userB});
+    var timeDone = 2 * 24 * 3600; //Freelancer suggest time done affer 2 days
+    var jobLog  = await bid.createBid(jobHash, 400e18, timeDone,{from:userB});
 ```
 
 * cancel bid
@@ -97,7 +107,7 @@ BBFreelancerJob.at(proxyAddressJob).getPastEvents('JobCreated', {
 
 ### Event lists:
 
-- event JobCreated(bytes jobHash, address indexed owner, uint created, string category);
+- event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget);
 - event JobCanceled(bytes jobHash);
 - event JobStarted(bytes jobHash);
 - event JobFinished(bytes jobHash);
