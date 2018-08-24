@@ -18,7 +18,20 @@ contract BBFreelancer is Ownable{
   using SafeMath for uint256;
   BBStorage bbs = BBStorage(0x0);
   ERC20 public bbo = ERC20(0x0);
-
+  // global constant key
+  bytes constant public PAYMENT_LIMIT_TIMESTAMP = 'PaymentLimitTimestamp';
+  bytes constant public FREELANCER_VOTING_STACK_TOKENS = 'FreelancerVotingStackTokens';
+  // per job constant key
+  bytes constant public FREELANCER = 'freelancer';
+  bytes constant public STATUS = 'status';
+  bytes constant public CANCEL = 'cancel';
+  bytes constant public BUDGET = 'budget';
+  bytes constant public BID = 'bid';
+  bytes constant public BID_COUNTER = 'bidCount';
+  bytes constant public EXPIRED = 'expired';
+  bytes constant public JOB_FINISHED_TIMESTAMP = 'finishedTimestamp';
+  bytes constant public PAYMENT_FINALIZED = 'isFinalized';
+  bytes constant public DISPUTE_WINNER = 'disputedWinner';
   /**
    * @dev set storage contract address
    * @param storageAddress Address of the Storage Contract
@@ -46,7 +59,7 @@ contract BBFreelancer is Ownable{
     _;
   }
   modifier isFreelancerOfJob(bytes jobHash){
-    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer'))) == msg.sender);
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,FREELANCER))) == msg.sender);
     _;
   }
   modifier isNotOwnerJob(bytes jobHash){
@@ -63,11 +76,11 @@ contract BBFreelancer is Ownable{
   }
 
   modifier jobNotStarted(bytes jobHash){
-    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) == 0x0);
+    require(bbs.getUint(keccak256(abi.encodePacked(jobHash, STATUS))) == 0x0);
     _;
   }
   modifier isNotCanceled(bytes jobHash){
-    require(bbs.getBool(keccak256(abi.encodePacked(jobHash,'cancel'))) !=true);
+    require(bbs.getBool(keccak256(abi.encodePacked(jobHash, CANCEL))) !=true);
     _;
   }
 }

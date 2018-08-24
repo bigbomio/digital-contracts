@@ -13,11 +13,7 @@ import './zeppelin/token/ERC20/ERC20.sol';
 /**
  * @title BBVoting contract 
  */
-contract BBVoting is Ownable{
-  using SafeMath for uint256;
-  BBStorage bbs = BBStorage(0x0);
-  ERC20 public bbo = ERC20(0x0);
-
+contract BBVoting is BBFreelancer{
 
   event VotingRightsGranted(address indexed voter);
   event VotingRightsWithdrawn(address indexed voter);
@@ -31,20 +27,20 @@ contract BBVoting is Ownable{
   }
   modifier canCreatePoll(bytes jobHash){
     address jobOwner = bbs.getAddress(keccak256(jobHash));
-    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
+    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,FREELANCER)));
     require (msg.sender==jobOwner || msg.sender==freelancer);
     _;
   }
 
   modifier isDisputeJob(bytes jobHash){
-    uint256 jobStatus = bbs.getUint(keccak256(abi.encodePacked(jobHash,'status')));
+    uint256 jobStatus = bbs.getUint(keccak256(abi.encodePacked(jobHash,STATUS)));
     require(jobStatus == 4);
-    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'disputedWinner')))==address(0x0));
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash, DISPUTE_WINNER)))==address(0x0));
     _;
   }
   modifier hasVotingRights(){
     uint256 lockedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingLockedTokens')));
-    uint256 amountHolder = bbs.getUint(keccak256('freelancerVotingHolderTokens'));
+    uint256 amountHolder = bbs.getUint(keccak256(FREELANCER_VOTING_STACK_TOKENS));
     require(lockedTokens>0);
     require(lockedTokens>=amountHolder);
     _;
@@ -60,33 +56,12 @@ contract BBVoting is Ownable{
   }
 
   /**
-   * @dev set storage contract address
-   * @param storageAddress Address of the Storage Contract
-   */
-  function setStorage(address storageAddress) onlyOwner public {
-    bbs = BBStorage(storageAddress);
-  }
-  /**
-   * @dev get storage contract address
-   */
-  function getStorage() onlyOwner public returns(address){
-    return bbs;
-  }
-
-  /**
-   * @dev set BBO contract address
-   * @param BBOAddress Address of the BBO token
-   */
-  function setBBO(address BBOAddress) onlyOwner public {
-    bbo = ERC20(BBOAddress);
-  }
-  /**
    * @dev request voting rights
    * 
    */
   function requestVotingRights() public {
     uint256 lockedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingLockedTokens')));
-    uint256 amountHolder = bbs.getUint(keccak256('freelancerVotingHolderTokens'));
+    uint256 amountHolder = bbs.getUint(keccak256(FREELANCER_VOTING_STACK_TOKENS));
     require(amountHolder!=0);
     require(lockedTokens<amountHolder);
     require(bbo.transferFrom(msg.sender,address(this), amountHolder.sub(lockedTokens)));
@@ -162,7 +137,7 @@ contract BBVoting is Ownable{
    
     uint256 rewardedTokens = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')));
     // rewards 100 BBO
-    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')), rewardedTokens.add(100));
+    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'freelancerVotingRewards')), rewardedTokens.add(100e18));
     emit VoteRevealed(msg.sender, jobHash, secretHash,choiceHash);
   }
   /**
@@ -176,7 +151,7 @@ contract BBVoting is Ownable{
   {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'revealEndDate')))<=now);
     address jobOwner = bbs.getAddress(keccak256(jobHash));
-    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
+    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,FREELANCER)));
     uint jobOwnerVotes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',jobOwner)));
     uint freelancerVotes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',freelancer)));
     uint voteQuorum = bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteQuorum')));
@@ -185,7 +160,7 @@ contract BBVoting is Ownable{
       // cancel poll
       bbs.setAddress(keccak256(abi.encodePacked(jobHash,'startPoll')), address(0x0));
     }else{
-      bbs.setAddress(keccak256(abi.encodePacked(jobHash, 'disputedWinner')), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
+      bbs.setAddress(keccak256(abi.encodePacked(jobHash, DISPUTE_WINNER)), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
     }
   }
   /**
@@ -239,13 +214,12 @@ contract BBVoting is Ownable{
   */
   function getPoll(bytes jobHash) public view returns (uint256, uint256, uint256) {
     address jobOwner = bbs.getAddress(keccak256(jobHash));
-    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer')));
+    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,FREELANCER)));
     return (bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',jobOwner))), bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteFor',freelancer))),  bbs.getUint(keccak256(abi.encodePacked(jobHash,'voteQuorum'))));
   }
   /**
   * @dev withdrawTokens:
   * @param anyToken token address
-  * 
   * 
   */
   function withdrawTokens(ERC20 anyToken) public onlyOwner{
