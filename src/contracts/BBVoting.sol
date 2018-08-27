@@ -14,6 +14,7 @@ import './BBFreelancer.sol';
 contract BBVoting is BBFreelancer{
   address public bboReward = address(0x0);
 
+
   event VotingRightsGranted(address indexed voter, uint256 numTokens);
   event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
   event VoteCommitted(address indexed voter, bytes jobHash);
@@ -52,7 +53,9 @@ contract BBVoting is BBFreelancer{
     }
     return out;
   }
-
+  function setBBOReward(address rewardAddress) onlyOwner public{
+    bboReward = rewardAddress;
+  }
   /**
    * @dev request voting rights
    * 
