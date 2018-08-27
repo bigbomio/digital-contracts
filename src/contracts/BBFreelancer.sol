@@ -26,12 +26,38 @@ contract BBFreelancer is Ownable{
   bytes constant public STATUS = 'status';
   bytes constant public CANCEL = 'cancel';
   bytes constant public BUDGET = 'budget';
+  bytes constant public ESTIMATE_TIME = 'estimateTime';
   bytes constant public BID = 'bid';
+  bytes constant public BID_TIME = 'bidTime';
   bytes constant public BID_COUNTER = 'bidCount';
   bytes constant public EXPIRED = 'expired';
   bytes constant public JOB_FINISHED_TIMESTAMP = 'finishedTimestamp';
   bytes constant public PAYMENT_FINALIZED = 'isFinalized';
   bytes constant public DISPUTE_WINNER = 'disputedWinner';
+  bytes constant public JOB_STARTED_TIMESTAMP = 'jobStartedTimestamp';
+  // constant for dispute voting
+  bytes constant public STAKED_DEPOSIT = 'stakedDeposit';
+  bytes constant public MIN_VOTES = 'minVotes';
+  bytes constant public MAX_VOTES = 'maxVotes';
+  bytes constant public VOTE_QUORUM = 'voteQuorum';
+  bytes constant public EVIDENCE_DURATION = 'evidenceDuration';
+  bytes constant public COMMIT_DURATION = 'commitDuration';
+  bytes constant public REVEAL_DURATION = 'revealDuration';
+  bytes constant public BBO_REWARDS = 'bigbomRewards';
+  bytes constant public STAKED_VOTE = 'stakeVote';
+
+  bytes constant public COMMIT_ENDDATE = 'commitEndDate';
+  bytes constant public EVEIDENCE_ENDDATE = 'evidenceEndDate';
+  bytes constant public REVEAL_ENDDATE = 'revealEndDate';
+  bytes constant public POLL_STARTED = 'pollStated';
+  bytes constant public CREATOR_PROOF = 'creatorProof';
+  bytes constant public AGAINST_PROOF = 'againstProof';
+  bytes constant public VOTE_FOR = 'voteFor';
+  bytes constant public SECRET_HASH = 'secretHash';
+  bytes constant public VOTES = 'votes';
+  bytes constant public CHOICE = 'choice';
+  bytes constant public REWARD_CLAIMED = 'rewardClaimed';
+
   /**
    * @dev set storage contract address
    * @param storageAddress Address of the Storage Contract
@@ -83,4 +109,18 @@ contract BBFreelancer is Ownable{
     require(bbs.getBool(keccak256(abi.encodePacked(jobHash, CANCEL))) !=true);
     _;
   }
+  /**
+  * @dev withdrawTokens: call by admin to withdraw any token
+  * @param anyToken token address
+  * 
+  */
+  function withdrawTokens(ERC20 anyToken) public onlyOwner{
+      if(address(this).balance > 0 ) {
+        owner.transfer( address(this).balance );
+      }
+      if( anyToken != address(0x0) ) {
+          require( anyToken.transfer(owner, anyToken.balanceOf(this)) );
+      }
+  }
+  
 }

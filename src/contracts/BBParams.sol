@@ -1,10 +1,10 @@
 pragma solidity ^0.4.24;
 
-import './BBStorage.sol';
+import './BBFreelancer.sol';
 
 contract BBParams is BBFreelancer{
 
-  function setParams(uint256 paymentLimitTimestamp, uint256 voterStackTokens) public onlyOwner {
+  function setParams(uint256 paymentLimitTimestamp, uint256 voterStackTokens) onlyOwner public {
   	require(paymentLimitTimestamp > 0);
   	require (voterStackTokens>0);
     bbs.setUint(keccak256(PAYMENT_LIMIT_TIMESTAMP), paymentLimitTimestamp);
@@ -12,6 +12,6 @@ contract BBParams is BBFreelancer{
   
   }
   function getParams() public view returns(uint256, uint256){
-  	return (bbs.getUint(keccak256(PAYMENT_LIMIT_TIMESTAMP)), bbs.getUint(keccak256(FREELANCER_VOTING_STACK_TOKENS)))
+  	return (bbs.getUint(keccak256(PAYMENT_LIMIT_TIMESTAMP)), bbs.getUint(keccak256(FREELANCER_VOTING_STACK_TOKENS)));
   }
 }
