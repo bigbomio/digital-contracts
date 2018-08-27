@@ -19,7 +19,7 @@ var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
 var jobHashWilcancel = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr2';
 var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
-var jobHash4 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr4';
+var jobHash4 = 'QmSn1wGTpz1';
 
 const files = [
   {
@@ -277,7 +277,7 @@ contract('Voting Test', async (accounts) => {
      let voting = await BBVoting.at(proxyAddressVoting);
      let proofHash = 'proofHash';
      var userB = accounts[2];
-     let l = await voting.startPoll(jobHash4, proofHash,24 * 3600,24 * 3600, 24 * 3600, 1, {from:userB});
+     let l = await voting.startPoll(jobHash4, proofHash, 24 * 3600, 24 * 3600, 24 * 3600, 1, {from:userB});
      const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
      assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
