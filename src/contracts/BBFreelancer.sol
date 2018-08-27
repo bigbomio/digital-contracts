@@ -70,18 +70,6 @@ contract BBFreelancer is Ownable{
     require(bbs.getBool(keccak256(abi.encodePacked(jobHash, 'CANCEL'))) !=true);
     _;
   }
-  /**
-  * @dev withdrawTokens: call by admin to withdraw any token
-  * @param anyToken token address
-  * 
-  */
-  function withdrawTokens(ERC20 anyToken) public onlyOwner{
-      if(address(this).balance > 0 ) {
-        owner.transfer( address(this).balance );
-      }
-      if( anyToken != address(0x0) ) {
-          require( anyToken.transfer(owner, anyToken.balanceOf(this)) );
-      }
-  }
+  
   
 }

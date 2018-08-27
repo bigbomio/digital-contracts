@@ -15,6 +15,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 const BBOTest = artifacts.require("BBOTest");
 const BBVoting = artifacts.require("BBVoting");
 const BBParams = artifacts.require("BBParams");
+const BBVotingReward = artifacts.require("BBVotingReward");
 
 var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
@@ -51,6 +52,7 @@ var proxyAddressJob = '';
 var proxyAddressBid = '';
 var proxyAddressPayment = '';
 var proxyAddressVoting = '';
+var proxyAddressVotingReward = '';
 var proxyAddressParams = '';
 var bboAddress = '';
 var storageAddress = '';
@@ -75,7 +77,10 @@ contract('Voting Test', async (accounts) => {
      let bidInstance = await BBFreelancerBid.new({from: accounts[0]});
      let paymentInstance = await BBFreelancerPayment.new({from: accounts[0]});
      let votingInstance = await BBVoting.new({from: accounts[0]});
+     let votingRewardInstance = await BBVotingReward.new({from: accounts[0]});
+
      let paramsInstance = await BBParams.new({from: accounts[0]});
+
      // create proxyfactory
      let proxyFact = await ProxyFactory.new({from: accounts[0]});
      // create proxy to docsign
@@ -99,12 +104,17 @@ contract('Voting Test', async (accounts) => {
      proxyAddressParams = l5.logs.find(l => l.event === 'ProxyCreated').args.proxy
      console.log('proxyAddressParams', proxyAddressParams)
 
+     const l6 = await proxyFact.createProxy(accounts[8], votingRewardInstance.address, {from: accounts[0]});
+     proxyAddressVotingReward = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
+     console.log('proxyAddressVotingReward', proxyAddressVotingReward)
+
      
        // set admin to storage
      await storage.addAdmin(proxyAddressJob, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressBid, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressPayment, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressVoting, {from: accounts[0]} );
+     await storage.addAdmin(proxyAddressVotingReward, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressParams, {from: accounts[0]} );
 
      await storage.addAdmin(accounts[7], {from: accounts[0]} );
@@ -142,6 +152,11 @@ contract('Voting Test', async (accounts) => {
      await params.transferOwnership(accounts[0], {from:accounts[0]});
      await params.setStorage(storage.address, {from:accounts[0]});
      await params.setBBO(bboAddress, {from:accounts[0]});
+
+     let votingReward = await BBParams.at(proxyAddressVotingReward);
+     await votingReward.transferOwnership(accounts[0], {from:accounts[0]});
+     await votingReward.setStorage(storage.address, {from:accounts[0]});
+     await votingReward.setBBO(bboAddress, {from:accounts[0]});
 
      await bid.setPaymentContract(proxyAddressPayment, {from:accounts[0]});
      
@@ -183,7 +198,7 @@ contract('Voting Test', async (accounts) => {
 
     //Create poll 
     try {
-      let voting = await BBVoting.at(proxyAddressVoting);
+      let voting = await BBVotingReward.at(proxyAddressVotingReward);
       let proofHash = 'proofHashc';
       let l = await voting.startPoll(jobHash4 + 'd', proofHash, {
         from: userB
@@ -231,7 +246,7 @@ contract('Voting Test', async (accounts) => {
       return true;
   });
   it("start poll", async() => {
-     let voting = await BBVoting.at(proxyAddressVoting);
+     let voting = await BBVotingReward.at(proxyAddressVotingReward);
      let proofHash = 'proofHash';
      var userB = accounts[2];
      let bbo = await BBOTest.at(bboAddress);
@@ -242,7 +257,7 @@ contract('Voting Test', async (accounts) => {
      assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
   it("against poll", async() => {
-     let voting = await BBVoting.at(proxyAddressVoting);
+     let voting = await BBVotingReward.at(proxyAddressVotingReward);
      let proofHash = 'proofHashAgainst';
      var userA = accounts[0];
      let bbo = await BBOTest.at(bboAddress);
@@ -297,7 +312,7 @@ contract('Voting Test', async (accounts) => {
   //    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   // });
     it("read poll ", async() => {
-     let voting = await BBVoting.at(proxyAddressVoting);
+     let voting = await BBVotingReward.at(proxyAddressVotingReward);
      var userC = accounts[1];
      let l = await voting.getPoll(jobHash4, {from:userC});
      console.log(l);
