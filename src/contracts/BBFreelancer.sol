@@ -20,7 +20,6 @@ contract BBFreelancer is Ownable{
   ERC20 public bbo = ERC20(0x0);
   // global constant key
   bytes constant public PAYMENT_LIMIT_TIMESTAMP = 'PaymentLimitTimestamp';
-  bytes constant public FREELANCER_VOTING_STACK_TOKENS = 'FreelancerVotingStackTokens';
   // per job constant key
   bytes constant public FREELANCER = 'freelancer';
   bytes constant public STATUS = 'status';
