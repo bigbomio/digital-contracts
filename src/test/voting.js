@@ -135,14 +135,14 @@ contract('Voting Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
     //Create Job
-    await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+    await job.createJob(jobHash4 + 'd', expiredTime, 500e18, 'banner', {
       from: userA
     });
     //Bid Job
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
+    await bid.createBid(jobHash4 + 'd', 400e18, {
       from: userB
     });
 
@@ -190,14 +190,14 @@ contract('Voting Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
     //Create Job
-    await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+    await job.createJob(jobHash4 + 'd', expiredTime, 500e18, 'banner', {
       from: userA
     });
     //Bid Job
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
+    await bid.createBid(jobHash4 + 'd', 400e18, {
       from: userB
     });
 
@@ -256,12 +256,12 @@ contract('Voting Test', async (accounts) => {
      var expiredTime = parseInt(Date.now()/1000) + 7 * 24 * 3600; // expired after 7 days
      var estimatedTime = 3 * 24 * 3600; // 3 days
 
-     await job.createJob(jobHash4, expiredTime, estimatedTime,500e18, 'banner', {from:userA});
+     await job.createJob(jobHash4, expiredTime,500e18, 'banner', {from:userA});
      var userB = accounts[2];
      let bid = await BBFreelancerBid.at(proxyAddressBid);
 
      var timeDone = 3 * 24 * 3600; // 3 days
-     await bid.createBid(jobHash4, 400e18, timeDone,{from:userB});
+     await bid.createBid(jobHash4, 400e18,{from:userB});
      let bbo = await BBOTest.at(bboAddress);
      await bbo.approve(bid.address, 0, {from:userA});
      await bbo.approve(bid.address, Math.pow(2, 255), {from:userA});
