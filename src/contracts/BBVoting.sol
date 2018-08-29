@@ -5,27 +5,42 @@
  */
 pragma solidity ^0.4.24;
 
-import './BBDispute.sol';
-
+import './BBStandard.sol';
+import './BBLib.sol';
 /**
  * @title BBVoting contract 
  */
-contract BBVoting is BBDispute{
-  
+contract BBVoting is BBStandard{
+  address public bboReward = address(0x0);
+
   event VotingRightsGranted(address indexed voter, uint256 numTokens);
   event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
   event VoteCommitted(address indexed voter, bytes jobHash);
   event VoteRevealed(address indexed voter, bytes jobHash, bytes32 secretHash, bytes32 cHash);
   
+  modifier isDisputeJob(bytes jobHash){
+    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+    require(jobStatus == 4);
+    require(bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'))==address(0x0));
+    _;
+  }
+  function isAgaintsPoll(bytes jobHash) public constant returns(bool){
+    return keccak256(bbs.getBytes(BBLib.toB32(jobHash,'AGAINST_PROOF')))!=keccak256("");
+  }
+  
+  function setBBOReward(address rewardAddress) onlyOwner public{
+    bboReward = rewardAddress;
+  }
+
   /**
    * @dev request voting rights
    * 
    */
   function requestVotingRights(uint256 numTokens) public {
     require(bbo.balanceOf(msg.sender) >= numTokens);
-    uint256 voteTokenBalance = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE')));
+    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     require(bbo.transferFrom(msg.sender, address(this), numTokens));
-    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE')), voteTokenBalance.add(numTokens));
+    bbs.setUint(BBLib.toB32(msg.sender,'STAKED_VOTE'), voteTokenBalance.add(numTokens));
     emit VotingRightsGranted(msg.sender, numTokens);
   }
   
@@ -35,12 +50,12 @@ contract BBVoting is BBDispute{
    */
   function withdrawVotingRights(uint256 numTokens) public 
   {
-    uint256 voteTokenBalance = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE')));
+    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     require (voteTokenBalance > 0);
     if(voteTokenBalance<numTokens){
       numTokens = voteTokenBalance;
     }    
-    bbs.setUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE')), voteTokenBalance.sub(numTokens));
+    bbs.setUint(BBLib.toB32(msg.sender,'STAKED_VOTE'), voteTokenBalance.sub(numTokens));
     require(bbo.transfer(msg.sender, numTokens));
     emit VotingRightsWithdrawn(msg.sender, numTokens);
   }
@@ -54,14 +69,14 @@ contract BBVoting is BBDispute{
   {
     require(isAgaintsPoll(jobHash)==true);
     require(secretHash != 0);
-    uint256 voteTokenBalance = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE')));
+    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     if(voteTokenBalance<tokens){
       requestVotingRights(tokens.sub(voteTokenBalance));
     }
-    require(bbs.getUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE'))) >= tokens);
+    require(bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE')) >= tokens);
     // add secretHash
-    bbs.setBytes(keccak256(abi.encodePacked(jobHash,'SECRET_HASH',msg.sender)), abi.encodePacked(secretHash));
-    bbs.setUint(keccak256(abi.encodePacked(jobHash,'VOTES',msg.sender)), tokens);
+    bbs.setBytes(BBLib.toB32(jobHash,'SECRET_HASH',msg.sender), abi.encodePacked(secretHash));
+    bbs.setUint(BBLib.toB32(jobHash,'VOTES',msg.sender), tokens);
     emit VoteCommitted(msg.sender, jobHash);
   }
 
@@ -72,8 +87,8 @@ contract BBVoting is BBDispute{
   * @param salt salt
   */
   function checkHash(bytes jobHash, address choice, uint salt) public view returns(bool){
-    bytes32 choiceHash = keccak256(abi.encodePacked(choice,salt));
-    bytes32 secretHash = bytesToBytes32(bbs.getBytes(keccak256(abi.encodePacked(jobHash,'SECRET_HASH',msg.sender))));
+    bytes32 choiceHash = BBLib.toB32(choice,salt);
+    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash,'SECRET_HASH',msg.sender)));
     return (choiceHash==secretHash);
   }
   /**
@@ -86,21 +101,21 @@ contract BBVoting is BBDispute{
   isDisputeJob(jobHash)
   {
     require(isAgaintsPoll(jobHash)==true);
-    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'COMMIT_ENDDATE')))<now);
-    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'REVEAL_ENDDATE')))>now);
-    uint256 voteTokenBalance = bbs.getUint(keccak256(abi.encodePacked(msg.sender,'STAKED_VOTE')));
-    uint256 votes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'VOTES',msg.sender)));
+    require(bbs.getUint(BBLib.toB32(jobHash,'COMMIT_ENDDATE'))<now);
+    require(bbs.getUint(BBLib.toB32(jobHash,'REVEAL_ENDDATE'))>now);
+    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
+    uint256 votes = bbs.getUint(BBLib.toB32(jobHash,'VOTES',msg.sender));
     // check staked vote
     require(voteTokenBalance>= votes);
 
-    bytes32 choiceHash = keccak256(abi.encodePacked(choice,salt));
-    bytes32 secretHash = bytesToBytes32(bbs.getBytes(keccak256(abi.encodePacked(jobHash,'SECRET_HASH',msg.sender))));
+    bytes32 choiceHash = BBLib.toB32(choice,salt);
+    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash,'SECRET_HASH',msg.sender)));
     require(choiceHash == secretHash);
-    uint256 numVote = bbs.getUint(keccak256(abi.encodePacked(jobHash,'VOTE_FOR',choice)));
+    uint256 numVote = bbs.getUint(BBLib.toB32(jobHash,'VOTE_FOR',choice));
     //save result poll
-    bbs.setUint(keccak256(abi.encodePacked(jobHash,'VOTE_FOR',choice)), numVote.add(votes));
+    bbs.setUint(BBLib.toB32(jobHash,'VOTE_FOR',choice), numVote.add(votes));
     // save voter choice
-    bbs.setAddress(keccak256(abi.encodePacked(jobHash,'CHOICE',msg.sender)), choice);
+    bbs.setAddress(BBLib.toB32(jobHash,'CHOICE',msg.sender), choice);
     emit VoteRevealed(msg.sender, jobHash, secretHash,choiceHash);
   }
   /**
@@ -109,11 +124,11 @@ contract BBVoting is BBDispute{
   *
   */
   function claimReward(bytes jobHash) public {
-    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'REVEAL_ENDDATE')))<=now);
-    require(bbs.getBool(keccak256(abi.encodePacked(jobHash,msg.sender,'REWARD_CLAIMED')))!= true);
+    require(bbs.getUint(BBLib.toB32(jobHash,'REVEAL_ENDDATE'))<=now);
+    require(bbs.getBool(BBLib.toB32(jobHash,'REWARD_CLAIMED',msg.sender))!= true);
     uint256 numReward = calcReward(jobHash);
     // set claimed to true
-    bbs.setBool(keccak256(abi.encodePacked(jobHash,msg.sender,'REWARD_CLAIMED')), true);
+    bbs.setBool(BBLib.toB32(jobHash,'REWARD_CLAIMED',msg.sender), true);
     require(bbo.transferFrom(bboReward, msg.sender, numReward));
   }
   /**
@@ -122,25 +137,18 @@ contract BBVoting is BBDispute{
   *
   */
   function calcReward(bytes jobHash) constant public returns(uint256 numReward){
-    address winner = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'DISPUTE_WINNER')));
+    address winner = bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'));
     require(winner!=address(0x0));
-    address choice = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'CHOICE',msg.sender)));
+    address choice = bbs.getAddress(BBLib.toB32(jobHash,'CHOICE',msg.sender));
     if(choice == winner){
-      uint256 votes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'VOTES',msg.sender)));
-      uint256 totalVotes = bbs.getUint(keccak256(abi.encodePacked(jobHash,'VOTE_FOR',choice)));
-      uint256 bboStake = bbs.getUint(keccak256(abi.encodePacked(jobHash,choice,'STAKED_DEPOSIT')));
+      uint256 votes = bbs.getUint(BBLib.toB32(jobHash,'VOTES',msg.sender));
+      uint256 totalVotes = bbs.getUint(BBLib.toB32(jobHash,'VOTE_FOR',choice));
+      uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash,'STAKED_DEPOSIT',choice));
       numReward = votes.mul(bboStake).div(totalVotes);
     }else{
       numReward = bbs.getUint(keccak256('BBO_REWARDS'));
     }
   }
-  function bytesToBytes32(bytes b) internal pure returns (bytes32) {
-    bytes32 out;
-
-    for (uint i = 0; i < 32; i++) {
-      out |= bytes32(b[i] & 0xFF) >> (i * 8);
-    }
-    return out;
-  }
+  
   
 }
