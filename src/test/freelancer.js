@@ -839,7 +839,14 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
-
+  it("check payment", async () => {
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    var userA = accounts[0];
+    var rs = await payment.checkPayment(jobHash, {
+      from: userA
+    });
+    return true;
+  });
   it("[Fail] cancel job after reject payment", async () => {
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
