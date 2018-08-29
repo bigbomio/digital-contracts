@@ -357,6 +357,22 @@ contract('Voting Test', async (accounts) => {
       });
     return true;
   });
+  it("[Fail] set params MinVotes > MaxVotes", async () => {
+    let params = await BBParams.at(proxyAddressParams);
+    try {
+    await params.setVotingParams(100e18, 10e18, 60, 100e18, 24 * 60 * 60, 24 * 60 * 60,
+      24 * 60 * 60, 10e18, 100e18, {
+        from: accounts[0]
+      });
+      console.log('set params MinVotes > MaxVotes TRUE');
+      return false;
+
+    } catch(e) {
+      console.log('set params MinVotes > MaxVotes FALSE');
+      return true;
+    }
+    
+  });
   it("[Fail] UserC start poll", async () => {
     let voting = await BBVotingReward.at(proxyAddressVotingReward);
     let proofHash = 'proofHash';

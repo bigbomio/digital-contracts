@@ -18,6 +18,7 @@ contract BBParams is BBFreelancer{
    uint256 revealDuration, uint256 bboRewards, uint256 stakeVote) onlyOwner public {
   	require(minVotes > 0);
   	require(maxVotes>0);
+    require(maxVotes > minVotes);
   	require(voteQuorum>0);
   	require(stakeDeposit>0);
   	require(eveidenceDuration>0);
