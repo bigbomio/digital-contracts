@@ -70,6 +70,10 @@ contract BBVoting is BBStandard{
   function commitVote(bytes jobHash, bytes32 secretHash, uint256 tokens) public 
   isDisputeJob(jobHash)
   {
+    uint256 minVotes = bbs.getUint(keccak256('MIN_VOTES'));
+    uint256 maxVotes = bbs.getUint(keccak256('MAX_VOTES'));
+    require(tokens >= minVotes);
+    require(tokens <= maxVotes);
     require(isAgaintsPoll(jobHash)==true);
     require(secretHash != 0);
     uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
