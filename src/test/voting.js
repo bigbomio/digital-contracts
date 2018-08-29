@@ -2,14 +2,16 @@ var Web3 = require('web3');
 var ipfsAPI = require('ipfs-api')
 var Helpers = require('./../helpers/helpers.js');
 
-var ipfs = ipfsAPI('ipfs.infura.io', '5001', {protocol: 'https'});
+var ipfs = ipfsAPI('ipfs.infura.io', '5001', {
+  protocol: 'https'
+});
 
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
-const BBFreelancerJob =  artifacts.require("BBFreelancerJob");
-const BBFreelancerBid =  artifacts.require("BBFreelancerBid");
-const BBFreelancerPayment =  artifacts.require("BBFreelancerPayment");
-const BBStorage =  artifacts.require("BBStorage");
+const BBFreelancerJob = artifacts.require("BBFreelancerJob");
+const BBFreelancerBid = artifacts.require("BBFreelancerBid");
+const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
+const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 const BBOTest = artifacts.require("BBOTest");
@@ -23,18 +25,16 @@ var jobHashWilcancel = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr2';
 var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
 var jobHash4 = 'QmSn1wGTpz1';
 
-const files = [
-  {
-    path: 'README.md',
-    content: 'text',
-  }
-]
+const files = [{
+  path: 'README.md',
+  content: 'text',
+}]
 
 var abi = require('ethereumjs-abi')
-var BN = require( 'bignumber.js')
+var BN = require('bignumber.js')
 
 function formatValue(value) {
-  if (typeof(value) === 'number' || BN.isBigNumber(value)) {
+  if (typeof (value) === 'number' || BN.isBigNumber(value)) {
     return value.toString();
   } else {
     return value;
@@ -237,24 +237,110 @@ contract('Voting Test', async (accounts) => {
      let payment = await BBFreelancerPayment.at(proxyAddressPayment);
      await payment.rejectPayment(jobHash4, {from:userA});
 
+  it("start other job for dispute voting", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var estimatedTime = 3 * 24 * 3600; // 3 days
+
+    await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
+      from: userA
+    });
+    var userB = accounts[2];
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+
+    var timeDone = 3 * 24 * 3600; // 3 days
+    await bid.createBid(jobHash4, 400e18, timeDone, {
+      from: userB
+    });
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(bid.address, 0, {
+      from: userA
+    });
+    await bbo.approve(bid.address, Math.pow(2, 255), {
+      from: userA
+    });
+    await bid.acceptBid(jobHash4, userB, {
+      from: userA
+    });
+
+    await job.startJob(jobHash4, {
+      from: userB
+    });
+    await job.finishJob(jobHash4, {
+      from: userB
+    });
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    await payment.rejectPayment(jobHash4, {
+      from: userA
+    });
+
   });
-  it("set params", async() => {
-     let params = await BBParams.at(proxyAddressParams);
-     await params.setVotingParams(100e18, 1000000e18, 60, 100e18, 24*60*60, 24*60*60, 
-   24*60*60, 10e18, 100e18, {from:accounts[0]});
+  it("set params", async () => {
+    let params = await BBParams.at(proxyAddressParams);
+    await params.setVotingParams(100e18, 1000000e18, 60, 100e18, 24 * 60 * 60, 24 * 60 * 60,
+      24 * 60 * 60, 10e18, 100e18, {
+        from: accounts[0]
+      });
+    return true;
+  });
+  it("[Fail] set params MinVotes > MaxVotes", async () => {
+    let params = await BBParams.at(proxyAddressParams);
+    try {
+    await params.setVotingParams(100e18, 10e18, 60, 100e18, 24 * 60 * 60, 24 * 60 * 60,
+      24 * 60 * 60, 10e18, 100e18, {
+        from: accounts[0]
+      });
+      console.log('set params MinVotes > MaxVotes TRUE');
+      return false;
+
+    } catch(e) {
+      console.log('set params MinVotes > MaxVotes FALSE');
       return true;
+    }
+    
   });
-  it("start poll", async() => {
-     let voting = await BBPoll.at(proxyAddressPoll);
-     let proofHash = 'proofHash';
-     var userB = accounts[2];
-     let bbo = await BBOTest.at(bboAddress);
-     await bbo.approve(voting.address, 0, {from:userB});
-     await bbo.approve(voting.address, Math.pow(2, 255), {from:userB});
-     let l = await voting.startPoll(jobHash4, proofHash, {from:userB});
-     const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
-     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  it("[Fail] UserC start poll", async () => {
+    let voting = await BBVotingReward.at(proxyAddressVotingReward);
+    let proofHash = 'proofHash';
+    var userB = accounts[3];
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userB
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userB
+    });
+    try {
+      await voting.startPoll(jobHash4, proofHash, {
+        from: userB
+      });
+      console.log('UserC can start poll');
+      return false;
+    } catch (e) {
+      console.log('UserC cann"t start poll');
+
+      return true;
+    }
+
   });
+  it("start poll", async () => {
+    let voting = await BBVotingReward.at(proxyAddressVotingReward);
+    let proofHash = 'proofHash';
+    var userB = accounts[2];
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userB
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userB
+    });
+    let l = await voting.startPoll(jobHash4, proofHash, {
+      from: userB
+    });
+    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
+    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+
   it("against poll", async() => {
      let voting = await BBPoll.at(proxyAddressPoll);
      let proofHash = 'proofHashAgainst';
@@ -266,22 +352,100 @@ contract('Voting Test', async (accounts) => {
      const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
      assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
-  it("reqest voting rights", async() => {
-     let voting = await BBVoting.at(proxyAddressVoting);
-     var userC = accounts[1];
-     let bbo = await BBOTest.at(bboAddress);
-     await bbo.approve(voting.address, 0, {from:userC});
-     await bbo.approve(voting.address, Math.pow(2, 255), {from:userC});
-     let l = await voting.requestVotingRights(200e18, {from:userC});
-     const jobHashRs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
-     assert.equal(userC, jobHashRs);
+  it("[Fail] Owner against poll", async () => {
+    let voting = await BBVotingReward.at(proxyAddressVotingReward);
+    let proofHash = 'proofHashAgainst';
+    var userA = accounts[2];
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userA
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userA
+    });
+    try {
+      let l = await voting.againstPoll(jobHash4, proofHash, {
+        from: userA
+      });
+      console.log('Owner can against poll');
+      return false;
+
+    } catch (e) {
+      console.log('Owner can not against poll');
+
+      return true;
+    }
+
+
+  });
+  it("[Fail] against poll with invalid jobHash", async () => {
+    let voting = await BBVotingReward.at(proxyAddressVotingReward);
+    let proofHash = 'proofHashAgainst';
+    var userA = accounts[0];
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userA
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userA
+    });
+    try {
+      let l = await voting.againstPoll(jobHash4 + 'okko', proofHash, {
+        from: userA
+      });
+
+      console.log('against poll with invalid jobHash TRUE');
+
+      return false;
+
+    } catch (e) {
+      console.log('against poll with invalid jobHash FALSE');
+
+      return true;
+    }
+
+  });
+  
+  it("against poll", async () => {
+    let voting = await BBVotingReward.at(proxyAddressVotingReward);
+    let proofHash = 'proofHashAgainst';
+    var userA = accounts[0];
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userA
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userA
+    });
+    let l = await voting.againstPoll(jobHash4, proofHash, {
+      from: userA
+    });
+    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
+    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  });
+  it("reqest voting rights", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userC
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userC
+    });
+    let l = await voting.requestVotingRights(200e18, {
+      from: userC
+    });
+    const jobHashRs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
+    assert.equal(userC, jobHashRs);
   });
   it("fast forward to 24h after start poll", function() {
     var fastForwardTime = 24 * 3600 + 1;
-    return Helpers.sendPromise( 'evm_increaseTime', [fastForwardTime] ).then(function(){
-        return Helpers.sendPromise( 'evm_mine', [] ).then(function(){
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+        console.log('aaaaaaaaaaaaaaaa fast forward to 24h after start poll');
 
-        });
+      });
     });
   });
   it("commit vote ", async() => {
@@ -294,27 +458,67 @@ contract('Voting Test', async (accounts) => {
   });
   it("fast forward to 24h after commit vote poll", function() {
     var fastForwardTime = 24 * 3600 + 1;
-    return Helpers.sendPromise( 'evm_increaseTime', [fastForwardTime] ).then(function(){
-        return Helpers.sendPromise( 'evm_mine', [] ).then(function(){
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
 
-        });
+      });
     });
   });
-  //  it("reveal vote ", async() => {
-  //    let voting = await BBVoting.at(proxyAddressVoting);
-  //    var userC = accounts[1];
-  //    var secretHash = web3.utils.sha3(accounts[2],123);
-  //    let l = await voting.revealVote(jobHash4, accounts[2], 123, {from:userC});
-  //    const a = l.logs.find(l => l.event === 'VoteRevealed').args
-  //    console.log(a)
-  //    const jobHashRs = a.jobHash
-  //    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
-  // });
+
+  it("[Fail] reveal vote with missing address", async() => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    try {
+        await voting.revealVote(jobHash4, accounts[3], 123, {from:userC});
+        console.log('reveal vote with missing address FALSE');
+        return false;
+    } catch(e) {
+      console.log('reveal vote with missing address FALSE');
+      return true;
+    }
+    
+ });
+ it("[Fail] reveal vote with missing salt", async() => {
+  let voting = await BBVoting.at(proxyAddressVoting);
+  var userC = accounts[1];
+  try {
+      await voting.revealVote(jobHash4, accounts[2], 124, {from:userC});
+      console.log('reveal vote with missing salt FALSE');
+      return false;
+  } catch(e) {
+    console.log('reveal vote with missing salt FALSE');
+    return true;
+  }
+  
+});
+
+   it("reveal vote ", async() => {
+     let voting = await BBVoting.at(proxyAddressVoting);
+     var userC = accounts[1];
+     var secretHash = web3.utils.sha3(accounts[2],123);
+     let l = await voting.revealVote(jobHash4, accounts[2], 123, {from:userC});
+     const a = l.logs.find(l => l.event === 'VoteRevealed').args
+     console.log(a)
+     const jobHashRs = a.jobHash
+     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  });
   it("read poll ", async() => {
      let voting = await BBPoll.at(proxyAddressPoll);
      var userC = accounts[1];
-     let l = await voting.getPoll(jobHash4, {from:userC});
-     console.log(l);
+     var secretHash = web3.utils.sha3(accounts[2],123);
+     let l = await voting.revealVote(jobHash4, accounts[2], 123, {from:userC});
+     const a = l.logs.find(l => l.event === 'VoteRevealed').args
+     console.log(a)
+     const jobHashRs = a.jobHash
+     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  });
+  it("read poll ", async () => {
+    let voting = await BBVotingReward.at(proxyAddressVotingReward);
+    var userC = accounts[1];
+    let l = await voting.getPoll(jobHash4, {
+      from: userC
+    });
+    console.log(l);
   });
 
 })
