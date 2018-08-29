@@ -15,7 +15,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 const BBOTest = artifacts.require("BBOTest");
 const BBVoting = artifacts.require("BBVoting");
 const BBParams = artifacts.require("BBParams");
-const BBVotingReward = artifacts.require("BBVotingReward");
+const BBPoll = artifacts.require("BBPoll");
 
 var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
@@ -52,7 +52,7 @@ var proxyAddressJob = '';
 var proxyAddressBid = '';
 var proxyAddressPayment = '';
 var proxyAddressVoting = '';
-var proxyAddressVotingReward = '';
+var proxyAddressPoll = '';
 var proxyAddressParams = '';
 var bboAddress = '';
 var storageAddress = '';
@@ -77,7 +77,7 @@ contract('Voting Test', async (accounts) => {
      let bidInstance = await BBFreelancerBid.new({from: accounts[0]});
      let paymentInstance = await BBFreelancerPayment.new({from: accounts[0]});
      let votingInstance = await BBVoting.new({from: accounts[0]});
-     let votingRewardInstance = await BBVotingReward.new({from: accounts[0]});
+     let votingRewardInstance = await BBPoll.new({from: accounts[0]});
 
      let paramsInstance = await BBParams.new({from: accounts[0]});
 
@@ -105,8 +105,8 @@ contract('Voting Test', async (accounts) => {
      console.log('proxyAddressParams', proxyAddressParams)
 
      const l6 = await proxyFact.createProxy(accounts[8], votingRewardInstance.address, {from: accounts[0]});
-     proxyAddressVotingReward = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
-     console.log('proxyAddressVotingReward', proxyAddressVotingReward)
+     proxyAddressPoll = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
+     console.log('proxyAddressPoll', proxyAddressPoll)
 
      
        // set admin to storage
@@ -114,7 +114,7 @@ contract('Voting Test', async (accounts) => {
      await storage.addAdmin(proxyAddressBid, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressPayment, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressVoting, {from: accounts[0]} );
-     await storage.addAdmin(proxyAddressVotingReward, {from: accounts[0]} );
+     await storage.addAdmin(proxyAddressPoll, {from: accounts[0]} );
      await storage.addAdmin(proxyAddressParams, {from: accounts[0]} );
 
      await storage.addAdmin(accounts[7], {from: accounts[0]} );
@@ -153,7 +153,7 @@ contract('Voting Test', async (accounts) => {
      await params.setStorage(storage.address, {from:accounts[0]});
      await params.setBBO(bboAddress, {from:accounts[0]});
 
-     let votingReward = await BBParams.at(proxyAddressVotingReward);
+     let votingReward = await BBPoll.at(proxyAddressPoll);
      await votingReward.transferOwnership(accounts[0], {from:accounts[0]});
      await votingReward.setStorage(storage.address, {from:accounts[0]});
      await votingReward.setBBO(bboAddress, {from:accounts[0]});
@@ -198,7 +198,7 @@ contract('Voting Test', async (accounts) => {
 
     //Create poll 
     try {
-      let voting = await BBVotingReward.at(proxyAddressVotingReward);
+      let voting = await BBPoll.at(proxyAddressPoll);
       let proofHash = 'proofHashc';
       let l = await voting.startPoll(jobHash4 + 'd', proofHash, {
         from: userB
@@ -215,7 +215,6 @@ contract('Voting Test', async (accounts) => {
 
   });
 
-  
   it("start other job for dispute voting", async() => {
      let job = await BBFreelancerJob.at(proxyAddressJob);
      var userA = accounts[0];
@@ -246,7 +245,7 @@ contract('Voting Test', async (accounts) => {
       return true;
   });
   it("start poll", async() => {
-     let voting = await BBVotingReward.at(proxyAddressVotingReward);
+     let voting = await BBPoll.at(proxyAddressPoll);
      let proofHash = 'proofHash';
      var userB = accounts[2];
      let bbo = await BBOTest.at(bboAddress);
@@ -257,7 +256,7 @@ contract('Voting Test', async (accounts) => {
      assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
   it("against poll", async() => {
-     let voting = await BBVotingReward.at(proxyAddressVotingReward);
+     let voting = await BBPoll.at(proxyAddressPoll);
      let proofHash = 'proofHashAgainst';
      var userA = accounts[0];
      let bbo = await BBOTest.at(bboAddress);
@@ -277,7 +276,7 @@ contract('Voting Test', async (accounts) => {
      const jobHashRs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
      assert.equal(userC, jobHashRs);
   });
-   it("fast forward to 24h after start poll", function() {
+  it("fast forward to 24h after start poll", function() {
     var fastForwardTime = 24 * 3600 + 1;
     return Helpers.sendPromise( 'evm_increaseTime', [fastForwardTime] ).then(function(){
         return Helpers.sendPromise( 'evm_mine', [] ).then(function(){
@@ -285,7 +284,7 @@ contract('Voting Test', async (accounts) => {
         });
     });
   });
-   it("commit vote ", async() => {
+  it("commit vote ", async() => {
      let voting = await BBVoting.at(proxyAddressVoting);
      var userC = accounts[1];
      var secretHash = web3.utils.soliditySha3(accounts[2],123);
@@ -293,7 +292,7 @@ contract('Voting Test', async (accounts) => {
      const jobHashRs = l.logs.find(l => l.event === 'VoteCommitted').args.jobHash
      assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
-   it("fast forward to 24h after commit vote poll", function() {
+  it("fast forward to 24h after commit vote poll", function() {
     var fastForwardTime = 24 * 3600 + 1;
     return Helpers.sendPromise( 'evm_increaseTime', [fastForwardTime] ).then(function(){
         return Helpers.sendPromise( 'evm_mine', [] ).then(function(){
@@ -311,8 +310,8 @@ contract('Voting Test', async (accounts) => {
   //    const jobHashRs = a.jobHash
   //    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   // });
-    it("read poll ", async() => {
-     let voting = await BBVotingReward.at(proxyAddressVotingReward);
+  it("read poll ", async() => {
+     let voting = await BBPoll.at(proxyAddressPoll);
      var userC = accounts[1];
      let l = await voting.getPoll(jobHash4, {from:userC});
      console.log(l);
