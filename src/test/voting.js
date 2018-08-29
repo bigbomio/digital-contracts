@@ -489,6 +489,7 @@ contract('Voting Test', async (accounts) => {
     var fastForwardTime = 24 * 3600 + 1;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
+        console.log('aaaaaaaaaaaaaaaa fast forward to 24h after start poll');
 
       });
     });
@@ -511,16 +512,43 @@ contract('Voting Test', async (accounts) => {
       });
     });
   });
-  //  it("reveal vote ", async() => {
-  //    let voting = await BBVoting.at(proxyAddressVoting);
-  //    var userC = accounts[1];
-  //    var secretHash = web3.utils.sha3(accounts[2],123);
-  //    let l = await voting.revealVote(jobHash4, accounts[2], 123, {from:userC});
-  //    const a = l.logs.find(l => l.event === 'VoteRevealed').args
-  //    console.log(a)
-  //    const jobHashRs = a.jobHash
-  //    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
-  // });
+
+  it("[Fail] reveal vote with missing address", async() => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    try {
+        await voting.revealVote(jobHash4, accounts[3], 123, {from:userC});
+        console.log('reveal vote with missing address FALSE');
+        return false;
+    } catch(e) {
+      console.log('reveal vote with missing address FALSE');
+      return true;
+    }
+    
+ });
+ it("[Fail] reveal vote with missing salt", async() => {
+  let voting = await BBVoting.at(proxyAddressVoting);
+  var userC = accounts[1];
+  try {
+      await voting.revealVote(jobHash4, accounts[2], 124, {from:userC});
+      console.log('reveal vote with missing salt FALSE');
+      return false;
+  } catch(e) {
+    console.log('reveal vote with missing salt FALSE');
+    return true;
+  }
+  
+});
+   it("reveal vote ", async() => {
+     let voting = await BBVoting.at(proxyAddressVoting);
+     var userC = accounts[1];
+     var secretHash = web3.utils.sha3(accounts[2],123);
+     let l = await voting.revealVote(jobHash4, accounts[2], 123, {from:userC});
+     const a = l.logs.find(l => l.event === 'VoteRevealed').args
+     console.log(a)
+     const jobHashRs = a.jobHash
+     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  });
   it("read poll ", async () => {
     let voting = await BBVotingReward.at(proxyAddressVotingReward);
     var userC = accounts[1];
