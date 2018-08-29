@@ -52,12 +52,15 @@ contract BBVoting is BBStandard{
   {
     uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     require (voteTokenBalance > 0);
-    if(voteTokenBalance<numTokens){
-      numTokens = voteTokenBalance;
-    }    
+    require (numTokens > 0);
+    require (numTokens<= voteTokenBalance);
     bbs.setUint(BBLib.toB32(msg.sender,'STAKED_VOTE'), voteTokenBalance.sub(numTokens));
     require(bbo.transfer(msg.sender, numTokens));
     emit VotingRightsWithdrawn(msg.sender, numTokens);
+  }
+
+  function checkBalance() public view returns(uint256 tokens){
+    tokens = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
   }
   /**
    * @dev commitVote for poll
@@ -127,6 +130,7 @@ contract BBVoting is BBStandard{
     require(bbs.getUint(BBLib.toB32(jobHash,'REVEAL_ENDDATE'))<=now);
     require(bbs.getBool(BBLib.toB32(jobHash,'REWARD_CLAIMED',msg.sender))!= true);
     uint256 numReward = calcReward(jobHash);
+    require (numReward > 0);
     // set claimed to true
     bbs.setBool(BBLib.toB32(jobHash,'REWARD_CLAIMED',msg.sender), true);
     require(bbo.transferFrom(bboReward, msg.sender, numReward));
@@ -144,7 +148,9 @@ contract BBVoting is BBStandard{
       uint256 votes = bbs.getUint(BBLib.toB32(jobHash,'VOTES',msg.sender));
       uint256 totalVotes = bbs.getUint(BBLib.toB32(jobHash,'VOTE_FOR',choice));
       uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash,'STAKED_DEPOSIT',choice));
-      numReward = votes.mul(bboStake).div(totalVotes);
+
+      numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
+
     }else{
       numReward = bbs.getUint(keccak256('BBO_REWARDS'));
     }
