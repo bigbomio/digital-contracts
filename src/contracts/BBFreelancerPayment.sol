@@ -52,7 +52,6 @@ contract BBFreelancerPayment is BBFreelancer{
   function claimePayment(bytes jobHash) public isFreelancerOfJob(jobHash)
   {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'STATUS'))) == 2);
-    uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash,'STATUS')));
     uint256 finishDate = bbs.getUint(keccak256(abi.encodePacked(jobHash,'JOB_FINISHED_TIMESTAMP')));
     uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
     require((finishDate+paymentLimitTimestamp) <= now );
@@ -68,7 +67,7 @@ contract BBFreelancerPayment is BBFreelancer{
    * @dev finalize Dispute
    * @param jobHash The job Hash 
    */
-  function finalizeDispute(bytes jobHash)  public {
+  function finalizeDispute(bytes jobHash)  public returns(bool) {
     require(bbs.getAddress(keccak256(jobHash)) != 0x0);
     require(bbs.getBool(keccak256(abi.encodePacked(jobHash, 'PAYMENT_FINALIZED')))!=true);
 
@@ -81,5 +80,6 @@ contract BBFreelancerPayment is BBFreelancer{
     bbs.setBool(keccak256(abi.encodePacked(jobHash, 'PAYMENT_FINALIZED')), true);
     require(bbo.transfer(winner, bid));
     emit DisputeFinalized(jobHash, winner);
+    return true;
   } 
 }

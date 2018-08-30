@@ -2,10 +2,16 @@ pragma solidity ^0.4.24;
 
 import './BBStandard.sol';
 import './BBLib.sol';
+import './BBFreelancerPayment.sol';
 
 contract BBPoll is BBStandard{
+  BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
+  function setPayment(address p) onlyOwner public  {
+    payment = BBFreelancerPayment(p);
+  }
   event PollStarted(bytes jobHash, address indexed creator);
   event PollAgainsted(bytes jobHash, address indexed creator);
+  event PollFinalized(bytes jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bool isPass);
 
   modifier pollNotStarted(bytes jobHash){
     require(bbs.getAddress(BBLib.toB32(jobHash,'POLL_STARTED'))==0x0);
@@ -45,24 +51,30 @@ contract BBPoll is BBStandard{
       bbs.setAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER'),creator);
       // refun staked for 
       require(bbo.transfer(creator,bboStake));
+      // cal finalizePayment
+      assert(payment.finalizeDispute(jobHash));
     }else{
       require(bbs.getUint(BBLib.toB32(jobHash,'REVEAL_ENDDATE'))<=now);
       address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
       address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
       uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash,'STAKED_DEPOSIT',jobOwner));
-      (uint jobOwnerVotes,uint freelancerVotes,bool voteQuorum) = getPoll(jobHash);
-      if(!voteQuorum){
+      (uint jobOwnerVotes, uint freelancerVotes, bool isPass) = getPoll(jobHash);
+      if(!isPass){
         // cancel poll
         bbs.setAddress(BBLib.toB32(jobHash,'POLL_STARTED'), address(0x0));
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
+        //TODO reset POLL
       }else{
         bbs.setAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER'), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
         //refun money staked for winner
         require(bbo.transfer(bbs.getAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER')), bboStake));
+        // cal finalizePayment
+        assert(payment.finalizeDispute(jobHash));
       }
     }
+    emit PollFinalized(jobHash, jobOwnerVotes, freelancerVotes, isPass);
   }
   /**
   * @dev getPoll:
