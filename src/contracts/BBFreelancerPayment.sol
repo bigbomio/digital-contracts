@@ -81,9 +81,9 @@ contract BBFreelancerPayment is BBFreelancer{
   * @dev check payment status 
   **/
   function checkPayment(bytes jobHash) public view returns(uint256, uint256){
-    uint256 finishDate = bbs.getUint(keccak256(abi.encodePacked(jobHash,'JOB_FINISHED_TIMESTAMP')));
-    uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
-    uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash,'STATUS')));
+    uint256 finishDate = bbs.getUint(keccak256(abi.encodePacked(jobHash,'finishedTimestamp')));
+    uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PaymentLimitTimestamp'));
+    uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash,'status')));
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
