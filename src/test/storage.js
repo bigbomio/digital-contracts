@@ -76,10 +76,10 @@ contract('BBStorage Test', async (accounts) => {
     let storage = await BBStorage.at(storageAddress);
     try {
       await storage.removeAdmin(accounts[0]);  
-      console.log('Can remove self');
+      //console.log('Can remove self');
     return false;
   } catch (e) {
-    console.log('Can not remove self');
+    //console.log('Can not remove self');
     return true;
   }
    });
@@ -102,11 +102,11 @@ contract('BBStorage Test', async (accounts) => {
     await storage.addAdmin(accounts[2]);
     await storage.removeAdmin(accounts[0]);
     await storage.removeAdmin(accounts[2]);
-    console.log('OKKKK');
+    //console.log('OKKKK');
     return false;
  
   } catch (e) {
-    console.log('FAILSEEEEE');
+    //console.log('FAILSEEEEE');
     return true;
   }});
 })

@@ -157,7 +157,7 @@ contract BBVoting is BBStandard{
   */
   function calcReward(bytes jobHash) constant public returns(uint256 numReward){
     uint256 pollId = getPollID(jobHash);
-    address winner = bbs.getAddress(BBLib.toB32(jobHash, pollId,  'DISPUTE_WINNER'));
+    address winner = bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'));
     require(winner!=address(0x0));
     address choice = bbs.getAddress(BBLib.toB32(jobHash, pollId, 'CHOICE',msg.sender));
     if(choice == winner){
