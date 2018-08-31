@@ -5,6 +5,7 @@
  */
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
+import './BBLib.sol';
 
 /**
  * @title BBFreelancerJob
@@ -22,11 +23,11 @@ contract BBFreelancerJob is BBFreelancer {
    */
   function getJob(bytes jobHash) public view returns(address, uint256, uint256, bool, uint256, address){
     address owner = bbs.getAddress(keccak256(jobHash));
-    uint256 expired = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'EXPIRED')));
-    uint256 budget = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'BUDGET')));
-    bool cancel = bbs.getBool(keccak256(abi.encodePacked(jobHash, 'CANCEL')));
-    uint256 status = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'STATUS')));
-    address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
+    uint256 expired = bbs.getUint(BBLib.toB32(jobHash, 'EXPIRED'));
+    uint256 budget = bbs.getUint(BBLib.toB32(jobHash, 'BUDGET'));
+    bool cancel = bbs.getBool(BBLib.toB32(jobHash, 'CANCEL'));
+    uint256 status = bbs.getUint(BBLib.toB32(jobHash, 'STATUS'));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
     return (owner, expired, budget, cancel, status, freelancer);
 
   }
@@ -55,12 +56,12 @@ contract BBFreelancerJob is BBFreelancer {
     // save jobHash owner
     bbs.setAddress(keccak256(jobHash), msg.sender);
     // save expired timestamp
-    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'EXPIRED')), expired);
+    bbs.setUint(BBLib.toB32(jobHash, 'EXPIRED'), expired);
 
     // save time freelancer can done this job
-    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'ESTIMATE_TIME')), estimateTime);
+    bbs.setUint(BBLib.toB32(jobHash, 'ESTIMATE_TIME'), estimateTime);
     // save budget 
-    bbs.setUint(keccak256(abi.encodePacked(jobHash, 'BUDGET')), budget);
+    bbs.setUint(BBLib.toB32(jobHash, 'BUDGET'), budget);
  
     emit JobCreated(jobHash, msg.sender, expired, category, budget);
   }
@@ -72,16 +73,16 @@ contract BBFreelancerJob is BBFreelancer {
   function cancelJob(bytes jobHash) public 
   isOwnerJob(jobHash)  {
 
-    uint status = bbs.getUint(keccak256(abi.encodePacked(jobHash,'STATUS')));
+    uint status = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
     require(status == 0 || status == 1);
     if(status == 1) {
-      address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
-      uint bidTime = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'BID_TIME', freelancer)));
-      uint timeStartJob = bbs.getUint(keccak256(abi.encodePacked(jobHash, 'JOB_STARTED_TIMESTAMP')));
+      address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+      uint bidTime = bbs.getUint(BBLib.toB32(jobHash, 'BID_TIME', freelancer));
+      uint timeStartJob = bbs.getUint(BBLib.toB32(jobHash, 'JOB_STARTED_TIMESTAMP'));
       require(now > timeStartJob + bidTime);
     }
     
-    bbs.setBool(keccak256(abi.encodePacked(jobHash,'CANCEL')), true);
+    bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
     emit JobCanceled(jobHash);
   }
   // freelancer start Job
@@ -94,9 +95,9 @@ contract BBFreelancerJob is BBFreelancer {
   jobNotStarted(jobHash)
   isFreelancerOfJob(jobHash) {
     // set status to 1
-    bbs.setUint(keccak256(abi.encodePacked(jobHash,'STATUS')), 1);
+    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 1);
     //Begin set time start job
-    bbs.setUint(keccak256(abi.encodePacked(jobHash,'JOB_STARTED_TIMESTAMP')), now);
+    bbs.setUint(BBLib.toB32(jobHash,'JOB_STARTED_TIMESTAMP'), now);
     emit JobStarted(jobHash);
   }
   // freelancer finish Job
@@ -108,10 +109,10 @@ contract BBFreelancerJob is BBFreelancer {
   isNotOwnerJob(jobHash) 
   isFreelancerOfJob(jobHash) {
     //status el 1
-    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'STATUS'))) ==1);
+    require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) ==1);
 
-    bbs.setUint(keccak256(abi.encodePacked(jobHash,'STATUS')), 2);
-    bbs.setUint(keccak256(abi.encodePacked(jobHash,'JOB_FINISHED_TIMESTAMP')), now);
+    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 2);
+    bbs.setUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'), now);
     emit JobFinished(jobHash);
   }
 
