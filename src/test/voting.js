@@ -93,6 +93,7 @@ contract('Voting Test', async (accounts) => {
       from: accounts[0]
     });
 
+
     let paramsInstance = await BBParams.new({
       from: accounts[0]
     });
@@ -140,31 +141,6 @@ contract('Voting Test', async (accounts) => {
     proxyAddressPoll = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
     console.log('proxyAddressPoll', proxyAddressPoll)
 
-
-    // set admin to storage
-    await storage.addAdmin(proxyAddressJob, {
-      from: accounts[0]
-    });
-    await storage.addAdmin(proxyAddressBid, {
-      from: accounts[0]
-    });
-    await storage.addAdmin(proxyAddressPayment, {
-      from: accounts[0]
-    });
-    await storage.addAdmin(proxyAddressVoting, {
-      from: accounts[0]
-    });
-    await storage.addAdmin(proxyAddressPoll, {
-      from: accounts[0]
-    });
-    await storage.addAdmin(proxyAddressParams, {
-      from: accounts[0]
-    });
-
-    await storage.addAdmin(accounts[7], {
-      from: accounts[0]
-    });
-
     console.log('done storage')
     let bbo = await BBOTest.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
@@ -183,7 +159,6 @@ contract('Voting Test', async (accounts) => {
       from: accounts[0]
     });
     console.log('bbo: ', bbo.address);
-
     
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -312,11 +287,13 @@ contract('Voting Test', async (accounts) => {
   });
 
 
+
   it("start other job for dispute voting", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
+
 
     await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
@@ -588,6 +565,7 @@ contract('Voting Test', async (accounts) => {
       return true;
     }
 
+
   });
   it("[Fail] reveal vote with missing salt", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
@@ -602,6 +580,7 @@ contract('Voting Test', async (accounts) => {
       console.log('reveal vote with missing salt FALSE');
       return true;
     }
+
 
   });
 
@@ -618,6 +597,7 @@ contract('Voting Test', async (accounts) => {
       console.log('reveal vote with missing voter FALSE');
       return true;
     }
+
 
   });
 
@@ -642,6 +622,7 @@ contract('Voting Test', async (accounts) => {
       });
     });
   });
+
 
   it("create job with dispute", async () => {
   
@@ -693,6 +674,7 @@ contract('Voting Test', async (accounts) => {
     await voting.startPoll(jobHash4 + 'kk', proofHash, {
       from: userB
     });
+
 
     var userC = accounts[4];
 
@@ -808,6 +790,7 @@ contract('Voting Test', async (accounts) => {
     var userC = accounts[1];
     let l = await voting.getPoll(jobHash4, {
       from: userC
+
     });
     console.log(JSON.stringify(l));
   });

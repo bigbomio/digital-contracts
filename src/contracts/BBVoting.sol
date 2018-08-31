@@ -17,7 +17,9 @@ contract BBVoting is BBStandard{
   event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
   event VoteCommitted(address indexed voter, bytes jobHash);
   event VoteRevealed(address indexed voter, bytes jobHash, bytes32 secretHash, bytes32 cHash);
-  
+  function getPollID(bytes jobHash) private constant returns(uint256 r){
+    r = bbs.getUint(BBLib.toB32(jobHash,'POLL_COUNTER'));
+  }
   modifier isDisputeJob(bytes jobHash){
     uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
     require(jobStatus == 4);
@@ -25,7 +27,7 @@ contract BBVoting is BBStandard{
     _;
   }
   function isAgaintsPoll(bytes jobHash) public constant returns(bool){
-    return keccak256(bbs.getBytes(BBLib.toB32(jobHash,'AGAINST_PROOF')))!=keccak256("");
+    return keccak256(bbs.getBytes(BBLib.toB32(jobHash, getPollID(jobHash),'AGAINST_PROOF')))!=keccak256("");
   }
   
   function setBBOReward(address rewardAddress) onlyOwner public{
@@ -70,20 +72,25 @@ contract BBVoting is BBStandard{
   function commitVote(bytes jobHash, bytes32 secretHash, uint256 tokens) public 
   isDisputeJob(jobHash)
   {
+    uint256 pollId = getPollID(jobHash);
     uint256 minVotes = bbs.getUint(keccak256('MIN_VOTES'));
     uint256 maxVotes = bbs.getUint(keccak256('MAX_VOTES'));
     require(tokens >= minVotes);
     require(tokens <= maxVotes);
     require(isAgaintsPoll(jobHash)==true);
+    require(bbs.getUint(BBLib.toB32(jobHash, pollId,'EVEIDENCE_ENDDATE'))<now);
+    require(bbs.getUint(BBLib.toB32(jobHash, pollId,'COMMIT_ENDDATE'))>now);
+
     require(secretHash != 0);
+    
     uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     if(voteTokenBalance<tokens){
       requestVotingRights(tokens.sub(voteTokenBalance));
     }
     require(bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE')) >= tokens);
     // add secretHash
-    bbs.setBytes(BBLib.toB32(jobHash,'SECRET_HASH',msg.sender), abi.encodePacked(secretHash));
-    bbs.setUint(BBLib.toB32(jobHash,'VOTES',msg.sender), tokens);
+    bbs.setBytes(BBLib.toB32(jobHash,pollId,'SECRET_HASH',msg.sender), abi.encodePacked(secretHash));
+    bbs.setUint(BBLib.toB32(jobHash,pollId,'VOTES',msg.sender), tokens);
     emit VoteCommitted(msg.sender, jobHash);
   }
 
@@ -94,8 +101,9 @@ contract BBVoting is BBStandard{
   * @param salt salt
   */
   function checkHash(bytes jobHash, address choice, uint salt) public view returns(bool){
+    uint256 pollId = getPollID(jobHash);
     bytes32 choiceHash = BBLib.toB32(choice,salt);
-    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash,'SECRET_HASH',msg.sender)));
+    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash,pollId,'SECRET_HASH',msg.sender)));
     return (choiceHash==secretHash);
   }
   /**
@@ -107,22 +115,24 @@ contract BBVoting is BBStandard{
   function revealVote(bytes jobHash, address choice, uint salt) public 
   isDisputeJob(jobHash)
   {
+    uint256 pollId = getPollID(jobHash);
     require(isAgaintsPoll(jobHash)==true);
-    require(bbs.getUint(BBLib.toB32(jobHash,'COMMIT_ENDDATE'))<now);
-    require(bbs.getUint(BBLib.toB32(jobHash,'REVEAL_ENDDATE'))>now);
+    require(bbs.getUint(BBLib.toB32(jobHash, pollId,'COMMIT_ENDDATE'))<now);
+    require(bbs.getUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'))>now);
+
     uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
-    uint256 votes = bbs.getUint(BBLib.toB32(jobHash,'VOTES',msg.sender));
+    uint256 votes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTES',msg.sender));
     // check staked vote
     require(voteTokenBalance>= votes);
 
     bytes32 choiceHash = BBLib.toB32(choice,salt);
-    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash,'SECRET_HASH',msg.sender)));
+    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash, pollId,'SECRET_HASH',msg.sender)));
     require(choiceHash == secretHash);
-    uint256 numVote = bbs.getUint(BBLib.toB32(jobHash,'VOTE_FOR',choice));
+    uint256 numVote = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',choice));
     //save result poll
-    bbs.setUint(BBLib.toB32(jobHash,'VOTE_FOR',choice), numVote.add(votes));
+    bbs.setUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',choice), numVote.add(votes));
     // save voter choice
-    bbs.setAddress(BBLib.toB32(jobHash,'CHOICE',msg.sender), choice);
+    bbs.setAddress(BBLib.toB32(jobHash, pollId,'CHOICE',msg.sender), choice);
     emit VoteRevealed(msg.sender, jobHash, secretHash,choiceHash);
   }
   /**
@@ -131,12 +141,13 @@ contract BBVoting is BBStandard{
   *
   */
   function claimReward(bytes jobHash) public {
-    require(bbs.getUint(BBLib.toB32(jobHash,'REVEAL_ENDDATE'))<=now);
-    require(bbs.getBool(BBLib.toB32(jobHash,'REWARD_CLAIMED',msg.sender))!= true);
+    uint256 pollId = getPollID(jobHash);
+    require(bbs.getUint(BBLib.toB32(jobHash,pollId,'REVEAL_ENDDATE'))<=now);
+    require(bbs.getBool(BBLib.toB32(jobHash,pollId,'REWARD_CLAIMED',msg.sender))!= true);
     uint256 numReward = calcReward(jobHash);
     require (numReward > 0);
     // set claimed to true
-    bbs.setBool(BBLib.toB32(jobHash,'REWARD_CLAIMED',msg.sender), true);
+    bbs.setBool(BBLib.toB32(jobHash,pollId,'REWARD_CLAIMED',msg.sender), true);
     require(bbo.transferFrom(bboReward, msg.sender, numReward));
   }
   /**
@@ -145,13 +156,14 @@ contract BBVoting is BBStandard{
   *
   */
   function calcReward(bytes jobHash) constant public returns(uint256 numReward){
+    uint256 pollId = getPollID(jobHash);
     address winner = bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'));
     require(winner!=address(0x0));
-    address choice = bbs.getAddress(BBLib.toB32(jobHash,'CHOICE',msg.sender));
+    address choice = bbs.getAddress(BBLib.toB32(jobHash, pollId, 'CHOICE',msg.sender));
     if(choice == winner){
-      uint256 votes = bbs.getUint(BBLib.toB32(jobHash,'VOTES',msg.sender));
-      uint256 totalVotes = bbs.getUint(BBLib.toB32(jobHash,'VOTE_FOR',choice));
-      uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash,'STAKED_DEPOSIT',choice));
+      uint256 votes = bbs.getUint(BBLib.toB32(jobHash, pollId, 'VOTES',msg.sender));
+      uint256 totalVotes = bbs.getUint(BBLib.toB32(jobHash, pollId, 'VOTE_FOR',choice));
+      uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId, 'STAKED_DEPOSIT',choice));
 
       numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
 
