@@ -660,44 +660,44 @@ contract('BBFreelancer Test', async (accounts) => {
     }
   });
 
-  it("[Fail] bid with job expired", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var userB = accounts[1];
+  // it("[Fail] bid with job expired", async () => {
+  //   let job = await BBFreelancerJob.at(proxyAddressJob);
+  //   var userA = accounts[0];
+  //   var userB = accounts[1];
 
 
 
-    var expiredTime = parseInt(Date.now() / 1000) + 1; // expired after 7 days
-    var timeBid = 1 * 24 * 3600;
+  //   var expiredTime = parseInt(Date.now() / 1000) + 1; // expired after 7 days
+  //   var timeBid = 1 * 24 * 3600;
 
-    //Hirer create job
-    await job.createJob(jobHash + 'jxcc', expiredTime, timeBid, 100e18, 'banner', {
-      from: userA
-    });
+  //   //Hirer create job
+  //   await job.createJob(jobHash + 'jxcc', expiredTime, timeBid, 100e18, 'banner', {
+  //     from: userA
+  //   });
 
-    //console.log("expiredTime " + expiredTime);
+  //   //console.log("expiredTime " + expiredTime);
 
-    //UserB bid
-    setTimeout(async function () {
-      //console.log('Now ' + parseInt(Date.now() / 1000));
-      try {
-        let bid = await BBFreelancerBid.at(proxyAddressBid);
-        var timeDone = 1; //days
-        await bid.createBid(jobHash + 'jxcc', 100e18, timeDone, {
-          from: userB
-        });
+  //   //UserB bid
+  //   setTimeout(async function () {
+  //     //console.log('Now ' + parseInt(Date.now() / 1000));
+  //     try {
+  //       let bid = await BBFreelancerBid.at(proxyAddressBid);
+  //       var timeDone = 1; //days
+  //       await bid.createBid(jobHash + 'jxcc', 100e18, timeDone, {
+  //         from: userB
+  //       });
 
-        //console.log("User can bid job expired");
-        return false;
+  //       //console.log("User can bid job expired");
+  //       return false;
 
-      } catch (e) {
-        //console.log("User can not bid job expired ");
-        return true;
-      }
+  //     } catch (e) {
+  //       //console.log("User can not bid job expired ");
+  //       return true;
+  //     }
 
-    }, 1200);
+  //   }, 1200);
 
-  });
+  // });
 
   it("[Fail] hirer accept 2 bid", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -843,7 +843,14 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
-
+  it("check payment", async () => {
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    var userA = accounts[0];
+    var rs = await payment.checkPayment(jobHash, {
+      from: userA
+    });
+    return true;
+  });
   it("[Fail] cancel job after reject payment", async () => {
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
