@@ -93,7 +93,6 @@ contract('Voting Test', async (accounts) => {
       from: accounts[0]
     });
 
-
     let paramsInstance = await BBParams.new({
       from: accounts[0]
     });
@@ -141,6 +140,31 @@ contract('Voting Test', async (accounts) => {
     proxyAddressPoll = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
     console.log('proxyAddressPoll', proxyAddressPoll)
 
+
+    // set admin to storage
+    await storage.addAdmin(proxyAddressJob, {
+      from: accounts[0]
+    });
+    await storage.addAdmin(proxyAddressBid, {
+      from: accounts[0]
+    });
+    await storage.addAdmin(proxyAddressPayment, {
+      from: accounts[0]
+    });
+    await storage.addAdmin(proxyAddressVoting, {
+      from: accounts[0]
+    });
+    await storage.addAdmin(proxyAddressPoll, {
+      from: accounts[0]
+    });
+    await storage.addAdmin(proxyAddressParams, {
+      from: accounts[0]
+    });
+
+    await storage.addAdmin(accounts[7], {
+      from: accounts[0]
+    });
+
     console.log('done storage')
     let bbo = await BBOTest.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
@@ -159,6 +183,7 @@ contract('Voting Test', async (accounts) => {
       from: accounts[0]
     });
     console.log('bbo: ', bbo.address);
+
     
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -285,15 +310,12 @@ contract('Voting Test', async (accounts) => {
     }
 
   });
-
-
-
+  
   it("start other job for dispute voting", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
-
 
     await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
@@ -565,7 +587,6 @@ contract('Voting Test', async (accounts) => {
       return true;
     }
 
-
   });
   it("[Fail] reveal vote with missing salt", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
@@ -580,7 +601,6 @@ contract('Voting Test', async (accounts) => {
       console.log('reveal vote with missing salt FALSE');
       return true;
     }
-
 
   });
 
@@ -597,7 +617,6 @@ contract('Voting Test', async (accounts) => {
       console.log('reveal vote with missing voter FALSE');
       return true;
     }
-
 
   });
 
@@ -623,140 +642,7 @@ contract('Voting Test', async (accounts) => {
     });
   });
 
-
-  it("create job with dispute", async () => {
   
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var estimatedTime = 3 * 24 * 3600; // 3 days
-
-    await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
-      from: userA
-    });
-    var userB = accounts[2];
-    let bid = await BBFreelancerBid.at(proxyAddressBid);
-
-    var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash4 + 'kk', 400e18, timeDone, {
-      from: userB
-    });
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(bid.address, 0, {
-      from: userA
-    });
-    await bbo.approve(bid.address, Math.pow(2, 255), {
-      from: userA
-    });
-    await bid.acceptBid(jobHash4 + 'kk', userB, {
-      from: userA
-    });
-
-    await job.startJob(jobHash4 + 'kk', {
-      from: userB
-    });
-    await job.finishJob(jobHash4 + 'kk', {
-      from: userB
-    });
-    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    await payment.rejectPayment(jobHash4 + 'kk', {
-      from: userA
-    });
-
-    let voting = await BBPoll.at(proxyAddressPoll);
-    let proofHash = 'proofHashxx';
-    await bbo.approve(voting.address, 0, {
-      from: userB
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userB
-    });
-    await voting.startPoll(jobHash4 + 'kk', proofHash, {
-      from: userB
-    });
-
-
-    var userC = accounts[4];
-
-    let votingRight = await BBVoting.at(proxyAddressVoting);
-
-    await bbo.approve(votingRight.address, 0, {
-      from: userC
-    });
-    await bbo.approve(votingRight.address, Math.pow(2, 255), {
-      from: userC
-    });
-
-    await votingRight.requestVotingRights(200e18, {
-      from: userC
-    });
-
-  });
-
-  it("fast forward to 24h after start poll", function () {
-    var fastForwardTime = 24 * 3600 + 1;
-    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
-      return Helpers.sendPromise('evm_mine', []).then(function () {
-
-      });
-    });
-  });
-
-  it("[Fail] get reward without no against", async () => {
-    try {
-     
-      var userC = accounts[4];
-
-      let votingRight = await BBVoting.at(proxyAddressVoting);
-      var fastForwardTime = 24 * 3600 + 1;
-      return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
-        return Helpers.sendPromise('evm_mine', []).then(function () {
-  
-        });
-      });
-    
-
-    //vote 
-    var secretHash = web3.utils.soliditySha3(accounts[0], 123);
-    await votingRight.commitVote(jobHash4 + 'kk', secretHash, 200e18, {
-      from: userC
-    });
-
-    await votingRight.revealVote(jobHash4+'kk', accounts[0], 123, {
-      from: userC
-    });
-
-    let fastForwardTimex = 4 * 24 * 3600 + 1;
-    return Helpers.sendPromise('evm_increaseTime', [fastForwardTimex]).then(function () {
-      return Helpers.sendPromise('evm_mine', []).then(function () {
-
-      });
-    });
-
-   
-    
-    //claimReward
-    await votingRight.claimReward(jobHash4+'kk', {
-      from: userC
-    });
-
-    let xxx  = await bbo.balanceOf(userC, {
-      from: userC
-    });
-
-    console.log('bbo balance userC : ',  xxx );
-    console.log('OKKKKKKKKKKK');
-
-    return true;
-  } catch(e) {
-    console.log('LOIiiiiiiiiiiiiiiiiiiiii');
-    console.log(e);
-    return false;
-  }
-
-
-    
-  });
 
   it("fast forward to 4 *  24h after start poll", function () {
     var fastForwardTime = 4*24 * 3600 + 1;
@@ -790,8 +676,8 @@ contract('Voting Test', async (accounts) => {
     var userC = accounts[1];
     let l = await voting.getPoll(jobHash4, {
       from: userC
-
     });
     console.log(JSON.stringify(l));
   });
 });
+

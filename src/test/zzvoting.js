@@ -23,7 +23,7 @@ var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
 var jobHashWilcancel = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr2';
 var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
-var jobHash4 = 'QmSn1wGTpz1';
+var jobHash4 = 'QmSn1wGTpz1cccc';
 
 const files = [{
   path: 'README.md',
@@ -57,9 +57,9 @@ var proxyAddressParams = '';
 var bboAddress = '';
 var storageAddress = '';
 
-contract('Voting Test 2', async (accounts) => { 
+contract('Voting Test 3', async (accounts) => { 
   
-  it("initialize contract 2", async () => {
+  it("initialize contract 3", async () => {
 
     // var filesrs = await ipfs.files.add(files);
     // console.log('filesrs', filesrs);
@@ -265,8 +265,6 @@ contract('Voting Test 2', async (accounts) => {
 
   });
 
- 
-
   it("set params", async () => {
     let params = await BBParams.at(proxyAddressParams);
     await params.setVotingParams(100e18, 1000000e18, 60, 300e18, 24 * 60 * 60, 24 * 60 * 60,
@@ -274,41 +272,15 @@ contract('Voting Test 2', async (accounts) => {
         from: accounts[0]
       });
     return true;
-  });
+  }); 
 
-  
-  it("get params", async () => {
-    let params = await BBParams.at(proxyAddressParams);
-    let re = await params.getVotingParams({
-        from: accounts[0]
-      });
-    //console.log(re);
-  });
-
-  it("set setFreelancerParams", async () => {
-    let params = await BBParams.at(proxyAddressParams);
-    await params.setFreelancerParams( 24 * 60 * 60, {
-        from: accounts[0]
-      });
-    return true;
-  });
-
-  it("get getFreelancerParams", async () => {
-    let params = await BBParams.at(proxyAddressParams);
-    let re = await params.getFreelancerParams({
-        from: accounts[0]
-      });
-    //console.log(re);
-  });
-
-
-  it("create job with dispute 2", async () => {
+ 
+  it("create job with dispute 3", async () => {
   
     let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
+    var userA = accounts[1];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
-    
     await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
@@ -320,13 +292,14 @@ contract('Voting Test 2', async (accounts) => {
 
     console.log('bbo balance userA Beffore : ',  xxx );
     
-    var userB = accounts[2];
+    var userB = accounts[3];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
 
     var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash4 + 'kk', 400e18, timeDone, {
+    await bid.createBid(jobHash4 + 'kk', 500e18, timeDone, {
       from: userB
     });
+    
     
     await bbo.approve(bid.address, 0, {
       from: userA
@@ -350,6 +323,8 @@ contract('Voting Test 2', async (accounts) => {
       from: userA
     });
 
+    
+
     let xxxy  = await bbo.balanceOf(userA, {
       from: userA
     });
@@ -361,9 +336,8 @@ contract('Voting Test 2', async (accounts) => {
     console.log('bbo balance userB Before : ',  xxxz );
 
 
-  
     let voting = await BBPoll.at(proxyAddressPoll);
-    let proofHash = 'proofHashxxkk';
+    let proofHash = 'proofHashxxkkpodid';
     await bbo.approve(voting.address, 0, {
       from: userB
     });
@@ -376,6 +350,23 @@ contract('Voting Test 2', async (accounts) => {
       from: userB
     });
 
+    //User A AgainPoll
+
+    await bbo.approve(voting.address, 0, {
+      from: userA
+    });
+   
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userA
+    });
+    
+
+    await voting.againstPoll(jobHash4 + 'kk', proofHash+'okman', {
+      from: userA
+    });
+
+   
+
     let xxxzk  = await bbo.balanceOf(userB, {
       from: userB
     });
@@ -383,24 +374,87 @@ contract('Voting Test 2', async (accounts) => {
     console.log('bbo balance userB Affter : ',  xxxzk );
 
     // //return;
-    // var userC = accounts[4];
+    var userC = accounts[4];
+    var userD = accounts[5];
 
-    // let votingRight = await BBVoting.at(proxyAddressVoting);
 
-    // await bbo.approve(votingRight.address, 0, {
-    //   from: userC
-    // });
-    // await bbo.approve(votingRight.address, Math.pow(2, 255), {
-    //   from: userC
-    // });
+    let votingRight = await BBVoting.at(proxyAddressVoting);
 
-    // await votingRight.requestVotingRights(200e18, {
-    //   from: userC
-    // });
+    await bbo.approve(votingRight.address, 0, {
+      from: userC
+    });
+    await bbo.approve(votingRight.address, Math.pow(2, 255), {
+      from: userC
+    });
+
+    await votingRight.requestVotingRights(200e18, {
+      from: userC
+    });
+
+    await bbo.approve(votingRight.address, 0, {
+      from: userD
+    });
+    await bbo.approve(votingRight.address, Math.pow(2, 255), {
+      from: userD
+    });
+
+    await votingRight.requestVotingRights(200e18, {
+      from: userD
+    });
 
   });
 
-  it("fast forward to 24h * 10 after start poll", function () {
+  it("fast forward to  1 after start poll 3333", function () {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("commit vote ", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+    var userD = accounts[5];    
+    
+   
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 123), 200e18, {
+      from: userC
+    });
+
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 123), 200e18, {
+      from: userD
+    });
+   
+  });
+
+  it("fast forward to  1 after start poll 3333", function () {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("reveal vote ", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+    var userD = accounts[5];
+
+    await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
+      from: userC
+    });
+
+    await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
+      from: userD
+    });
+    
+  });
+
+  //return;
+  it("fast forward to 24h * 10 after start poll 3333", function () {
     var fastForwardTime = 10 * 24 * 3600 + 1;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
@@ -411,10 +465,10 @@ contract('Voting Test 2', async (accounts) => {
 
  
 
-  it("finalizePoll", async () => {
+  it("finalizePoll 3333 ", async () => {
     try {
      
-      var userB = accounts[2];
+      var userB = accounts[3];
 
       let votingRight = await BBPoll.at(proxyAddressPoll);
 
