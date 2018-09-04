@@ -57,7 +57,6 @@ contract BBPoll is BBStandard{
       require(bbs.getUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'))<=now);
       address jobOwner = bbs.getAddress(BBLib.toB32(jobHash, pollId));
       address freelancer = bbs.getAddress(BBLib.toB32(jobHash, pollId,'FREELANCER'));
-      bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId,'STAKED_DEPOSIT',jobOwner));
       (uint jobOwnerVotes, uint freelancerVotes, bool isPass) = getPoll(jobHash);
       if(!isPass){
         // cancel poll
