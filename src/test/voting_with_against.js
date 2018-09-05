@@ -490,9 +490,11 @@ contract('Voting Test 3', async (accounts) => {
     
     
     //claimReward
-    await votingRight.finalizePoll(jobHash4+'kk', {
+    let l =  await votingRight.finalizePoll(jobHash4+'kk', {
       from: userB
     });
+    const a = l.logs.find(l => l.event === 'PollFinalized').args
+    console.log(a);
     let bbo = await BBOTest.at(bboAddress);
     let xxx  = await bbo.balanceOf(userB, {
       from: userB
