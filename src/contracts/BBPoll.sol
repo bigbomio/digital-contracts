@@ -85,8 +85,8 @@ contract BBPoll is BBStandard{
   */
   function getPoll(bytes jobHash) public constant returns (uint256, uint256, bool) {
     uint256 pollId = getPollID(jobHash);
-    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash, pollId));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, pollId,'FREELANCER'));
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
     uint jobOwnerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',jobOwner));
     uint freelancerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',freelancer));
     uint voteQuorum = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_QUORUM'));

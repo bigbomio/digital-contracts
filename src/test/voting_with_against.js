@@ -423,7 +423,7 @@ contract('Voting Test 3', async (accounts) => {
       from: userC
     });
 
-    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 123), 200e18, {
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[3], 124), 500e18, {
       from: userD
     });
    
@@ -438,18 +438,29 @@ contract('Voting Test 3', async (accounts) => {
     });
   });
 
-  it("reveal vote ", async () => {
+  it("reveal vote 333", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[4];
     var userD = accounts[5];
 
-    await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
+    let l = await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
       from: userC
     });
 
-    await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
+    console.log('jobOwner : ',accounts[1]);
+    console.log('freelancer : ',accounts[3]);
+
+
+    const a = l.logs.find(l => l.event === 'VoteRevealed').args
+    console.log(a);
+
+
+    let l2 = await voting.revealVote(jobHash4 + 'kk', accounts[3], 124, {
       from: userD
     });
+    const aa = l2.logs.find(l2 => l2.event === 'VoteRevealed').args
+    console.log(aa);
+
     
   });
 
