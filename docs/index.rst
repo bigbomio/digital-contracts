@@ -5,7 +5,7 @@
 
 Welcome to Bigbom Digital Contracts's documentation!
 ====================================================
-
+.. _bb-content:
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -13,3 +13,25 @@ Welcome to Bigbom Digital Contracts's documentation!
    Document_Sign_Technical_Paper
    Freelancer_Smart_Contract_Architecture
    Freelancer_Smart_Contract_Implement
+
+
+.. _bb-reference:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Bigbom Smart Contracts:
+
+   BBFreelancer
+   BBFreelancerJob
+   BBFreelancerBid
+   BBFreelancerPayment
+   BBStorage
+   BBDocumentSign
+   BBLib
+   BBStandard
+   BBParams
+   BBPoll
+   BBVoting
+   AdminUpgradeabilityProxy
+
+
