@@ -73,7 +73,7 @@ contract('BigbomDigitalContract Test', async (accounts) => {
      console.log('proxyAddress', proxyAddress)
 
        // set admin to storage
-     await storage.addAdmin(proxyAddress, {from: accounts[0]} );
+     await storage.addAdmin(proxyAddress, true, {from: accounts[0]} );
      console.log('set storage admin done')
 
 
