@@ -30,6 +30,7 @@ contract BBFreelancerBid is BBFreelancer{
 
   event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint256 timeDone, uint created);
   event BidCanceled(bytes32 indexed jobHash, address indexed owner);
+  event BidResume(bytes32 indexed jobHash, address indexed owner);
   event BidAccepted(bytes32 indexed jobHash, address indexed freelancer);
 
    // freelancer bid job
@@ -75,7 +76,9 @@ contract BBFreelancerBid is BBFreelancer{
    * @dev 
    * @param jobHash Job Hash
    */
-  function cancelBid(bytes jobHash) public isNotOwnerJob(jobHash) {
+  function cancelBid(bytes jobHash) public isNotOwnerJob(jobHash)
+   isNotCanceled(jobHash)
+   jobNotStarted(jobHash) {
     require(bbs.getUint(keccak256(abi.encodePacked(jobHash, msg.sender)))!=0x0);
 
     // check the job is not has freelancer yet
@@ -85,6 +88,18 @@ contract BBFreelancerBid is BBFreelancer{
     bbs.setBool(keccak256(abi.encodePacked(jobHash,msg.sender, 'cancel')), true);
     emit BidCanceled(keccak256(jobHash), msg.sender);
   }
+
+  //Owner resume Bid
+
+   function resumeBid(bytes jobHash) public  isNotCanceled(jobHash)
+   jobNotStarted(jobHash)
+   isOwnerJob(jobHash) {
+
+    require(now < bbs.getUint(keccak256(abi.encodePacked(jobHash, 'expired'))));
+    bbs.setAddress(keccak256(abi.encodePacked(jobHash,'freelancer')), 0x0);
+
+    emit BidResume(keccak256(jobHash), msg.sender);
+    }
 
   // hirer accept bid
   /**
