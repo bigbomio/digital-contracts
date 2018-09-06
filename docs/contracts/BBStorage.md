@@ -15,6 +15,34 @@ BBStorage is key-value type storage:
     mapping(bytes32 => int256)     private intStorage;
 ```
 
+Index
+=================
+  * [Modifiers](#modifiers)
+     * [onlyAdminStorage](#onlyadminstorage)
+  * [Events](#events)
+     * [AdminAdded](#adminadded)
+  * [Functions](#functions)
+     * [addAdmin](#addadmin)
+     * [getAddress](#getaddress)
+     * [getUint](#getuint)
+     * [getString](#getstring)
+     * [getBytes](#getbytes)
+     * [getBool](#getbool)
+     * [getInt](#getint)
+     * [setAddress](#setaddress)
+     * [setUint](#setuint)
+     * [setString](#setstring)
+     * [setBytes](#setbytes)
+     * [setBool](#setbool)
+     * [setInt](#setint)
+     * [deleteAddress](#deleteaddress)
+     * [deleteUint](#deleteuint)
+     * [deleteString](#deletestring)
+     * [deleteBytes](#deletebytes)
+     * [deleteBool](#deletebool)
+     * [deleteInt](#deleteint)
+
+
 ## Modifiers
 
 ### onlyAdminStorage
