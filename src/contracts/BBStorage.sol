@@ -53,7 +53,7 @@ contract BBStorage is Ownable {
     }
 
     /// @param _key The key for the record
-    function getUint(bytes32 _key) external view returns (uint) {
+    function getUint(bytes32 _key) external view returns (uint256) {
         return uIntStorage[_key];
     }
 
@@ -87,7 +87,7 @@ contract BBStorage is Ownable {
     }
 
     /// @param _key The key for the record
-    function setUint(bytes32 _key, uint _value) onlyAdminStorage external {
+    function setUint(bytes32 _key, uint256 _value) onlyAdminStorage external {
         uIntStorage[_key] = _value;
     }
 
