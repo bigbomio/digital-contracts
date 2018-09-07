@@ -43,6 +43,8 @@ contract BBPoll is BBStandard{
     require(creator!=address(0x0));
     require(bbs.getUint(BBLib.toB32(jobHash, pollId,'EVEIDENCE_ENDDATE'))<=now);
 
+    uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId,'STAKED_DEPOSIT',creator));
+
     // check if not have against proof
     if(!isAgaintsPoll(jobHash)){      
       // set winner to creator 
@@ -53,9 +55,8 @@ contract BBPoll is BBStandard{
       assert(payment.finalizeDispute(jobHash));
     }else{
       require(bbs.getUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'))<=now);
-      address jobOwner = bbs.getAddress(BBLib.toB32(jobHash, pollId));
-      address freelancer = bbs.getAddress(BBLib.toB32(jobHash, pollId,'FREELANCER'));
-      uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId,'STAKED_DEPOSIT',jobOwner));
+      address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+      address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
       (uint jobOwnerVotes, uint freelancerVotes, bool isPass) = getPoll(jobHash);
       if(!isPass){
         // cancel poll
@@ -84,8 +85,8 @@ contract BBPoll is BBStandard{
   */
   function getPoll(bytes jobHash) public constant returns (uint256, uint256, bool) {
     uint256 pollId = getPollID(jobHash);
-    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash, pollId));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, pollId,'FREELANCER'));
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
     uint jobOwnerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',jobOwner));
     uint freelancerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',freelancer));
     uint voteQuorum = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_QUORUM'));
