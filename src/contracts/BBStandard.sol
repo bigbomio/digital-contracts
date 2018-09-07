@@ -7,7 +7,7 @@ import './zeppelin/token/ERC20/ERC20.sol';
 
 contract BBStandard is Ownable {
   using SafeMath for uint256;
-  BBStorage bbs = BBStorage(0x0);
+  BBStorage public bbs = BBStorage(0x0);
   ERC20 public bbo = ERC20(0x0);
 
   /**
@@ -17,12 +17,7 @@ contract BBStandard is Ownable {
   function setStorage(address storageAddress) onlyOwner public {
     bbs = BBStorage(storageAddress);
   }
-  /**
-   * @dev get storage contract address
-   */
-  function getStorage() onlyOwner public returns(address){
-    return bbs;
-  }
+  
 
   /**
    * @dev set BBO contract address

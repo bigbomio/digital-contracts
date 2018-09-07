@@ -62,20 +62,20 @@ contract('Voting Test 3', async (accounts) => {
   it("initialize contract 3", async () => {
 
     // var filesrs = await ipfs.files.add(files);
-    // console.log('filesrs', filesrs);
+    // //console.log('filesrs', filesrs);
 
     // jobHash = filesrs[0].hash;
     erc20 = await BBOTest.new({
       from: accounts[0]
     });
     bboAddress = erc20.address;
-    console.log('jobHash', jobHash);
+    //console.log('jobHash', jobHash);
     // create storage
-    console.log('bboAddress', bboAddress);
+    //console.log('bboAddress', bboAddress);
     let storage = await BBStorage.new({
       from: accounts[0]
     });
-    console.log('storage address', storage.address);
+    //console.log('storage address', storage.address);
     storageAddress = storage.address;
     // create bb contract
     let jobInstance = await BBFreelancerJob.new({
@@ -109,37 +109,37 @@ contract('Voting Test 3', async (accounts) => {
       from: accounts[0]
     });
     proxyAddressJob = logs.find(l => l.event === 'ProxyCreated').args.proxy
-    console.log('proxyAddressJob', proxyAddressJob)
+    //console.log('proxyAddressJob', proxyAddressJob)
 
     const l2 = await proxyFact.createProxy(accounts[8], bidInstance.address, {
       from: accounts[0]
     });
     proxyAddressBid = l2.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    console.log('proxyAddressBid', proxyAddressBid)
+    //console.log('proxyAddressBid', proxyAddressBid)
 
     const l3 = await proxyFact.createProxy(accounts[8], paymentInstance.address, {
       from: accounts[0]
     });
     proxyAddressPayment = l3.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    console.log('proxyAddressPayment', proxyAddressPayment)
+    //console.log('proxyAddressPayment', proxyAddressPayment)
 
     const l4 = await proxyFact.createProxy(accounts[8], votingInstance.address, {
       from: accounts[0]
     });
     proxyAddressVoting = l4.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    console.log('proxyAddressVoting', proxyAddressVoting)
+    //console.log('proxyAddressVoting', proxyAddressVoting)
 
     const l5 = await proxyFact.createProxy(accounts[8], paramsInstance.address, {
       from: accounts[0]
     });
     proxyAddressParams = l5.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    console.log('proxyAddressParams', proxyAddressParams)
+    //console.log('proxyAddressParams', proxyAddressParams)
 
     const l6 = await proxyFact.createProxy(accounts[8], votingRewardInstance.address, {
       from: accounts[0]
     });
     proxyAddressPoll = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    console.log('proxyAddressPoll', proxyAddressPoll)
+    //console.log('proxyAddressPoll', proxyAddressPoll)
 
 
     // set admin to storage
@@ -166,7 +166,7 @@ contract('Voting Test 3', async (accounts) => {
       from: accounts[0]
     });
 
-    console.log('done storage')
+    //console.log('done storage')
     let bbo = await BBOTest.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
@@ -183,7 +183,7 @@ contract('Voting Test 3', async (accounts) => {
     await bbo.transfer(accounts[5], 900e18, {
       from: accounts[0]
     });
-    console.log('bbo: ', bbo.address);
+    //console.log('bbo: ', bbo.address);
 
     
 
@@ -267,6 +267,7 @@ contract('Voting Test 3', async (accounts) => {
 
   it("set params", async () => {
     let params = await BBParams.at(proxyAddressParams);
+    await params.addAdmin(accounts[0], true);
     await params.setVotingParams(100e18, 1000000e18, 60, 300e18, 24 * 60 * 60, 24 * 60 * 60,
       24 * 60 * 60, 10e18, 100e18, {
         from: accounts[0]
@@ -290,7 +291,7 @@ contract('Voting Test 3', async (accounts) => {
       from: userA
     });
 
-    console.log('bbo balance userA Beffore : ',  xxx );
+    //console.log('bbo balance userA Beffore : ',  xxx );
     
     var userB = accounts[3];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
@@ -332,8 +333,8 @@ contract('Voting Test 3', async (accounts) => {
       from: userB
     });
 
-    console.log('bbo balance userA Affter : ',  xxxy );
-    console.log('bbo balance userB Before : ',  xxxz );
+    //console.log('bbo balance userA Affter : ',  xxxy );
+    //console.log('bbo balance userB Before : ',  xxxz );
 
 
     let voting = await BBPoll.at(proxyAddressPoll);
@@ -371,7 +372,7 @@ contract('Voting Test 3', async (accounts) => {
       from: userB
     });
 
-    console.log('bbo balance userB Affter : ',  xxxzk );
+    //console.log('bbo balance userB Affter : ',  xxxzk );
 
     // //return;
     var userC = accounts[4];
@@ -447,19 +448,19 @@ contract('Voting Test 3', async (accounts) => {
       from: userC
     });
 
-    console.log('jobOwner : ',accounts[1]);
-    console.log('freelancer : ',accounts[3]);
+    //console.log('jobOwner : ',accounts[1]);
+    //console.log('freelancer : ',accounts[3]);
 
 
     const a = l.logs.find(l => l.event === 'VoteRevealed').args
-    console.log(a);
+    //console.log(a);
 
 
     let l2 = await voting.revealVote(jobHash4 + 'kk', accounts[3], 124, {
       from: userD
     });
     const aa = l2.logs.find(l2 => l2.event === 'VoteRevealed').args
-    console.log(aa);
+    //console.log(aa);
 
     
   });
@@ -486,7 +487,7 @@ contract('Voting Test 3', async (accounts) => {
       let info_ = await votingRight.getPoll(jobHash4+'kk', {
         from: userB
       });
-      console.log(JSON.stringify( info_ ));
+      //console.log(JSON.stringify( info_ ));
     
     
     //claimReward
@@ -494,19 +495,19 @@ contract('Voting Test 3', async (accounts) => {
       from: userB
     });
     const a = l.logs.find(l => l.event === 'PollFinalized').args
-    console.log(a);
+    //console.log(a);
     let bbo = await BBOTest.at(bboAddress);
     let xxx  = await bbo.balanceOf(userB, {
       from: userB
     });
 
-    console.log('bbo balance userB : ',  xxx );
-    console.log('OKKKKKKKKKKK');
+    //console.log('bbo balance userB : ',  xxx );
+    //console.log('OKKKKKKKKKKK');
 
     return true;
   } catch(e) {
-    console.log('LOIiiiiiiiiiiiiiiiiiiiii');
-    console.log(e);
+    //console.log('LOIiiiiiiiiiiiiiiiiiiiii');
+    //console.log(e);
     return false;
   }
     

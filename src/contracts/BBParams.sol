@@ -4,7 +4,24 @@ import './BBFreelancer.sol';
 
 contract BBParams is BBFreelancer{
 
-  function setFreelancerParams(uint256 paymentLimitTimestamp) onlyOwner public {
+  mapping(address => bool) private admins;
+  event AdminAdded(address indexed admin, bool add);
+  modifier onlyAdmin() {
+    require(admins[msg.sender]==true);
+    _;
+  }
+
+  function addAdmin(address admin, bool add) onlyOwner public {
+    require(admin!=address(0x0));
+    admins[admin] = add;
+    emit AdminAdded(admin, add);
+  }
+
+  function isAdmin(address admin) public view returns (bool isAdm){
+    isAdm = admins[admin];
+  }
+
+  function setFreelancerParams(uint256 paymentLimitTimestamp) onlyAdmin public {
   	require(paymentLimitTimestamp > 0);
     bbs.setUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'), paymentLimitTimestamp);
   
@@ -15,7 +32,7 @@ contract BBParams is BBFreelancer{
 
   function setVotingParams(uint256 minVotes, uint256 maxVotes, uint256 voteQuorum,
    uint256 stakeDeposit, uint256 eveidenceDuration, uint256 commitDuration, 
-   uint256 revealDuration, uint256 bboRewards, uint256 stakeVote) onlyOwner public {
+   uint256 revealDuration, uint256 bboRewards, uint256 stakeVote) onlyAdmin public {
   	require(minVotes > 0);
   	require(maxVotes>0);
     require(maxVotes > minVotes);
