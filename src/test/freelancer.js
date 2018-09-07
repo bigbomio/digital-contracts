@@ -462,8 +462,8 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     //console.log(jobLog.logs[0].blockNumber);
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidCreated').args.jobHash
-    console.log('BidCreated ' + web3.utils.sha3(jobHash));
-    console.log(JSON.stringify(jobLog));
+    //console.log('BidCreated ' + web3.utils.sha3(jobHash));
+    //console.log(JSON.stringify(jobLog));
     assert.equal(web3.utils.sha3(jobHash),jobHashRs);
 
   });
@@ -511,6 +511,32 @@ contract('BBFreelancer Test', async (accounts) => {
       return false;
     } catch (e) {
       console.log("C Bid FAIL");
+      return true;
+    }
+
+  });
+
+  it("[Fail] Owner resume bid", async () => {
+    var userB = accounts[2];
+    var userD = accounts[3];
+    var userA = accounts[0];
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 1 * 24 * 3600; //days
+
+    await bid.resumeBid(jobHash+'xv', {
+      from: userA
+    });
+
+  
+
+    try {
+      await bid.createBid(jobHash + 'xv', 300e18, timeDone, {
+        from: userD
+      });
+      console.log('UserD can Bid after Owner resume');
+      return false;
+    } catch (e) {
+      console.log('UserD can not Bid after Owner resume');
       return true;
     }
 
