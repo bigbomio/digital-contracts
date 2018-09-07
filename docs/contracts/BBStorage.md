@@ -1,6 +1,8 @@
 # BBStorage
 
-Contract **BBStorage** is *Ownable* import  [Ownable.sol](../../src/contracts/zeppelin/ownership/Ownable.sol)
+Contract **BBStorage** is *Ownable* 
+
+imports: [Ownable.sol](../../src/contracts/zeppelin/ownership/Ownable.sol)
 
 Source: [BBStorage.sol](../../src/contracts/BBStorage.sol)
 
@@ -85,7 +87,7 @@ modifier: [onlyOwner](../../src/contracts/zeppelin/ownership/Ownable.sol#L31-L35
 Get `address` value from storage mapping by key
 
 ---
-function getAddress(bytes32 _key) external view returns (address)
+`function getAddress(bytes32 _key) external view returns (address)`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -97,7 +99,7 @@ Returns: `address` value
 Get `uint256` value from storage mapping by key
 
 ---
-function getUint(bytes32 _key) external view returns (uint256)
+`function getUint(bytes32 _key) external view returns (uint256)`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -109,7 +111,7 @@ Returns: `uint256` value
 Get `string` value from storage mapping by key
 
 ---
-function getString(bytes32 _key) external view returns (string)
+`function getString(bytes32 _key) external view returns (string)`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -121,7 +123,7 @@ Returns: `string` value
 Get `bytes` value from storage mapping by key
 
 ---
-function getBytes(bytes32 _key) external view returns (bytes)
+`function getBytes(bytes32 _key) external view returns (bytes)`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -133,7 +135,7 @@ Returns: `bytes` value
 Get `bool` value from storage mapping by key
 
 ---
-function getBool(bytes32 _key) external view returns (bool)
+`function getBool(bytes32 _key) external view returns (bool)`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -145,7 +147,7 @@ Returns: `bool` value
 Get `int` value from storage mapping by key
 
 ---
-function getInt(bytes32 _key) external view returns (int)
+`function getInt(bytes32 _key) external view returns (int)`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -157,7 +159,7 @@ Returns: `int` value
 Set `address` value to storage mapping by key
 
 ---
-function setAddress(bytes32 _key, address _value) onlyAdminStorage external 
+`function setAddress(bytes32 _key, address _value) onlyAdminStorage external `
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -170,7 +172,7 @@ Modifier: `onlyAdminStorage`
 Set `uint256` value to storage mapping by key
 
 ---
-function setUint(bytes32 _key, uint256 _value) onlyAdminStorage external 
+`function setUint(bytes32 _key, uint256 _value) onlyAdminStorage external `
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -183,7 +185,7 @@ Modifier: `onlyAdminStorage`
 Set `string` value to storage mapping by key
 
 ---
-function setString(bytes32 _key, string _value) onlyAdminStorage external 
+`function setString(bytes32 _key, string _value) onlyAdminStorage external `
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -196,7 +198,7 @@ Modifier: `onlyAdminStorage`
 Set `bytes` value to storage mapping by key
 
 ---
-function setBytes(bytes32 _key, bytes _value) onlyAdminStorage external 
+`function setBytes(bytes32 _key, bytes _value) onlyAdminStorage external `
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -209,7 +211,7 @@ Modifier: `onlyAdminStorage`
 Set `bool` value to storage mapping by key
 
 ---
-function setBool(bytes32 _key, bool _value) onlyAdminStorage external 
+`function setBool(bytes32 _key, bool _value) onlyAdminStorage external `
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -222,7 +224,7 @@ Modifier: `onlyAdminStorage`
 Set `int` value to storage mapping by key
 
 ---
-function setInt(bytes32 _key, int _value) onlyAdminStorage external 
+`function setInt(bytes32 _key, int _value) onlyAdminStorage external `
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -235,7 +237,7 @@ Modifier: `onlyAdminStorage`
 delete `address` value from storage mapping by key
 
 ---
-function deleteAddress(bytes32 _key) onlyAdminStorage external
+`function deleteAddress(bytes32 _key) onlyAdminStorage external`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -247,7 +249,7 @@ Modifier: `onlyAdminStorage`
 delete `unit256` value from storage mapping by key
 
 ---
-function deleteUint(bytes32 _key) onlyAdminStorage external
+`function deleteUint(bytes32 _key) onlyAdminStorage external`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -259,7 +261,7 @@ Modifier: `onlyAdminStorage`
 delete `string` value from storage mapping by key
 
 ---
-function deleteString(bytes32 _key) onlyAdminStorage external
+`function deleteString(bytes32 _key) onlyAdminStorage external`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -271,7 +273,7 @@ Modifier: `onlyAdminStorage`
 delete `bytes` value from storage mapping by key
 
 ---
-function deleteBytes(bytes32 _key) onlyAdminStorage external
+`function deleteBytes(bytes32 _key) onlyAdminStorage external`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -283,7 +285,7 @@ Modifier: `onlyAdminStorage`
 delete `bool` value from storage mapping by key
 
 ---
-function deleteBool(bytes32 _key) onlyAdminStorage external
+`function deleteBool(bytes32 _key) onlyAdminStorage external`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -295,7 +297,7 @@ Modifier: `onlyAdminStorage`
 delete `int` value from storage mapping by key
 
 ---
-function deleteInt(bytes32 _key) onlyAdminStorage external
+`function deleteInt(bytes32 _key) onlyAdminStorage external`
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
