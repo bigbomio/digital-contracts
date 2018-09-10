@@ -881,17 +881,6 @@ contract('BBFreelancer Test', async (accounts) => {
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
 
-  it("get payment", async () => {
-    let bid = await BBFreelancerBid.at(proxyAddressBid);
-    var userA = accounts[0];
-    var jobLog = await bid.getPaymentContract({
-      from: userA
-    });
-
-    // //console.log(JSON.stringify(jobLog));
-
-  });
-
   it("[Fail] userB get userA's payment ", async () => {
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
