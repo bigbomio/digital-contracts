@@ -12,7 +12,15 @@ import './BBLib.sol';
  * @title BBFreelancerJob
  */
 contract BBFreelancerJob is BBFreelancer {
+   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
+  /**
+   * @dev 
+   * @param paymentAddress address of the Payment Contract
+   */
+  function setPaymentContract(address paymentAddress) onlyOwner public {
+    payment = BBFreelancerPayment(paymentAddress);
+  }
 
   event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
   event JobCanceled(bytes jobHash);
