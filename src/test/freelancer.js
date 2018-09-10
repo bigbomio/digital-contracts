@@ -108,13 +108,13 @@ contract('BBFreelancer Test', async (accounts) => {
     //console.log('proxyAddressPayment', proxyAddressPayment)
 
     // set admin to storage
-    await storage.addAdmin(proxyAddressJob, {
+    await storage.addAdmin(proxyAddressJob, true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressBid, {
+    await storage.addAdmin(proxyAddressBid, true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressPayment, {
+    await storage.addAdmin(proxyAddressPayment, true,{
       from: accounts[0]
     });
      await storage.addAdmin(accounts[7], {
@@ -1070,7 +1070,7 @@ contract('BBFreelancer Test', async (accounts) => {
 
     // set the dispute winner 
     let bbs = await BBStorage.at(storageAddress);
-    await bbs.addAdmin(userA, {
+    await bbs.addAdmin(userA, true, {
       from: userA
     });
     await bbs.setAddress(web3.utils.sha3(jobHash4 + 'DISPUTE_WINNER'), userB, {

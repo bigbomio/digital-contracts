@@ -24,7 +24,7 @@ contract BBStorage is Ownable {
     mapping(bytes32 => int256)     private intStorage;
     mapping(bytes32 => bool)       private admins;
 
-
+    event AdminAdded(address indexed admin, bool add);
     /*** Modifiers ************/
    
     /// @dev Only allow access from the latest version of a contract in the network after deployment
@@ -36,25 +36,15 @@ contract BBStorage is Ownable {
 
     /**
      * @dev 
-     * @param adm Admin of the contract
+     * @param admin Admin of the contract
+     * @param add is true/false
      */
-    function addAdmin(address adm) public onlyOwner {
-        require(adm!=address(0x0));
-        require(admins[keccak256(abi.encodePacked('admin:',adm))]!=true);
-
-        admins[keccak256(abi.encodePacked('admin:',adm))] = true;
+    function addAdmin(address admin, bool add) public onlyOwner {
+        require(admin!=address(0x0));
+        admins[keccak256(abi.encodePacked('admin:',admin))] = add;
+        emit AdminAdded(admin, add);
     }
-    /**
-     * @dev 
-     * @param adm Admin of the contract
-     */
-    function removeAdmin(address adm) public onlyOwner {
-        require(adm!=address(0x0));
-        require(admins[keccak256(abi.encodePacked('admin:',adm))]==true);
-
-        admins[keccak256(abi.encodePacked('admin:',adm))] = false;
-    }
-
+    
     /**** Get Methods ***********/
 
     /// @param _key The key for the record
@@ -63,7 +53,7 @@ contract BBStorage is Ownable {
     }
 
     /// @param _key The key for the record
-    function getUint(bytes32 _key) external view returns (uint) {
+    function getUint(bytes32 _key) external view returns (uint256) {
         return uIntStorage[_key];
     }
 
@@ -97,7 +87,7 @@ contract BBStorage is Ownable {
     }
 
     /// @param _key The key for the record
-    function setUint(bytes32 _key, uint _value) onlyAdminStorage external {
+    function setUint(bytes32 _key, uint256 _value) onlyAdminStorage external {
         uIntStorage[_key] = _value;
     }
 
