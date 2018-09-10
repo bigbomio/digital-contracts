@@ -488,7 +488,7 @@ contract('BBFreelancer Test', async (accounts) => {
     console.log('balance BBO userA  after acceptBid UserB :', balancex);
     // Cancel Bid
     await bid.cancelBid(jobHash+'xkop', {
-      from: userA
+      from: userB
     });
 
     await bid.acceptBid(jobHash + 'xkop', userC, {
@@ -504,7 +504,7 @@ contract('BBFreelancer Test', async (accounts) => {
 
     let balancey = await getBalance(bbo, userA);
     console.log('balance BBO userA  after acceptBid UserD :', balancey);
-    
+
     //Job ownwer cancel job
     await job.cancelJob(jobHash+'xkop', {
       from: userA
@@ -994,6 +994,14 @@ contract('BBFreelancer Test', async (accounts) => {
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
 
+  it("get payment from job", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    let res =  await job.getPaymentContract( {
+      from: userA
+    });    
+  });
+
   it("[Fail] cancel job after finish job", async () => {
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -1279,6 +1287,20 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
     assert.equal(userB, jobHashRs1.winner);
+
+  });
+
+  it("withdrawTokens", async () => {
+    var userA = accounts[0];
+    let bbo = await BBOTest.at(bboAddress);
+
+    console.log('bbo.address ', bbo.address);
+
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    var jobLog = await payment.withdrawTokens(bbo.address, {
+      from: userA
+    });
+    
 
   });
 
