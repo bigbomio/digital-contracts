@@ -12,7 +12,7 @@ import './BBLib.sol';
  */
 contract BBFreelancerJob is BBFreelancer {
 
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -63,7 +63,7 @@ contract BBFreelancerJob is BBFreelancer {
     // save budget 
     bbs.setUint(BBLib.toB32(jobHash, 'BUDGET'), budget);
  
-    emit JobCreated(jobHash, msg.sender, expired, category, budget);
+    emit JobCreated(jobHash, msg.sender, expired, category, budget, estimateTime);
   }
     // hirer  cancel job
   /**
