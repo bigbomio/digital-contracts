@@ -12,7 +12,7 @@ import './BBLib.sol';
  */
 contract BBFreelancerBid is BBFreelancer{
 
-  BBFreelancerPayment payment = BBFreelancerPayment(0x0);
+  BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
    * @dev 
@@ -21,14 +21,9 @@ contract BBFreelancerBid is BBFreelancer{
   function setPaymentContract(address paymentAddress) onlyOwner public {
     payment = BBFreelancerPayment(paymentAddress);
   }
-  /**
-   * @dev 
-   */
-  function getPaymentContract() onlyOwner public returns (address)  {
-    return payment;
-  }
 
-  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint256 bidTime, uint created);
+
+  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint256 bidTime);
   event BidCanceled(bytes32 indexed jobHash, address indexed owner);
   event BidAccepted(bytes32 indexed jobHash, uint256 bid,address indexed freelancer);
 
@@ -59,7 +54,7 @@ contract BBFreelancerBid is BBFreelancer{
     //set user bidTime value
     bbs.setUint(BBLib.toB32(jobHash,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime, now);
+    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
   }
 
 

@@ -13,24 +13,8 @@ import './BBLib.sol';
  */
 contract BBFreelancerJob is BBFreelancer {
 
-    BBFreelancerPayment payment = BBFreelancerPayment(0x0);
 
-  /**
-   * @dev 
-   * @param paymentAddress address of the Payment Contract
-   */
-  function setPaymentContract(address paymentAddress) onlyOwner public {
-    payment = BBFreelancerPayment(paymentAddress);
-  }
-  /**
-   * @dev 
-   */
-  function getPaymentContract() onlyOwner public returns (address)  {
-    return payment;
-  }
-
-
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget);
+  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -81,7 +65,7 @@ contract BBFreelancerJob is BBFreelancer {
     // save budget 
     bbs.setUint(BBLib.toB32(jobHash, 'BUDGET'), budget);
  
-    emit JobCreated(jobHash, msg.sender, expired, category, budget);
+    emit JobCreated(jobHash, msg.sender, expired, category, budget, estimateTime);
   }
     // hirer  cancel job
   /**
