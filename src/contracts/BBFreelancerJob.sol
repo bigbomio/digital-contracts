@@ -5,12 +5,30 @@
  */
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
+import './BBFreelancerPayment.sol';
 import './BBLib.sol';
 
 /**
  * @title BBFreelancerJob
  */
 contract BBFreelancerJob is BBFreelancer {
+
+    BBFreelancerPayment payment = BBFreelancerPayment(0x0);
+
+  /**
+   * @dev 
+   * @param paymentAddress address of the Payment Contract
+   */
+  function setPaymentContract(address paymentAddress) onlyOwner public {
+    payment = BBFreelancerPayment(paymentAddress);
+  }
+  /**
+   * @dev 
+   */
+  function getPaymentContract() onlyOwner public returns (address)  {
+    return payment;
+  }
+
 
   event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget);
   event JobCanceled(bytes jobHash);
@@ -80,6 +98,11 @@ contract BBFreelancerJob is BBFreelancer {
       uint bidTime = bbs.getUint(BBLib.toB32(jobHash, 'BID_TIME', freelancer));
       uint timeStartJob = bbs.getUint(BBLib.toB32(jobHash, 'JOB_STARTED_TIMESTAMP'));
       require(now > timeStartJob + bidTime);
+    }
+    uint bid = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'PAYMENT'));
+    if(bid > 0) {
+       //Refun BBO to job owner
+       require(payment.refundBBO(msg.sender, bid));
     }
     
     bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);

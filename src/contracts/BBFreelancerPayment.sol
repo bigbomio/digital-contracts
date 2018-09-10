@@ -73,6 +73,10 @@ contract BBFreelancerPayment is BBFreelancer{
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
+  function refundBBO(address receiver, uint amount) public returns(bool) {
+      return bbo.transfer(receiver, amount);
+  }
+
   /**
    * @dev finalize Dispute
    * @param jobHash The job Hash 
