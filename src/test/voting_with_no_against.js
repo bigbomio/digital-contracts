@@ -17,7 +17,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 const BBOTest = artifacts.require("BBOTest");
 const BBVoting = artifacts.require("BBVoting");
 const BBParams = artifacts.require("BBParams");
-const BBPoll = artifacts.require("BBPoll");
+const BBDispute = artifacts.require("BBDispute");
 
 var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
@@ -90,7 +90,7 @@ contract('Voting Test 2', async (accounts) => {
     let votingInstance = await BBVoting.new({
       from: accounts[0]
     });
-    let votingRewardInstance = await BBPoll.new({
+    let votingRewardInstance = await BBDispute.new({
       from: accounts[0]
     });
 
@@ -244,7 +244,7 @@ contract('Voting Test 2', async (accounts) => {
       from: accounts[0]
     });
 
-    let votingReward = await BBPoll.at(proxyAddressPoll);
+    let votingReward = await BBDispute.at(proxyAddressPoll);
     await votingReward.transferOwnership(accounts[0], {
       from: accounts[0]
     });
@@ -363,7 +363,7 @@ contract('Voting Test 2', async (accounts) => {
 
 
   
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashxxkk';
     await bbo.approve(voting.address, 0, {
       from: userB
@@ -417,7 +417,7 @@ contract('Voting Test 2', async (accounts) => {
      
       var userB = accounts[2];
 
-      let votingRight = await BBPoll.at(proxyAddressPoll);
+      let votingRight = await BBDispute.at(proxyAddressPoll);
 
       let info_ = await votingRight.getPoll(jobHash4+'kk', {
         from: userB

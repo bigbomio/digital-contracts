@@ -17,7 +17,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 const BBOTest = artifacts.require("BBOTest");
 const BBVoting = artifacts.require("BBVoting");
 const BBParams = artifacts.require("BBParams");
-const BBPoll = artifacts.require("BBPoll");
+const BBDispute = artifacts.require("BBDispute");
 
 var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
@@ -89,7 +89,7 @@ contract('Voting Test', async (accounts) => {
     let votingInstance = await BBVoting.new({
       from: accounts[0]
     });
-    let votingRewardInstance = await BBPoll.new({
+    let votingRewardInstance = await BBDispute.new({
       from: accounts[0]
     });
 
@@ -241,7 +241,7 @@ contract('Voting Test', async (accounts) => {
       from: accounts[0]
     });
 
-    let votingReward = await BBPoll.at(proxyAddressPoll);
+    let votingReward = await BBDispute.at(proxyAddressPoll);
     await votingReward.transferOwnership(accounts[0], {
       from: accounts[0]
     });
@@ -294,7 +294,7 @@ contract('Voting Test', async (accounts) => {
 
     //Create poll 
     try {
-      let voting = await BBPoll.at(proxyAddressPoll);
+      let voting = await BBDispute.at(proxyAddressPoll);
       let proofHash = 'proofHashc';
       let l = await voting.startPoll(jobHash4 + 'd', proofHash, {
         from: userB
@@ -376,7 +376,7 @@ contract('Voting Test', async (accounts) => {
 
   });
   it("[Fail] UserC start poll", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHash';
     var userB = accounts[3];
     let bbo = await BBOTest.at(bboAddress);
@@ -400,7 +400,7 @@ contract('Voting Test', async (accounts) => {
 
   });
   it("start poll", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHash';
     var userB = accounts[2];
     let bbo = await BBOTest.at(bboAddress);
@@ -417,7 +417,7 @@ contract('Voting Test', async (accounts) => {
     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
   it("against poll", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
     let bbo = await BBOTest.at(bboAddress);
@@ -434,7 +434,7 @@ contract('Voting Test', async (accounts) => {
     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
   it("[Fail] Owner against poll", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[2];
     let bbo = await BBOTest.at(bboAddress);
@@ -460,7 +460,7 @@ contract('Voting Test', async (accounts) => {
 
   });
   it("[Fail] against poll with invalid jobHash", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
     let bbo = await BBOTest.at(bboAddress);
@@ -488,7 +488,7 @@ contract('Voting Test', async (accounts) => {
   });
 
   it("against poll", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
     let bbo = await BBOTest.at(bboAddress);
@@ -673,7 +673,7 @@ contract('Voting Test', async (accounts) => {
 
 
   it("read poll ", async () => {
-    let voting = await BBPoll.at(proxyAddressPoll);
+    let voting = await BBDispute.at(proxyAddressPoll);
     var userC = accounts[1];
     let l = await voting.getPoll(jobHash4, {
       from: userC

@@ -4,7 +4,7 @@ import './BBStandard.sol';
 import './BBLib.sol';
 import './BBFreelancerPayment.sol';
 
-contract BBPoll is BBStandard{
+contract BBDispute is BBStandard{
   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
   function setPayment(address p) onlyOwner public  {
     payment = BBFreelancerPayment(p);
