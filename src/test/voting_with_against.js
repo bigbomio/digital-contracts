@@ -439,6 +439,46 @@ contract('Voting Test 3', async (accounts) => {
     });
   });
 
+  it("[Fail] not votter reveal vote 333", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userE = accounts[6];
+
+    try {
+    await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
+      from: userE
+    });
+    console.log('User E can revealVote');
+    return false;
+    } catch(e) {
+      console.log('User E can not revealVote');
+      return true;
+    }
+
+  
+    
+  });
+
+  it("[Fail] reveal vote with wrong choose 333", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+
+    try {
+    await voting.revealVote(jobHash4 + 'kk', accounts[2], 123, {
+      from: userC
+    });
+    console.log('revealVote OK');
+    return false;
+    } catch(e) {
+      console.log('revealVote FAIL');
+      return true;
+    }
+
+  
+    
+  });
+
+
+
   it("reveal vote 333", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[4];

@@ -74,25 +74,22 @@ contract BBFreelancerPayment is BBFreelancer{
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
-  function withdrawAllBBO(bytes jobHash) public  returns(bool) {
-      require(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) == true);
-      address owner = bbs.getAddress(keccak256(jobHash));
-      uint256  amount = bbs.getUint(BBLib.toB32(jobHash, owner,'DEPOSIT'));
-      bbs.setUint(BBLib.toB32(jobHash, owner,'DEPOSIT'), 0);
-      if(amount > 0) {
-         return bbo.transfer(owner, amount);
-      }
-
-  }
 
   function refundBBO(bytes jobHash) public  returns(bool) {
       address owner = bbs.getAddress(keccak256(jobHash));
-      address freelancer = bbs.getAddress(keccak256(jobHash, 'FREELANCER'));
       uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash, owner, 'DEPOSIT'));
-      uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
-      require(bid > 0);
-      require(lastDeposit > bid);
-      return bbo.transfer(owner, lastDeposit - bid);
+      if(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) == true) {
+          bbs.setUint(BBLib.toB32(jobHash, owner,'DEPOSIT'), 0);
+          if(lastDeposit > 0) {
+            return bbo.transfer(owner, lastDeposit);
+          }
+      } else {
+        address freelancer = bbs.getAddress(keccak256(jobHash, 'FREELANCER'));
+        uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
+        require(bid > 0);
+        require(lastDeposit > bid);
+        return bbo.transfer(owner, lastDeposit - bid);
+      }
 
   }
 
