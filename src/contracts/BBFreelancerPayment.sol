@@ -73,9 +73,21 @@ contract BBFreelancerPayment is BBFreelancer{
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
+  function withdrawAllBBO(bytes jobHash) public  returns(bool) {
+      require(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) == true);
+      address owner = bbs.getAddress(keccak256(jobHash));
+      uint256  amount = bbs.getUint(BBLib.toB32(jobHash, owner,'DEPOSIT'));
+      bbs.setUint(BBLib.toB32(jobHash, owner,'DEPOSIT'), 0);
+      if(amount > 0) {
+         return bbo.transfer(owner, amount);
+      }
+
+  }
+
   function refundBBO(bytes jobHash) public  returns(bool) {
       address owner = bbs.getAddress(keccak256(jobHash));
-      uint256  amount = bbs.getUint(BBLib.toB32(jobHash,owner,'REFUND'));
+      uint256  amount = bbs.getUint(BBLib.toB32(jobHash, owner,'REFUND'));
+      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), 0);
       require(amount > 0);
       return bbo.transfer(owner, amount);
 

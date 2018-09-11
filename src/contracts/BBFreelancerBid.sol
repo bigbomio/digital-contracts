@@ -68,16 +68,16 @@ contract BBFreelancerBid is BBFreelancer{
      address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')));
      //Job ownwer call this function
      if(bbs.getAddress(keccak256(jobHash)) == msg.sender && freelancer != 0x0 ) {
-        bbs.setUint(BBLib.toB32(jobHash, freelancer), 0);
         bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), 0x0);
      } else {
        uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,msg.sender)));
        require(bid > 0);
-       bbs.setUint(BBLib.toB32(jobHash, msg.sender), 0);
+       bbs.setBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL'), true);
        if(msg.sender == freelancer) {
          bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), 0x0);
        }
      }
+
     emit BidCanceled(keccak256(jobHash), msg.sender);
 
   }
@@ -94,26 +94,23 @@ contract BBFreelancerBid is BBFreelancer{
     isNotCanceled(jobHash){
     uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
     require(bid > 0);
+    require(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) !=true);
     
-    uint256 lastBid = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'PAYMENT'));
-    if(lastBid == 0) {
-      require(bbo.transferFrom(msg.sender, address(payment), bid));
-    } else if(lastBid > bid) {
-      //Refun BBO to job owner
-      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), lastBid - bid);
-      require(payment.refundBBO(jobHash));
-      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), 0);
-    } else if(lastBid < bid){
-      //Deposit more BBO
-      require(bbo.transferFrom(msg.sender, address(payment), bid - lastBid));
-    } 
+    uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'));
     //Storage amount of BBO that Job owner transferred to payment address
-    bbs.setUint(BBLib.toB32(jobHash,msg.sender,'PAYMENT'), bid);
+    bbs.setUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'), bid);
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), freelancer);
-    
+    if(lastDeposit > bid) {
+      //Refun BBO to job owner
+      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), lastDeposit - bid);
+      require(payment.refundBBO(jobHash));
+      
+    } else if(bid - lastDeposit > 0) {
+      //Deposit more BBO
+      require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
+    } 
     emit BidAccepted(keccak256(jobHash), bid ,freelancer);
-  
   }
   
 }
