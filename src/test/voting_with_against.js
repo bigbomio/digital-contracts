@@ -143,26 +143,26 @@ contract('Voting Test 3', async (accounts) => {
 
 
     // set admin to storage
-    await storage.addAdmin(proxyAddressJob, {
+    await storage.addAdmin(proxyAddressJob,  true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressBid, {
+    await storage.addAdmin(proxyAddressBid,  true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressPayment, {
+    await storage.addAdmin(proxyAddressPayment, true,  {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressVoting, {
+    await storage.addAdmin(proxyAddressVoting,  true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressPoll, {
+    await storage.addAdmin(proxyAddressPoll,  true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressParams, {
+    await storage.addAdmin(proxyAddressParams, true,  {
       from: accounts[0]
     });
 
-    await storage.addAdmin(accounts[7], {
+    await storage.addAdmin(accounts[7],  true, {
       from: accounts[0]
     });
 

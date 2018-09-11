@@ -117,7 +117,7 @@ contract('BBFreelancer Test', async (accounts) => {
     await storage.addAdmin(proxyAddressPayment, true,{
       from: accounts[0]
     });
-    await storage.addAdmin(accounts[7], {
+    await storage.addAdmin(accounts[7],true, {
       from: accounts[0]
     });
 
