@@ -9,10 +9,7 @@ Source: [BBVoting.sol](../../src/contracts/BBVoting.sol)
 BBVoting is the contract implements Partial-Lock Commit-Reveal Voting
  for allow voter can help to reslove the dispute in Freelancer app
 
-Index
-=================
 
-   * [BBVoting](#bbvoting)
       * [Events](#events)
          * [VotingRightsGranted](#votingrightsgranted)
          * [VotingRightsWithdrawn](#votingrightswithdrawn)

@@ -8,10 +8,6 @@ Source: [BBFreelancerBid.sol](../../src/contracts/BBFreelancerBid.sol)
 
 BBFreelancerBid is the contract implements Bidding actions for Freelancer app
 
-Index
-=================
-
-   * [BBFreelancerBid](#bbfreelancerbid)
       * [Events](#events)
          * [BidCreated](#bidcreated)
          * [BidCanceled](#bidcanceled)

@@ -8,10 +8,7 @@ Source: [BBFreelancerJob.sol](../../src/contracts/BBFreelancerJob.sol)
 
 BBFreelancerJob is the contract implements Job Posting actions for Freelancer app
 
-Index
-=================
 
-   * [BBFreelancerJob](#bbfreelancerjob)
       * [Events](#events)
          * [JobCreated](#jobcreated)
          * [JobCanceled](#jobcanceled)
