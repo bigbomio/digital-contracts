@@ -73,8 +73,12 @@ contract BBFreelancerPayment is BBFreelancer{
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
-  function refundBBO(address receiver, uint amount) public returns(bool) {
-      return bbo.transfer(receiver, amount);
+  function refundBBO(bytes jobHash) public  returns(bool) {
+      address owner = bbs.getAddress(keccak256(jobHash));
+      uint256  amount = bbs.getUint(BBLib.toB32(jobHash,owner,'REFUND'));
+      require(amount > 0);
+      return bbo.transfer(owner, amount);
+
   }
 
   /**

@@ -105,7 +105,9 @@ contract BBFreelancerBid is BBFreelancer{
       require(bbo.transferFrom(msg.sender, address(payment), bid));
     } else if(lastBid > bid) {
       //Refun BBO to job owner
-      require(payment.refundBBO(msg.sender, lastBid - bid));
+      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), lastBid - bid);
+      require(payment.refundBBO(jobHash));
+      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), 0);
     } else if(lastBid < bid){
       //Deposit more BBO
       require(bbo.transferFrom(msg.sender, address(payment), bid - lastBid));
@@ -114,6 +116,7 @@ contract BBFreelancerBid is BBFreelancer{
     bbs.setUint(BBLib.toB32(jobHash,msg.sender,'PAYMENT'), bid);
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), freelancer);
+    
     emit BidAccepted(keccak256(jobHash), bid ,freelancer);
   
   }

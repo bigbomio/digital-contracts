@@ -102,7 +102,10 @@ contract BBFreelancerJob is BBFreelancer {
     uint bid = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'PAYMENT'));
     if(bid > 0) {
        //Refun BBO to job owner
-       require(payment.refundBBO(msg.sender, bid));
+       bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), bid);
+       require(payment.refundBBO(jobHash));
+       bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), 0);
+
     }
     
     bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
