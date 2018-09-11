@@ -90,10 +90,8 @@ contract BBFreelancerJob is BBFreelancer {
       uint bidTime = bbs.getUint(BBLib.toB32(jobHash, 'BID_TIME', freelancer));
       uint timeStartJob = bbs.getUint(BBLib.toB32(jobHash, 'JOB_STARTED_TIMESTAMP'));
       require(now > timeStartJob + bidTime);
-      bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
-    } else {
-      bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
     }
+    bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
     payment.withdrawAllBBO(jobHash);
     emit JobCanceled(jobHash);
   }
