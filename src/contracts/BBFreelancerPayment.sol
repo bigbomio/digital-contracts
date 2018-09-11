@@ -70,6 +70,7 @@ contract BBFreelancerPayment is BBFreelancer{
     uint256 finishDate = bbs.getUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'));
     uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
     uint256 status = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
