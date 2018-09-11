@@ -5,12 +5,22 @@
  */
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
+import './BBFreelancerPayment.sol';
 import './BBLib.sol';
 
 /**
  * @title BBFreelancerJob
  */
 contract BBFreelancerJob is BBFreelancer {
+   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
+
+  /**
+   * @dev 
+   * @param paymentAddress address of the Payment Contract
+   */
+  function setPaymentContract(address paymentAddress) onlyOwner public {
+    payment = BBFreelancerPayment(paymentAddress);
+  }
 
   event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
   event JobCanceled(bytes jobHash);
@@ -81,8 +91,8 @@ contract BBFreelancerJob is BBFreelancer {
       uint timeStartJob = bbs.getUint(BBLib.toB32(jobHash, 'JOB_STARTED_TIMESTAMP'));
       require(now > timeStartJob + bidTime);
     }
-    
     bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
+    payment.withdrawAllBBO(jobHash);
     emit JobCanceled(jobHash);
   }
   // freelancer start Job
