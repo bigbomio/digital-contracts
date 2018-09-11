@@ -8,9 +8,6 @@ Source: [BBStandard.sol](../../src/contracts/BBStandard.sol)
 
 BBStandard is standard contract implements the key-value storage from `BBStorage`, and use `BBO ERC20` token for payment
 
-Index
-=================
-
    * [BBStandard](#bbstandard)
       * [Functions](#functions)
          * [setStorage](#setstorage)

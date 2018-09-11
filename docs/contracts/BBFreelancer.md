@@ -8,17 +8,14 @@ Source: [BBFreelancer.sol](../../src/contracts/BBFreelancer.sol)
 
 BBFreelancer is modifiers contract used for `BBFreelancerBid`, `BBFreelancerJob`, `BBFreelancerPayment`
 
-Index
-=================
 
-   * [BBFreelancer](#bbfreelancer)
-      * [Modifiers](#modifiers)
-         * [jobNotExist](#jobnotexist)
-         * [isFreelancerOfJob](#isfreelancerofjob)
-         * [isNotOwnerJob](#isnotownerjob)
-         * [isOwnerJob](#isownerjob)
-         * [isNotCanceled](#isnotcanceled)
-         * [jobNotStarted](#jobnotstarted)
+  * [Modifiers](#modifiers)
+     * [jobNotExist](#jobnotexist)
+     * [isFreelancerOfJob](#isfreelancerofjob)
+     * [isNotOwnerJob](#isnotownerjob)
+     * [isOwnerJob](#isownerjob)
+     * [isNotCanceled](#isnotcanceled)
+     * [jobNotStarted](#jobnotstarted)
 
 
 ## Modifiers

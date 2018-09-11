@@ -8,9 +8,6 @@ Source: [BBFreelancerPayment.sol](../../src/contracts/BBFreelancerPayment.sol)
 
 BBFreelancerPayment is the contract control the payment for Freelancer app
 
-Index
-=================
-
    * [BBFreelancerPayment](#bbfreelancerpayment)
       * [Events](#events)
          * [PaymentClaimed](#paymentclaimed)

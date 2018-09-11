@@ -8,21 +8,18 @@ Source: [BBFreelancerJob.sol](../../src/contracts/BBFreelancerJob.sol)
 
 BBFreelancerJob is the contract implements Job Posting actions for Freelancer app
 
-Index
-=================
 
-   * [BBFreelancerJob](#bbfreelancerjob)
-      * [Events](#events)
-         * [JobCreated](#jobcreated)
-         * [JobCanceled](#jobcanceled)
-         * [JobStarted](#jobstarted)
-         * [JobFinished](#jobfinished)
-      * [Functions](#functions)
-         * [getJob](#getjob)
-         * [createJob](#createjob)
-         * [cancelJob](#canceljob)
-         * [startJob](#startjob)
-         * [finishJob](#finishjob)
+  * [Events](#events)
+     * [JobCreated](#jobcreated)
+     * [JobCanceled](#jobcanceled)
+     * [JobStarted](#jobstarted)
+     * [JobFinished](#jobfinished)
+  * [Functions](#functions)
+     * [getJob](#getjob)
+     * [createJob](#createjob)
+     * [cancelJob](#canceljob)
+     * [startJob](#startjob)
+     * [finishJob](#finishjob)
 
 ## Events
 

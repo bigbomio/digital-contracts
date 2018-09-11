@@ -8,23 +8,17 @@ Source: [BBDispute.sol](../../src/contracts/BBDispute.sol)
 
 BBDispute is the contract implements Poll creation actions for creating dispute in Freelancer app
 
-
-Index
-=================
-
-   * [BBDispute](#bbdispute)
-   * [Index](#index)
-      * [Events](#events)
-         * [PollStarted](#pollstarted)
-         * [PollAgainsted](#pollagainsted)
-         * [PollFinalized](#pollfinalized)
-      * [Functions](#functions)
-         * [setPayment](#setpayment)
-         * [isAgaintsPoll](#isagaintspoll)
-         * [startPoll](#startpoll)
-         * [againstPoll](#againstpoll)
-         * [getPoll](#getpoll)
-         * [finalizePoll](#finalizepoll)
+  * [Events](#events)
+     * [PollStarted](#pollstarted)
+     * [PollAgainsted](#pollagainsted)
+     * [PollFinalized](#pollfinalized)
+  * [Functions](#functions)
+     * [setPayment](#setpayment)
+     * [isAgaintsPoll](#isagaintspoll)
+     * [startPoll](#startpoll)
+     * [againstPoll](#againstpoll)
+     * [getPoll](#getpoll)
+     * [finalizePoll](#finalizepoll)
 
 
 ## Events

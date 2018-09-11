@@ -8,19 +8,15 @@ Source: [BBFreelancerBid.sol](../../src/contracts/BBFreelancerBid.sol)
 
 BBFreelancerBid is the contract implements Bidding actions for Freelancer app
 
-Index
-=================
-
-   * [BBFreelancerBid](#bbfreelancerbid)
-      * [Events](#events)
-         * [BidCreated](#bidcreated)
-         * [BidCanceled](#bidcanceled)
-         * [BidAccepted](#bidaccepted)
-      * [Functions](#functions)
-         * [setPaymentContract](#setpaymentcontract)
-         * [createBid](#createbid)
-         * [cancelBid](#cancelbid)
-         * [acceptBid](#acceptbid)
+   * [Events](#events)
+      * [BidCreated](#bidcreated)
+      * [BidCanceled](#bidcanceled)
+      * [BidAccepted](#bidaccepted)
+   * [Functions](#functions)
+      * [setPaymentContract](#setpaymentcontract)
+      * [createBid](#createbid)
+      * [cancelBid](#cancelbid)
+      * [acceptBid](#acceptbid)
 
 ## Events
 

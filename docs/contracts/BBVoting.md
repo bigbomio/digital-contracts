@@ -9,28 +9,25 @@ Source: [BBVoting.sol](../../src/contracts/BBVoting.sol)
 BBVoting is the contract implements Partial-Lock Commit-Reveal Voting
  for allow voter can help to reslove the dispute in Freelancer app
 
-Index
-=================
 
-   * [BBVoting](#bbvoting)
-      * [Events](#events)
-         * [VotingRightsGranted](#votingrightsgranted)
-         * [VotingRightsWithdrawn](#votingrightswithdrawn)
-         * [VoteCommitted](#votecommitted)
-         * [VoteRevealed](#voterevealed)
-      * [Modifiers](#modifiers)
-         * [isDisputeJob](#isdisputejob)
-      * [Functions](#functions)
-         * [isAgaintsPoll](#isagaintspoll)
-         * [setBBOReward](#setbboreward)
-         * [requestVotingRights](#requestvotingrights)
-         * [withdrawVotingRights](#withdrawvotingrights)
-         * [checkBalance](#checkbalance)
-         * [commitVote](#commitvote)
-         * [revealVote](#revealvote)
-         * [checkHash](#checkhash)
-         * [claimReward](#claimreward)
-         * [calcReward](#calcreward)
+  * [Events](#events)
+     * [VotingRightsGranted](#votingrightsgranted)
+     * [VotingRightsWithdrawn](#votingrightswithdrawn)
+     * [VoteCommitted](#votecommitted)
+     * [VoteRevealed](#voterevealed)
+  * [Modifiers](#modifiers)
+     * [isDisputeJob](#isdisputejob)
+  * [Functions](#functions)
+     * [isAgaintsPoll](#isagaintspoll)
+     * [setBBOReward](#setbboreward)
+     * [requestVotingRights](#requestvotingrights)
+     * [withdrawVotingRights](#withdrawvotingrights)
+     * [checkBalance](#checkbalance)
+     * [commitVote](#commitvote)
+     * [revealVote](#revealvote)
+     * [checkHash](#checkhash)
+     * [claimReward](#claimreward)
+     * [calcReward](#calcreward)
 
 
 ## Events
