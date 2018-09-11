@@ -97,16 +97,17 @@ contract BBFreelancerBid is BBFreelancer{
     require(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) !=true);
     
     uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'));
-    //Storage amount of BBO that Job owner transferred to payment address
-    bbs.setUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'), bid);
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), freelancer);
     if(lastDeposit > bid) {
       //Refun BBO to job owner
-      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), lastDeposit - bid);
       require(payment.refundBBO(jobHash));
+      //Storage amount of BBO that Job owner transferred to payment address
+      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'), bid);
       
     } else if(bid - lastDeposit > 0) {
+      //Storage amount of BBO that Job owner transferred to payment address
+      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'), bid);
       //Deposit more BBO
       require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
     } 

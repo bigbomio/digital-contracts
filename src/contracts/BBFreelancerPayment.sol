@@ -86,10 +86,12 @@ contract BBFreelancerPayment is BBFreelancer{
 
   function refundBBO(bytes jobHash) public  returns(bool) {
       address owner = bbs.getAddress(keccak256(jobHash));
-      uint256  amount = bbs.getUint(BBLib.toB32(jobHash, owner,'REFUND'));
-      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'REFUND'), 0);
-      require(amount > 0);
-      return bbo.transfer(owner, amount);
+      address freelancer = bbs.getAddress(keccak256(jobHash, 'FREELANCER'));
+      uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash, owner, 'DEPOSIT'));
+      uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
+      require(bid > 0);
+      require(lastDeposit > bid);
+      return bbo.transfer(owner, lastDeposit - bid);
 
   }
 

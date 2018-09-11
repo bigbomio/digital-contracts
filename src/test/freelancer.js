@@ -491,6 +491,14 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userB
     });
 
+    await bid.acceptBid(jobHash + 'xkop', userD, {
+      from: userA
+    });
+
+    await bid.cancelBid(jobHash+'xkop', {
+      from: userA
+    });
+
     await bid.acceptBid(jobHash + 'xkop', userC, {
       from: userA
     });
