@@ -177,10 +177,16 @@ contract('Voting Test 3', async (accounts) => {
     await bbo.transfer(accounts[3], 100000e18, {
       from: accounts[0]
     });
-    await bbo.transfer(accounts[4], 100000e18, {
+    await bbo.transfer(accounts[4], 900e18, {
       from: accounts[0]
     });
     await bbo.transfer(accounts[5], 900e18, {
+      from: accounts[0]
+    });
+    await bbo.transfer(accounts[6], 900e18, {
+      from: accounts[0]
+    });
+    await bbo.transfer(accounts[7], 9000e18, {
       from: accounts[0]
     });
     //console.log('bbo: ', bbo.address);
@@ -231,6 +237,16 @@ contract('Voting Test 3', async (accounts) => {
     });
     await voting.setBBO(bboAddress, {
       from: accounts[0]
+    });
+    await voting.setBBOReward(accounts[7], {
+      from: accounts[0]
+    });
+
+    await bbo.approve(voting.address, 0, {
+      from: accounts[7]
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: accounts[7]
     });
 
     let params = await BBParams.at(proxyAddressParams);
@@ -294,6 +310,19 @@ contract('Voting Test 3', async (accounts) => {
     //console.log('bbo balance userA Beffore : ',  xxx );
     
     var userB = accounts[3];
+
+
+    let xxxyn  = await bbo.balanceOf(userA, {
+      from: userA
+    });
+    let xxxzn  = await bbo.balanceOf(userB, {
+      from: userB
+    });
+
+    console.log('bbo balance Job Owner Affter Bid: ',  xxxyn );
+    console.log('bbo balance Freelancer Affter Bid: ',  xxxzn );
+
+
     let bid = await BBFreelancerBid.at(proxyAddressBid);
 
     var timeDone = 3 * 24 * 3600; // 3 days
@@ -333,8 +362,8 @@ contract('Voting Test 3', async (accounts) => {
       from: userB
     });
 
-    //console.log('bbo balance userA Affter : ',  xxxy );
-    //console.log('bbo balance userB Before : ',  xxxz );
+    console.log('bbo balance Job Owner Affter Dispute: ',  xxxy );
+    console.log('bbo balance Freelancer Affter Dispute: ',  xxxz );
 
 
     let voting = await BBDispute.at(proxyAddressPoll);
@@ -377,6 +406,7 @@ contract('Voting Test 3', async (accounts) => {
     // //return;
     var userC = accounts[4];
     var userD = accounts[5];
+    var userE = accounts[6];
 
 
     let votingRight = await BBVoting.at(proxyAddressVoting);
@@ -403,6 +433,17 @@ contract('Voting Test 3', async (accounts) => {
       from: userD
     });
 
+    await bbo.approve(votingRight.address, 0, {
+      from: userE
+    });
+    await bbo.approve(votingRight.address, Math.pow(2, 255), {
+      from: userE
+    });
+
+    await votingRight.requestVotingRights(200e18, {
+      from: userE
+    });
+
   });
 
   it("fast forward to  1 after start poll 3333", function () {
@@ -418,7 +459,7 @@ contract('Voting Test 3', async (accounts) => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[4];
     var userD = accounts[5];    
-    
+    var userE = accounts[6];
    
     await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 123), 200e18, {
       from: userC
@@ -426,6 +467,9 @@ contract('Voting Test 3', async (accounts) => {
 
     await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[3], 124), 500e18, {
       from: userD
+    });
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[3], 124), 500e18, {
+      from: userE
     });
    
   });
@@ -483,6 +527,7 @@ contract('Voting Test 3', async (accounts) => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[4];
     var userD = accounts[5];
+    var userE = accounts[6];
 
     let l = await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
       from: userC
@@ -499,8 +544,27 @@ contract('Voting Test 3', async (accounts) => {
     let l2 = await voting.revealVote(jobHash4 + 'kk', accounts[3], 124, {
       from: userD
     });
+    voting.revealVote(jobHash4 + 'kk', accounts[3], 124, {
+      from: userE
+    });
     const aa = l2.logs.find(l2 => l2.event === 'VoteRevealed').args
     //console.log(aa);
+
+    
+  });
+
+
+
+  it("checkHash", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+    
+
+    let ll = await voting.checkHash(jobHash4 + 'kk', accounts[1], 123, {
+      from: userC
+    });
+
+    console.log(ll);
 
     
   });
@@ -520,6 +584,7 @@ contract('Voting Test 3', async (accounts) => {
   it("finalizePoll 3333 ", async () => {
     try {
      
+      var userA = accounts[1];
       var userB = accounts[3];
 
       let votingRight = await BBDispute.at(proxyAddressPoll);
@@ -527,7 +592,7 @@ contract('Voting Test 3', async (accounts) => {
       let info_ = await votingRight.getPoll(jobHash4+'kk', {
         from: userB
       });
-      //console.log(JSON.stringify( info_ ));
+      console.log(JSON.stringify( info_ ));
     
     
     //claimReward
@@ -537,17 +602,141 @@ contract('Voting Test 3', async (accounts) => {
     const a = l.logs.find(l => l.event === 'PollFinalized').args
     //console.log(a);
     let bbo = await BBOTest.at(bboAddress);
-    let xxx  = await bbo.balanceOf(userB, {
+    
+    let xxxy  = await bbo.balanceOf(userA, {
+      from: userA
+    });
+    let xxxz  = await bbo.balanceOf(userB, {
       from: userB
     });
 
-    //console.log('bbo balance userB : ',  xxx );
-    //console.log('OKKKKKKKKKKK');
+    console.log('bbo balance Job Owner Affter finalizePoll: ',  xxxy );
+    console.log('bbo balance Freelancer Affter finalizePoll: ',  xxxz );
 
     return true;
   } catch(e) {
-    //console.log('LOIiiiiiiiiiiiiiiiiiiiii');
+    console.log('LOIiiiiiiiiiiiiiiiiiiiii');
     //console.log(e);
+    return false;
+  }
+    
+  });
+
+  it("claimReward 3333 ", async () => {
+    try {
+     
+      var userC = accounts[4];
+      var userD = accounts[5];
+      var userE = accounts[6];
+
+      let bbo = await BBOTest.at(bboAddress);
+
+      let xxxyc  = await bbo.balanceOf(userC, {
+        from: userC
+      });
+      let xxxzc  = await bbo.balanceOf(userD, {
+        from: userD
+      });
+  
+      let xxxzcx  = await bbo.balanceOf(userE, {
+        from: userE
+      });
+  
+      console.log('bbo balance UserC Before finalizePoll: ',  xxxyc );
+      console.log('bbo balance UserD Before finalizePoll: ',  xxxzc );
+      console.log('bbo balance UserE Before finalizePoll: ',  xxxzcx );
+
+
+      let votingRight = await BBVoting.at(proxyAddressVoting);
+
+      await votingRight.claimReward(jobHash4+'kk', {
+        from: userC
+      });
+      await votingRight.claimReward(jobHash4+'kk', {
+        from: userD
+      });
+      await votingRight.claimReward(jobHash4+'kk', {
+        from: userE
+      });
+     
+    
+    let xxxy  = await bbo.balanceOf(userC, {
+      from: userC
+    });
+    let xxxz  = await bbo.balanceOf(userD, {
+      from: userD
+    });
+    let xxxo  = await bbo.balanceOf(userE, {
+      from: userD
+    });
+
+    console.log('bbo balance UserC Affter finalizePoll: ',  xxxy );
+    console.log('bbo balance UserD Affter finalizePoll: ',  xxxz );
+    console.log('bbo balance UserE Affter finalizePoll: ',  xxxo );
+
+    return true;
+  } catch(e) {
+    console.log('LOi claimReward');
+    console.log(e);
+    return false;
+  }
+    
+  });
+
+  it("[Fail] claimReward  Again 3333 ", async () => {
+    try {
+     
+      var userC = accounts[4];
+      
+
+
+      let votingRight = await BBVoting.at(proxyAddressVoting);
+
+      await votingRight.claimReward(jobHash4+'kk', {
+        from: userC
+      });
+     ;
+    console.log('claimReward  Again OK');
+
+    return false;
+  } catch(e) {
+    console.log('claimReward  Again FAIL');
+
+    return true;
+  }
+    
+  });
+
+  it("withdrawVotingRights 3333 ", async () => {
+    try {
+     
+      var userC = accounts[4];
+      var userD = accounts[5];
+      var userE = accounts[6];
+
+      let bbo = await BBOTest.at(bboAddress);
+
+     
+      let votingRight = await BBVoting.at(proxyAddressVoting);
+
+      await votingRight.withdrawVotingRights(200e18, {
+        from: userC
+      });
+     
+     
+    
+    let xxxy  = await bbo.balanceOf(userC, {
+      from: userC
+    });
+   
+
+    console.log('bbo balance UserC Affter withdrawVotingRights: ',  xxxy );
+    
+
+    return true;
+  } catch(e) {
+    console.log('LOi withdrawVotingRights');
+    console.log(e);
     return false;
   }
     
