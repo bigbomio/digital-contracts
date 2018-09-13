@@ -5,48 +5,19 @@
  */
 pragma solidity ^0.4.24;
 
-import './BBStorage.sol';
-import './zeppelin/ownership/Ownable.sol';
-import './zeppelin/math/SafeMath.sol';
-import './zeppelin/token/ERC20/ERC20.sol';
-
+import './BBStandard.sol';
 
 /**
  * @title Freelancer contract 
  */
-contract BBFreelancer is Ownable{
-  using SafeMath for uint256;
-  BBStorage bbs = BBStorage(0x0);
-  ERC20 public bbo = ERC20(0x0);
-
-  /**
-   * @dev set storage contract address
-   * @param storageAddress Address of the Storage Contract
-   */
-  function setStorage(address storageAddress) onlyOwner public {
-    bbs = BBStorage(storageAddress);
-  }
-  /**
-   * @dev get storage contract address
-   */
-  function getStorage() onlyOwner public returns(address){
-    return bbs;
-  }
-
-  /**
-   * @dev set BBO contract address
-   * @param BBOAddress Address of the BBO token
-   */
-  function setBBO(address BBOAddress) onlyOwner public {
-    bbo = ERC20(BBOAddress);
-  }
+contract BBFreelancer is BBStandard{
 
   modifier jobNotExist(bytes jobHash){
     require(bbs.getAddress(keccak256(jobHash)) == 0x0);
     _;
   }
   modifier isFreelancerOfJob(bytes jobHash){
-    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'freelancer'))) == msg.sender);
+    require(bbs.getAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER'))) == msg.sender);
     _;
   }
   modifier isNotOwnerJob(bytes jobHash){
@@ -63,11 +34,13 @@ contract BBFreelancer is Ownable{
   }
 
   modifier jobNotStarted(bytes jobHash){
-    require(bbs.getUint(keccak256(abi.encodePacked(jobHash,'status'))) == 0x0);
+    require(bbs.getUint(keccak256(abi.encodePacked(jobHash, 'STATUS'))) == 0x0);
     _;
   }
   modifier isNotCanceled(bytes jobHash){
-    require(bbs.getBool(keccak256(abi.encodePacked(jobHash,'cancel'))) !=true);
+    require(bbs.getBool(keccak256(abi.encodePacked(jobHash, 'CANCEL'))) !=true);
     _;
   }
+  
+  
 }
