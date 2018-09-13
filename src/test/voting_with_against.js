@@ -24,6 +24,8 @@ var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
 var jobHashWilcancel = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr2';
 var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
 var jobHash4 = 'QmSn1wGTpz1cccc';
+var jobHash5 = 'xvcxhccvv';
+
 
 const files = [{
   path: 'README.md',
@@ -299,6 +301,10 @@ contract('Voting Test 3', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
     await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+      from: userA
+    });
+    expiredTime = parseInt(Date.now() / 1000) + 90 * 24 * 3600;
+    await job.createJob(jobHash5 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
 
@@ -741,4 +747,231 @@ contract('Voting Test 3', async (accounts) => {
   }
     
   });
+
+
+  it("Job Ower win ", async () => {
+    jobHash4 = jobHash5;
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[1];
+    var userB = accounts[3];
+    let bbo = await BBOTest.at(bboAddress);
+
+    
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+
+    var timeDone = 3 * 24 * 3600; // 3 days
+    await bid.createBid(jobHash4 + 'kk', 500e18, timeDone, {
+      from: userB
+    });
+
+    
+    
+  
+    await bid.acceptBid(jobHash4 + 'kk', userB, {
+      from: userA
+    });
+   
+
+
+    await job.startJob(jobHash4 + 'kk', {
+      from: userB
+    });
+    await job.finishJob(jobHash4 + 'kk', {
+      from: userB
+    });
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    await payment.rejectPayment(jobHash4 + 'kk', {
+      from: userA
+    });
+
+    
+
+    let voting = await BBDispute.at(proxyAddressPoll);
+    let proofHash = 'proofHashxxkkpodiddd';
+    await bbo.approve(voting.address, 0, {
+      from: userB
+    });
+   
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userB
+    });
+    
+    await voting.startPoll(jobHash4 + 'kk', proofHash, {
+      from: userB
+    });
+
+    //User A AgainPoll
+
+    await bbo.approve(voting.address, 0, {
+      from: userA
+    });
+   
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userA
+    });
+    
+
+    await voting.againstPoll(jobHash4 + 'kk', proofHash+'okmjjan', {
+      from: userA
+    });
+
+   
+    var userC = accounts[4];
+    var userD = accounts[5];
+    var userE = accounts[6];
+
+
+    let votingRight = await BBVoting.at(proxyAddressVoting);
+
+    await bbo.approve(votingRight.address, 0, {
+      from: userC
+    });
+    await bbo.approve(votingRight.address, Math.pow(2, 255), {
+      from: userC
+    });
+
+    await votingRight.requestVotingRights(200e18, {
+      from: userC
+    });
+
+    await bbo.approve(votingRight.address, 0, {
+      from: userD
+    });
+    await bbo.approve(votingRight.address, Math.pow(2, 255), {
+      from: userD
+    });
+
+    await votingRight.requestVotingRights(200e18, {
+      from: userD
+    });
+
+    await bbo.approve(votingRight.address, 0, {
+      from: userE
+    });
+    await bbo.approve(votingRight.address, Math.pow(2, 255), {
+      from: userE
+    });
+
+    await votingRight.requestVotingRights(200e18, {
+      from: userE
+    });
+    
+  });
+
+  it("fast forward to  1 after start poll 3333", function () {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("commit vote for job Ower Win", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+    var userD = accounts[5];    
+    var userE = accounts[6];
+   
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 123), 100e18, {
+      from: userC
+    });
+
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 124), 100e18, {
+      from: userD
+    });
+    await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[1], 124), 100e18, {
+      from: userE
+    });
+   
+  });
+
+  it("fast forward to  1 after start poll 3333", function () {
+    var fastForwardTime = 1 * 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("reveal vote ", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+    var userD = accounts[5];
+    var userE = accounts[6];
+
+    await voting.revealVote(jobHash4 + 'kk', accounts[1], 123, {
+      from: userC
+    });
+    await voting.revealVote(jobHash4 + 'kk', accounts[1], 124, {
+      from: userD
+    });
+    await voting.revealVote(jobHash4 + 'kk', accounts[1], 124, {
+      from: userE
+    });
+ 
+    
+  });
+
+  it("fast forward to 24h * 10 after start poll 3333", function () {
+    var fastForwardTime = 10 * 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("finalizePoll JOB Owner Win ", async () => {
+    try {
+      let bbo = await BBOTest.at(bboAddress);
+      var userA = accounts[1];
+      var userB = accounts[3];
+
+      let xxxyc  = await bbo.balanceOf(userA, {
+        from: userA
+      });
+      let xxxzc  = await bbo.balanceOf(userB, {
+        from: userB
+      });
+  
+      console.log('bbo balance Job Owner Before finalizePoll: ',  xxxyc );
+      console.log('bbo balance Freelancer Before finalizePoll: ',  xxxzc );
+
+      let votingRight = await BBDispute.at(proxyAddressPoll);
+
+      let info_ = await votingRight.getPoll(jobHash4+'kk', {
+        from: userB
+      });
+      console.log(JSON.stringify( info_ ));
+    
+    
+    //claimReward
+    let l =  await votingRight.finalizePoll(jobHash4+'kk', {
+      from: userB
+    });
+    const a = l.logs.find(l => l.event === 'PollFinalized').args
+    //console.log(a);
+    
+    
+    let xxxy  = await bbo.balanceOf(userA, {
+      from: userA
+    });
+    let xxxz  = await bbo.balanceOf(userB, {
+      from: userB
+    });
+
+    console.log('bbo balance Job Owner Affter finalizePoll: ',  xxxy );
+    console.log('bbo balance Freelancer Affter finalizePoll: ',  xxxz );
+
+    return true;
+  } catch(e) {
+    console.log('LOI finalizePoll JOB Owner Win');
+    console.log(e);
+    return false;
+  }
+    
+  });
+
 });
