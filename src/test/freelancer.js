@@ -1287,14 +1287,14 @@ contract('BBFreelancer Test', async (accounts) => {
 
   });
 
-  it("withdrawTokens", async () => {
+  it("emergencyERC20Drain", async () => {
     var userA = accounts[0];
     let bbo = await BBOTest.at(bboAddress);
 
     console.log('bbo.address ', bbo.address);
 
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    var jobLog = await payment.withdrawTokens(bbo.address, {
+    var jobLog = await payment.emergencyERC20Drain(bbo.address, {
       from: userA
     });
     

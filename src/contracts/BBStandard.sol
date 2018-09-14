@@ -31,7 +31,7 @@ contract BBStandard is Ownable {
   * @param anyToken token address
   * 
   */
-  function withdrawTokens(ERC20 anyToken) public onlyOwner{
+  function emergencyERC20Drain(ERC20 anyToken) public onlyOwner{
       if(address(this).balance > 0 ) {
         owner.transfer( address(this).balance );
       }

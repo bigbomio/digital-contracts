@@ -271,7 +271,7 @@ contract('Voting Test 2', async (accounts) => {
     let params = await BBParams.at(proxyAddressParams);
     await params.addAdmin(accounts[0], true);
     await params.setVotingParams(100e18, 1000000e18, 60, 300e18, 24 * 60 * 60, 24 * 60 * 60,
-      24 * 60 * 60, 10e18, 100e18, {
+      24 * 60 * 60, 10e18,  {
         from: accounts[0]
       });
     return true;
