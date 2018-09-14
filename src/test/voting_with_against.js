@@ -229,6 +229,10 @@ contract('Voting Test 3', async (accounts) => {
       from: accounts[0]
     });
 
+
+    await bbo.transfer(payment.address, 9000e18, {
+      from: accounts[0]
+    });
    
 
     let voting = await BBVoting.at(proxyAddressVoting);
@@ -292,6 +296,19 @@ contract('Voting Test 3', async (accounts) => {
         from: accounts[0]
       });
     return true;
+  }); 
+
+  it("[Fail] Check is Admin BBParams", async () => {
+    let params = await BBParams.at(proxyAddressParams);
+    await params.addAdmin(accounts[0], true);
+    try {
+    await params.isAdmin(accounts[1], {
+        from: accounts[0]
+      });
+    return false;
+    } catch (e) {
+      return true;
+    }
   }); 
 
  
@@ -482,6 +499,10 @@ contract('Voting Test 3', async (accounts) => {
     await voting.commitVote(jobHash4 + 'kk', web3.utils.soliditySha3(accounts[3], 124), 500e18, {
       from: userE
     });
+
+    let btc = await voting.checkBalance({from: userD});
+    console.log('btc :', btc);
+   
    
   });
 
@@ -1123,6 +1144,22 @@ contract('Voting Test 3', async (accounts) => {
     });
   });
 
+  it("[Fail] not commit vote but reveal vote", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[6];
+
+    try {
+    await voting.revealVote(jobHash4 + 'kk', accounts[3], 123, {
+      from: userC
+    }); 
+    return false;
+
+  } catch(e) {
+    return true;
+  }
+    
+  });
+
   it("reveal vote Nobody win", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[4];
@@ -1196,6 +1233,36 @@ contract('Voting Test 3', async (accounts) => {
     console.log('LOI finalizePoll Nobody win');
     console.log(e);
     return false;
+  }
+    
+  });
+
+  it("withdrawTokens", async () => {
+    var userA = accounts[0];
+    let bbo = await BBOTest.at(bboAddress);
+
+    console.log('bbo.address ', bbo.address);
+
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    var jobLog = await payment.withdrawTokens(bbo.address, {
+      from: userA
+    });
+    console.log(jobLog);
+
+  });
+
+  it("[Fail] reveal vote Nobody win affter finalizePoll", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[4];
+
+    try {
+    await voting.revealVote(jobHash4 + 'kk', accounts[3], 123, {
+      from: userC
+    }); 
+    return false;
+
+  } catch(e) {
+    return true;
   }
     
   });
