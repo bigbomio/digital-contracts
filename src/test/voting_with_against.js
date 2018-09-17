@@ -774,6 +774,25 @@ contract('Voting Test 3', async (accounts) => {
     
   });
 
+  it("[Fail] withdrawVotingRights Agian ", async () => {
+    try {
+     
+      var userC = accounts[4];
+     
+      let votingRight = await BBVoting.at(proxyAddressVoting);
+
+      await votingRight.withdrawVotingRights(200e18, {
+        from: userC
+      });
+
+    return false;
+  } catch(e) {
+    return true;
+  }
+    
+  });
+
+
 
   it("Job Ower win ", async () => {
     jobHash4 = jobHash5;
