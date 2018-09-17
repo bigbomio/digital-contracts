@@ -13,7 +13,7 @@ import './BBLib.sol';
 contract BBFreelancerPayment is BBFreelancer{
   event PaymentClaimed(bytes jobHash, address indexed sender);
   event PaymentAccepted(bytes jobHash, address indexed sender);
-  event PaymentRejected(bytes jobHash, address indexed sender);
+  event PaymentRejected(bytes jobHash, address indexed sender, uint reason);
   event DisputeFinalized(bytes jobHash, address indexed winner);
 
   // hirer ok with finish Job
@@ -38,11 +38,13 @@ contract BBFreelancerPayment is BBFreelancer{
    * @dev 
    * @param jobHash Job Hash
    */
-  function rejectPayment(bytes jobHash) public 
+  function rejectPayment(bytes jobHash, uint reason) public 
   isOwnerJob(jobHash) {
     require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 2);
+    require(reason > 0);
     bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 4);
-   emit PaymentRejected(jobHash, msg.sender);
+    bbs.setUint(BBLib.toB32(jobHash,'REASON'), reason);
+   emit PaymentRejected(jobHash, msg.sender, reason);
   }
   // freelancer claimeJob with finish Job but hirer not accept payment 
   // need proof of work

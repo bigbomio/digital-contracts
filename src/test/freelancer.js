@@ -1028,7 +1028,7 @@ contract('BBFreelancer Test', async (accounts) => {
   it("reject payment", async () => {
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     var userA = accounts[0];
-    var jobLog = await payment.rejectPayment(jobHash, {
+    var jobLog = await payment.rejectPayment(jobHash, 1,{
       from: userA
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentRejected').args
@@ -1257,7 +1257,7 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userB
     });
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    await payment.rejectPayment(jobHash4, {
+    await payment.rejectPayment(jobHash4, 1,{
       from: userA
     });
 
