@@ -114,10 +114,10 @@ contract('BBFreelancer Test', async (accounts) => {
     await storage.addAdmin(proxyAddressBid, true, {
       from: accounts[0]
     });
-    await storage.addAdmin(proxyAddressPayment, true,{
+    await storage.addAdmin(proxyAddressPayment, true, {
       from: accounts[0]
     });
-    await storage.addAdmin(accounts[7],true, {
+    await storage.addAdmin(accounts[7], true, {
       from: accounts[0]
     });
 
@@ -457,8 +457,8 @@ contract('BBFreelancer Test', async (accounts) => {
     var timeBid = 8 * 24 * 3600; //8 days
 
     await job.createJob(jobHash + 'xkop', expiredTime, timeBid, 1000e18, 'banner', {
-        from: userA
-      });
+      from: userA
+    });
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     var timeDone = 3 * 24 * 3600;
@@ -487,7 +487,7 @@ contract('BBFreelancer Test', async (accounts) => {
     let balancex = await getBalance(bbo, userA);
     console.log('balance BBO userA  after acceptBid UserB :', balancex);
     // Cancel Bid
-    await bid.cancelBid(jobHash+'xkop', {
+    await bid.cancelBid(jobHash + 'xkop', {
       from: userB
     });
 
@@ -495,7 +495,7 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userA
     });
 
-    await bid.cancelBid(jobHash+'xkop', {
+    await bid.cancelBid(jobHash + 'xkop', {
       from: userA
     });
 
@@ -514,7 +514,7 @@ contract('BBFreelancer Test', async (accounts) => {
     console.log('balance BBO userA  after acceptBid UserD :', balancey);
 
     //Job ownwer cancel job
-    await job.cancelJob(jobHash+'xkop', {
+    await job.cancelJob(jobHash + 'xkop', {
       from: userA
     });
 
@@ -1028,7 +1028,7 @@ contract('BBFreelancer Test', async (accounts) => {
   it("reject payment", async () => {
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     var userA = accounts[0];
-    var jobLog = await payment.rejectPayment(jobHash, 1,{
+    var jobLog = await payment.rejectPayment(jobHash, 1, {
       from: userA
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentRejected').args
@@ -1036,6 +1036,22 @@ contract('BBFreelancer Test', async (accounts) => {
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash, web3.utils.hexToUtf8(jobHashRs));
   });
+
+  it("[Fail] reject payment with reasion = 0", async () => {
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    var userA = accounts[0];
+    try {
+      await payment.rejectPayment(jobHash, 0, {
+        from: userA
+      });
+      return false;
+    } catch (e) {
+      return true;
+
+    }
+
+  });
+
   it("check payment", async () => {
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     var userA = accounts[0];
@@ -1257,7 +1273,7 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userB
     });
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    await payment.rejectPayment(jobHash4, 1,{
+    await payment.rejectPayment(jobHash4, 1, {
       from: userA
     });
 
@@ -1297,7 +1313,7 @@ contract('BBFreelancer Test', async (accounts) => {
     var jobLog = await payment.withdrawTokens(bbo.address, {
       from: userA
     });
-    
+
 
   });
 
