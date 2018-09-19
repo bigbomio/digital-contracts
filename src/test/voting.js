@@ -345,7 +345,7 @@ contract('Voting Test', async (accounts) => {
       from: userB
     });
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    await payment.rejectPayment(jobHash4, {
+    await payment.rejectPayment(jobHash4, 1,{
       from: userA
     });
 
