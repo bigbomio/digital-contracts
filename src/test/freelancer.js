@@ -132,6 +132,15 @@ contract('BBFreelancer Test', async (accounts) => {
     await bbo.transfer(accounts[3], 1000e18, {
       from: accounts[0]
     });
+    await bbo.transfer(accounts[4], 1000e18, {
+      from: accounts[0]
+    });
+    await bbo.transfer(accounts[5], 1000e18, {
+      from: accounts[0]
+    });
+    await bbo.transfer(accounts[6], 1000e18, {
+      from: accounts[0]
+    });
     //console.log('bbo: ', bbo.address);
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -225,7 +234,7 @@ contract('BBFreelancer Test', async (accounts) => {
         //TODO
         if (error) {
           //console.log('error filter');
-          //console.log(error);
+          //console.s.log(error);
         }
         // //console.log(JSON.stringify( events)); 
       }).then(function (events) {
@@ -239,7 +248,7 @@ contract('BBFreelancer Test', async (accounts) => {
     }
 
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'JobCreated').args
-
+    console.log(JSON.stringify( jobHashRs1.jobID ));
     const jobHashRs = jobHashRs1.jobHash
     assert.equal(jobHash + 'dddd', web3.utils.hexToUtf8(jobHashRs));
   });
@@ -540,6 +549,63 @@ contract('BBFreelancer Test', async (accounts) => {
     // assert.equal(jobHashWilcancel, web3.utils.hexToUtf8(jobHashRs));
 
   });
+
+  it("create createMultipleBid", async () => {
+    var listJobHash = [];
+    var listTime = [];
+    var listBid = [];
+    var listJobID = [];
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+
+    for(var i = 0; i < 4; i++) {
+      var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+      var timeBid = 3 * 24 * 3600; //3 days
+      listJobHash.push(jobHashWilcancel +'xx' + i);
+      listTime.push(timeBid);
+      listBid.push(400e18);
+      let jobLog = await job.createJob(jobHashWilcancel +'xx' + i, expiredTime, timeBid, 500e18, 'banner', {
+        from: accounts[i]
+      });
+      let jobHashRs = jobLog.logs.find(l => l.event === 'JobCreated').args
+      listJobID.push(jobHashRs.jobID);
+      //console.log(jobHashRs.jobID);
+    }
+
+    console.log('listJobHash ', listJobHash);
+    //console.log('listJobID ', listJobID);
+    //console.log('listBid ', listBid);
+    //console.log('listTime ', listTime);
+
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    let bbo = await BBOTest.at(bboAddress);
+    let userA = accounts[1];
+    await bid.createMultipleBid(listJobID, listBid,listTime, {
+      from : accounts[5]
+    });
+    
+    await bbo.approve(bid.address, 0, {
+      from: userA
+    });
+    await bbo.approve(bid.address, Math.pow(2, 255), {
+      from: userA
+    });
+
+    var jobLog = await bid.acceptBid(jobHashWilcancel +'xx' + 1, accounts[5], {
+      from: userA
+    });
+    console.log('jobHash :', jobHashWilcancel +'xx' + 1);
+    //console.log(JSON.stringify(jobLog.logs[0]));
+    const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.jobHash
+    console.log('jobHashRs ', jobHashRs);
+    console.log('jobHash ', web3.utils.sha3(jobHashWilcancel +'xx' + 1));
+
+
+
+
+  });
+
+  return;
 
   it("create bid", async () => {
     var userB = accounts[1];

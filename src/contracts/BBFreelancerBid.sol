@@ -27,6 +27,7 @@ contract BBFreelancerBid is BBFreelancer{
   event BidCanceled(bytes32 indexed jobHash, address indexed owner);
   event BidAccepted(bytes32 indexed jobHash, uint256 bid,address indexed freelancer);
 
+
    // freelancer bid job
   /**
    * @dev 
@@ -57,7 +58,18 @@ contract BBFreelancerBid is BBFreelancer{
     emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
   }
 
+  
 
+  function createMultipleBid(uint256[] jobIDs, uint256[] bids, uint[] bidTimes) public {
+      require(jobIDs.length == bids.length);
+      require(bidTimes.length == bids.length);
+      require(jobIDs.length <= 10);
+
+      for(uint i = 0; i < jobIDs.length; i++) {
+        bytes memory _jobHash = bbs.getBytes(BBLib.toB32(jobIDs[i]));
+        createBid(_jobHash, bids[i], bidTimes[i]);
+      }      
+  }
   
   // freelancer cancel bid
   /**
