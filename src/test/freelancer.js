@@ -563,23 +563,24 @@ contract('BBFreelancer Test', async (accounts) => {
       var timeBid = 3 * 24 * 3600; //3 days
       listJobHash.push(jobHashWilcancel +'xx' + i);
       listTime.push(timeBid);
-      listBid.push(400e18);
-      let jobLog = await job.createJob(jobHashWilcancel +'xx' + i, expiredTime, timeBid, 500e18, 'banner', {
+      listBid.push(100e18);
+      let jobLog = await job.createJob(jobHashWilcancel +'xx' + i, expiredTime, timeBid, 200e18, 'banner', {
         from: accounts[i]
       });
       let jobHashRs = jobLog.logs.find(l => l.event === 'JobCreated').args
       listJobID.push(jobHashRs.jobID);
-      //console.log(jobHashRs.jobID);
     }
 
     console.log('listJobHash ', listJobHash);
-    //console.log('listJobID ', listJobID);
-    //console.log('listBid ', listBid);
-    //console.log('listTime ', listTime);
+    console.log('listBid before', listBid);
+
+    listBid[1] = 300e18;
+    console.log('listBid after', listBid);
+
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     let bbo = await BBOTest.at(bboAddress);
-    let userA = accounts[1];
+    let userA = accounts[0];
     await bid.createMultipleBid(listJobID, listBid,listTime, {
       from : accounts[5]
     });
@@ -591,21 +592,16 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userA
     });
 
-    var jobLog = await bid.acceptBid(jobHashWilcancel +'xx' + 1, accounts[5], {
+    var jobLog = await bid.acceptBid(jobHashWilcancel +'xx' + 0, accounts[5], {
       from: userA
     });
-    console.log('jobHash :', jobHashWilcancel +'xx' + 1);
+    console.log('jobHash :', jobHashWilcancel +'xx' + 3);
     //console.log(JSON.stringify(jobLog.logs[0]));
     const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.jobHash
     console.log('jobHashRs ', jobHashRs);
     console.log('jobHash ', web3.utils.sha3(jobHashWilcancel +'xx' + 1));
 
-
-
-
   });
-
-  return;
 
   it("create bid", async () => {
     var userB = accounts[1];

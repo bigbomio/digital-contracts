@@ -29,7 +29,7 @@ contract BBFreelancerBid is BBFreelancer{
 
 
    // freelancer bid job
-  /**
+  /** 
    * @dev 
    * @param jobHash Job Hash
    * @param bid value of bid amount
@@ -39,10 +39,7 @@ contract BBFreelancerBid is BBFreelancer{
    isNotOwnerJob(jobHash)
    isNotCanceled(jobHash)
    jobNotStarted(jobHash) {
-   // sender should not cancel previous bid yet
-    require( bbs.getBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL')) != true);
     // bid must in range budget
-
     require(bid <= bbs.getUint(BBLib.toB32(jobHash, 'BUDGET' )));
     //check job expired
     require(now < bbs.getUint(BBLib.toB32(jobHash, 'EXPIRED')));
@@ -59,7 +56,42 @@ contract BBFreelancerBid is BBFreelancer{
     emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
   }
 
-  
+   function createSingleBid(bytes jobHash, uint256 bid, uint bidTime) public {
+     //Job owner call
+     if(bbs.getAddress(keccak256(jobHash))==msg.sender) {
+       return;
+     }
+     //Job has not started
+     if(bbs.getUint(keccak256(abi.encodePacked(jobHash, 'STATUS'))) != 0x0) {
+       return;
+     }
+    
+    //sender should not cancel previous bid yet
+    if( bbs.getBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL')) == true) {
+      return;
+    }
+    //bid must in range budget
+    if(bid > bbs.getUint(BBLib.toB32(jobHash, 'BUDGET' ))) {
+       return;
+    }
+    //check job expired
+    if(now > bbs.getUint(BBLib.toB32(jobHash, 'EXPIRED'))) {
+      return;
+    }
+    if(bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER')) != 0x0) {
+      return;
+    }
+    if(bidTime <= 0) {
+      return;
+    }
+    // set user bid value
+    bbs.setUint(BBLib.toB32(jobHash,msg.sender), bid);
+    //set user bidTime value
+    bbs.setUint(BBLib.toB32(jobHash,'BID_TIME',msg.sender), bidTime);
+
+    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
+
+  }
 
   function createMultipleBid(uint256[] jobIDs, uint256[] bids, uint[] bidTimes) public {
       require(jobIDs.length == bids.length);
@@ -68,7 +100,7 @@ contract BBFreelancerBid is BBFreelancer{
 
       for(uint i = 0; i < jobIDs.length; i++) {
         bytes memory _jobHash = bbs.getBytes(BBLib.toB32(jobIDs[i]));
-        createBid(_jobHash, bids[i], bidTimes[i]);
+        createSingleBid(_jobHash, bids[i], bidTimes[i]);
       }      
   }
   
