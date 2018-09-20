@@ -46,6 +46,6 @@ Welcome to Bigbom Digital Contracts's documentation!
    contracts/BBLib
    contracts/BBStandard
    contracts/BBParams
-   contracts/BBPoll
+   contracts/BBDispute
    contracts/BBVoting
    contracts/AdminUpgradeabilityProxy

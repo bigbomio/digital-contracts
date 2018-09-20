@@ -17,8 +17,7 @@ BBStorage is key-value type storage:
     mapping(bytes32 => int256)     private intStorage;
 ```
 
-Index
-=================
+
   * [Modifiers](#modifiers)
      * [onlyAdminStorage](#onlyadminstorage)
   * [Events](#events)

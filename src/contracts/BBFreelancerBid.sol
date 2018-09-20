@@ -39,7 +39,8 @@ contract BBFreelancerBid is BBFreelancer{
    isNotOwnerJob(jobHash)
    isNotCanceled(jobHash)
    jobNotStarted(jobHash) {
-    
+   // sender should not cancel previous bid yet
+    require( bbs.getBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL')) != true);
     // bid must in range budget
 
     require(bid <= bbs.getUint(BBLib.toB32(jobHash, 'BUDGET' )));

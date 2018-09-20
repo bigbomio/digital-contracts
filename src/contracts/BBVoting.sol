@@ -16,7 +16,7 @@ contract BBVoting is BBStandard{
   event VotingRightsGranted(address indexed voter, uint256 numTokens);
   event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
   event VoteCommitted(address indexed voter, bytes jobHash);
-  event VoteRevealed(address indexed voter, bytes jobHash, bytes32 secretHash, bytes32 cHash);
+  event VoteRevealed(address indexed voter, bytes jobHash, bytes32 secretHash);
   function getPollID(bytes jobHash) private constant returns(uint256 r){
     r = bbs.getUint(BBLib.toB32(jobHash,'POLL_COUNTER'));
   }
@@ -133,7 +133,7 @@ contract BBVoting is BBStandard{
     bbs.setUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',choice), numVote.add(votes));
     // save voter choice
     bbs.setAddress(BBLib.toB32(jobHash, pollId,'CHOICE',msg.sender), choice);
-    emit VoteRevealed(msg.sender, jobHash, secretHash,choiceHash);
+    emit VoteRevealed(msg.sender, jobHash, secretHash);
   }
   /**
   * @dev claimReward for poll
