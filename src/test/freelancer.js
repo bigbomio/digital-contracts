@@ -679,9 +679,12 @@ contract('BBFreelancer Test', async (accounts) => {
     var userB = accounts[1];
     var userC = accounts[2];
     
-    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var expiredTime = parseInt(Date.now() / 1000) + 1 * 24 * 3600; // expired after 1 days
     var timeBid = 3 * 24 * 3600; //3 days
     await job.createJob(jobHashWilcancel + 'bbb', expiredTime, timeBid, 500e18, 'banner', {
+      from: userA
+    });
+    await job.createJob(jobHashWilcancel + 'ccc', expiredTime, timeBid, 500e18, 'banner', {
       from: userA
     });
     let bid = await BBFreelancerBid.at(proxyAddressBid);
@@ -698,9 +701,74 @@ contract('BBFreelancer Test', async (accounts) => {
     await bid.createSingleBid(jobHashWilcancel + 'bbb', 300e18, timeDone, {
       from: userB
     });
+  });
 
+  it("fast forward to  1 day + 1 sec", function () {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("[Fail] createSingleBid job EXPIRED", async () => {
+    var userB = accounts[1];
+   
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 1 * 24 * 3600; //days
+
+    await bid.createSingleBid(jobHashWilcancel + 'ccc', 300e18, timeDone, {
+      from: userB
+    });
+  });
+
+  it("[Fail] createSingleBid job has freelancer", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[1];
+    var userB = accounts[2];
+    var userC = accounts[3];
+    var userD = accounts[4];
+
+    
+    jobHashWilcancel ='sadasqeq';
+    var expiredTime = parseInt(Date.now() / 1000) + 3 * 24 * 3600; // expired after 1 days
+    var timeBid = 3 * 24 * 3600; //3 days
+    await job.createJob(jobHashWilcancel + 'ahihi', expiredTime, timeBid, 500e18, 'banner', {
+      from: userA
+    });
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 1 * 24 * 3600; //days
+
+    await bid.createSingleBid(jobHashWilcancel + 'ahihi', 300e18, timeDone, {
+      from: userB
+    });
+
+    await bid.createSingleBid(jobHashWilcancel + 'ahihi', 300e18, 0, {
+      from: userD
+    });
+
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(bid.address, 0, {
+      from: userA
+    });
+    await bbo.approve(bid.address, Math.pow(2, 255), {
+      from: userA
+    });
+
+    await bid.acceptBid(jobHashWilcancel + 'ahihi', userB, {
+      from: userA
+    });
+
+    
+    await bid.createSingleBid(jobHashWilcancel + 'ahihi', 300e18, timeDone, {
+      from: userC
+    });
+    
 
   });
+
+
 
   it("create bid", async () => {
     var userB = accounts[1];
