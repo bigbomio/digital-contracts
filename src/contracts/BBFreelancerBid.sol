@@ -60,7 +60,7 @@ contract BBFreelancerBid is BBFreelancer{
 
    function createSingleBid(bytes jobHash, uint256 bid, uint bidTime) public {
      //Job owner call
-     if(checkFreelancerOfJob(msg.sender, jobHash)) {
+     if(checkOwnerOfJob(msg.sender, jobHash)) {
        return;
      }
      //Job has not started

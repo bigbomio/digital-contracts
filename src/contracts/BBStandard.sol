@@ -40,8 +40,8 @@ contract BBStandard is Ownable {
       }
   }
 
-  function checkFreelancerOfJob(address sender, bytes jobHash) public returns (bool) {
-      return (bbs.getAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER'))) == sender);
+  function checkOwnerOfJob(address sender, bytes jobHash) public returns (bool) {
+      return (bbs.getAddress(keccak256(jobHash)) == sender);
   }
 
   function checkJobStart(bytes jobHash) public returns (bool) {

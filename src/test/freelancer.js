@@ -768,6 +768,26 @@ contract('BBFreelancer Test', async (accounts) => {
 
   });
 
+  it("[Fail] createSingleBid job Owner bid", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+
+    
+    var expiredTime = parseInt(Date.now() / 1000) + 4 * 24 * 3600; // expired after 1 days
+    var timeBid = 3 * 24 * 3600; //3 days
+    await job.createJob(jobHashWilcancel + 'bbbkl', expiredTime, timeBid, 500e18, 'banner', {
+      from: userA
+    });
+   
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+    var timeDone = 1 * 24 * 3600; //days
+
+    await bid.createSingleBid(jobHashWilcancel + 'bbbkl', 300e18, timeDone, {
+      from: userA
+    });
+
+  });
+
 
 
   it("create bid", async () => {
