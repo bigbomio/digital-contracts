@@ -60,16 +60,16 @@ contract BBFreelancerBid is BBFreelancer{
 
    function createSingleBid(bytes jobHash, uint256 bid, uint bidTime) public {
      //Job owner call
-     if(bbs.getAddress(keccak256(jobHash))==msg.sender) {
+     if(checkFreelancerOfJob(msg.sender, jobHash)) {
        return;
      }
      //Job has not started
-     if(bbs.getUint(keccak256(abi.encodePacked(jobHash, 'STATUS'))) != 0x0) {
+     if(checkJobStart(jobHash)) {
        return;
      }
     
     //sender should not cancel previous bid yet
-    if( bbs.getBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL')) == true) {
+    if(checkJobCancel(msg.sender, jobHash)) {
       return;
     }
     //bid must in range budget
@@ -77,10 +77,10 @@ contract BBFreelancerBid is BBFreelancer{
        return;
     }
     //check job expired
-    if(now > bbs.getUint(BBLib.toB32(jobHash, 'EXPIRED'))) {
+    if(checkJobExpired(jobHash)) {
       return;
     }
-    if(bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER')) != 0x0) {
+    if(checkJobHasFreelancer(jobHash)) {
       return;
     }
     if(bidTime <= 0) {
