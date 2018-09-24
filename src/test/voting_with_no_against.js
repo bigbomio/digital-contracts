@@ -380,33 +380,46 @@ contract('Voting Test 2', async (accounts) => {
       from: userB
     });
 
-    await voting.startPoll(jobHash4 + 'kk', proofHash, {
+    let r = await voting.startPoll(jobHash4 + 'kk', proofHash, {
       from: userB
     });
-
-    let xxxzk = await bbo.balanceOf(userB, {
-      from: userB
+    let jh = jobHash4 + 'kk';
+    var myContract = await new web3.eth.Contract(voting.abi, voting.address, {
+      from: userA, // default from address
+      gasPrice: '20000000000' // default gas price in wei, 20 gwei in this case
     });
 
-    //console.log('bbo balance userB Affter : ',  xxxzk );
+    console.log('PollStarted Event');
 
-    // //return;
-    // var userC = accounts[4];
+    try {
+      await myContract.getPastEvents('PollStarted', {
+        filter: {
+          owner: userB,
+          jobHash: jh
+        }, // filter by owner, category
+        fromBlock: 0, // should use recent number
+        toBlock: 'latest'
+      }, function (error, events) {
+        //TODO
+        if (error) {
+          //console.log('error filter');
+          //console.s.log(error);
+        }
+        // //console.log(JSON.stringify( events)); 
+      }).then(function (events) {
+        console.log(events) // same results as the optional callback above
+      });
 
-    // let votingRight = await BBVoting.at(proxyAddressVoting);
 
-    // await bbo.approve(votingRight.address, 0, {
-    //   from: userC
-    // });
-    // await bbo.approve(votingRight.address, Math.pow(2, 255), {
-    //   from: userC
-    // });
 
-    // await votingRight.requestVotingRights(200e18, {
-    //   from: userC
-    // });
+    } catch (e) {
+      //console.log(e);
+    }
 
+   
   });
+
+
 
   it("fast forward to 24h * 1 after start poll", function () {
     var fastForwardTime = 1 * 24 * 3600 + 1;

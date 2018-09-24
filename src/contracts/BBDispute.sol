@@ -9,9 +9,9 @@ contract BBDispute is BBStandard{
   function setPayment(address p) onlyOwner public  {
     payment = BBFreelancerPayment(p);
   }
-  event PollStarted(bytes jobHash, address indexed creator);
-  event PollAgainsted(bytes jobHash, address indexed creator);
-  event PollFinalized(bytes jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bool isPass);
+  event PollStarted(bytes32 indexed jobHash, address indexed creator);
+  event PollAgainsted(bytes32 indexed jobHash, address indexed creator);
+  event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bool isPass);
 
  
   function canCreatePoll(bytes jobHash) private returns (bool r){
@@ -73,7 +73,7 @@ contract BBDispute is BBStandard{
         assert(payment.finalizeDispute(jobHash));
       }
     }
-    emit PollFinalized(jobHash, jobOwnerVotes, freelancerVotes, isPass);
+    emit PollFinalized(keccak256(jobHash), jobOwnerVotes, freelancerVotes, isPass);
   }
 
   
@@ -143,7 +143,7 @@ contract BBDispute is BBStandard{
     // save creator proofHash
     bbs.setBytes(BBLib.toB32(jobHash, pollId,'CREATOR_PROOF'), proofHash);
 
-    emit PollStarted(jobHash, msg.sender);
+    emit PollStarted(keccak256(jobHash), msg.sender);
   }
   /**
   * @dev againstPoll
@@ -167,7 +167,7 @@ contract BBDispute is BBStandard{
     bbs.setUint(BBLib.toB32(jobHash, pollId,'STAKED_DEPOSIT',msg.sender), bboStake);
 
     bbs.setBytes(BBLib.toB32(jobHash, pollId,'AGAINST_PROOF'), againstProofHash);
-    emit PollAgainsted(jobHash, msg.sender);
+    emit PollAgainsted(keccak256(jobHash), msg.sender);
   }
 
 }
