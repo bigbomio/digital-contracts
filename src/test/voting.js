@@ -414,7 +414,7 @@ contract('Voting Test', async (accounts) => {
       from: userB
     });
     const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
-    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+    assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
   });
   it("against poll", async () => {
     let voting = await BBDispute.at(proxyAddressPoll);
@@ -431,7 +431,7 @@ contract('Voting Test', async (accounts) => {
       from: userA
     });
     const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
-    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+    assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
   });
   it("[Fail] Owner against poll", async () => {
     let voting = await BBDispute.at(proxyAddressPoll);
@@ -487,7 +487,7 @@ contract('Voting Test', async (accounts) => {
 
   });
 
-  it("against poll", async () => {
+  it("against poll ---", async () => {
     let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
@@ -502,7 +502,7 @@ contract('Voting Test', async (accounts) => {
       from: userA
     });
     const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
-    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+    assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
   });
   it("reqest voting rights", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);

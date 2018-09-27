@@ -31,14 +31,14 @@ contract BBParams is BBFreelancer{
   }
 
   function setVotingParams(uint256 minVotes, uint256 maxVotes, uint256 voteQuorum,
-   uint256 stakeDeposit, uint256 eveidenceDuration, uint256 commitDuration, 
+   uint256 stakeDeposit, uint256 evidenceDuration, uint256 commitDuration, 
    uint256 revealDuration, uint256 bboRewards, uint256 stakeVote) onlyAdmin public {
   	require(minVotes > 0);
   	require(maxVotes>0);
     require(maxVotes > minVotes);
   	require(voteQuorum>0);
   	require(stakeDeposit>0);
-  	require(eveidenceDuration>0);
+  	require(evidenceDuration>0);
   	require(commitDuration>0);
   	require(revealDuration>0);
   	require(bboRewards>0);
@@ -48,7 +48,7 @@ contract BBParams is BBFreelancer{
     bbs.setUint(keccak256('MAX_VOTES'), maxVotes);
     bbs.setUint(keccak256('VOTE_QUORUM'), voteQuorum);
     bbs.setUint(keccak256('STAKED_DEPOSIT'), stakeDeposit);
-    bbs.setUint(keccak256('EVIDENCE_DURATION'), eveidenceDuration);
+    bbs.setUint(keccak256('EVIDENCE_DURATION'), evidenceDuration);
     bbs.setUint(keccak256('COMMIT_DURATION'), commitDuration);
     bbs.setUint(keccak256('REVEAL_DURATION'), revealDuration);
     bbs.setUint(keccak256('BBO_REWARDS'), bboRewards);
