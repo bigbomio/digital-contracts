@@ -31,7 +31,7 @@ event PollStarted(bytes jobHash, address indexed creator);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
 | `proofHash`     | proofHash   |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who start the Poll  |
 
@@ -43,7 +43,7 @@ event PollAgainsted(bytes jobHash, address indexed creator);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
 | `proofHash`     | proofHash  |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who against the Poll  |
 
@@ -56,10 +56,9 @@ event PollFinalized(bytes jobHash, uint256 jobOwnerVotes, uint256 freelancerVote
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
 | `jobOwnerVotes`       | uint256       |  number of votes for the hirer of this job  |
 | `freelancerVotes`       | uint256       |  number of votes for the freelancer of this job  |
-| `isPass`       | bool       |  `true`  if the poll is pass the quorum |
 
 
 
@@ -128,7 +127,6 @@ Returns:
 | ------------- |:-------------:| ---------------------------:|
 | `jobOwnerVotes`       | uint256       |  number of votes for the hirer of this job  |
 | `freelancerVotes`       | uint256       |  number of votes for the freelancer of this job  |
-| `isPass`       | bool       |  `true`  if the poll is pass the quorum |
 
 
 ### finalizePoll

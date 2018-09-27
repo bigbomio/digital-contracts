@@ -11,7 +11,7 @@ contract BBDispute is BBStandard{
   }
   event PollStarted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollAgainsted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
-  event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bool isPass);
+  event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes);
 
  
   function canCreatePoll(bytes jobHash) private returns (bool r){
@@ -62,8 +62,8 @@ contract BBDispute is BBStandard{
       require(bbs.getUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'))<=now);
       address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
       address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
-      (uint jobOwnerVotes, uint freelancerVotes, bool isPass) = getPoll(jobHash);
-      if(!isPass){
+      (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
+      if(jobOwnerVotes == freelancerVotes){
         // cancel poll
         bbs.setAddress(BBLib.toB32(jobHash, 'POLL_STARTED'), address(0x0));
         // refun money staked
@@ -80,7 +80,7 @@ contract BBDispute is BBStandard{
         assert(payment.finalizeDispute(jobHash));
       }
     }
-    emit PollFinalized(keccak256(jobHash), jobOwnerVotes, freelancerVotes, isPass);
+    emit PollFinalized(keccak256(jobHash), jobOwnerVotes, freelancerVotes);
   }
 
   
@@ -90,20 +90,13 @@ contract BBDispute is BBStandard{
   * returns uint ownerVotes, uint freelancerVotes, bool isPass quorum
   * 
   */
-  function getPoll(bytes jobHash) public constant returns (uint256, uint256, bool) {
+  function getPoll(bytes jobHash) public constant returns (uint256, uint256) {
     uint256 pollId = getPollID(jobHash);
     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
     address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
     uint jobOwnerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',jobOwner));
-    uint freelancerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',freelancer));
-    uint voteQuorum = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_QUORUM'));
-    bool isPass = false;
-    if(jobOwnerVotes>freelancerVotes){
-      isPass = (jobOwnerVotes*100)>voteQuorum*(jobOwnerVotes+freelancerVotes);
-    }else{
-      isPass = (freelancerVotes*100)>voteQuorum*(jobOwnerVotes+freelancerVotes);
-    }
-    return (jobOwnerVotes, freelancerVotes, isPass);
+    uint freelancerVotes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',freelancer));    
+    return (jobOwnerVotes, freelancerVotes);
   }
   /**
   * @dev startPoll
