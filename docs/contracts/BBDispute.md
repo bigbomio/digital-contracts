@@ -32,6 +32,7 @@ event PollStarted(bytes jobHash, address indexed creator);
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `proofHash`     | proofHash   |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who start the Poll  |
 
 ### PollAgainsted
@@ -43,6 +44,7 @@ event PollAgainsted(bytes jobHash, address indexed creator);
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `proofHash`     | proofHash  |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who against the Poll  |
 
 
