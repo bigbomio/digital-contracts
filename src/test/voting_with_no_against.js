@@ -62,20 +62,20 @@ contract('Voting Test 2', async (accounts) => {
   it("initialize contract 2", async () => {
 
     // var filesrs = await ipfs.files.add(files);
-    // //console.log('filesrs', filesrs);
+    
 
     // jobHash = filesrs[0].hash;
     erc20 = await BBOTest.new({
       from: accounts[0]
     });
     bboAddress = erc20.address;
-    //console.log('jobHash', jobHash);
+    
     // create storage
-    //console.log('bboAddress', bboAddress);
+    
     let storage = await BBStorage.new({
       from: accounts[0]
     });
-    //console.log('storage address', storage.address);
+    
     storageAddress = storage.address;
     // create bb contract
     let jobInstance = await BBFreelancerJob.new({
@@ -109,37 +109,37 @@ contract('Voting Test 2', async (accounts) => {
       from: accounts[0]
     });
     proxyAddressJob = logs.find(l => l.event === 'ProxyCreated').args.proxy
-    //console.log('proxyAddressJob', proxyAddressJob)
+    
 
     const l2 = await proxyFact.createProxy(accounts[8], bidInstance.address, {
       from: accounts[0]
     });
     proxyAddressBid = l2.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    //console.log('proxyAddressBid', proxyAddressBid)
+    
 
     const l3 = await proxyFact.createProxy(accounts[8], paymentInstance.address, {
       from: accounts[0]
     });
     proxyAddressPayment = l3.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    //console.log('proxyAddressPayment', proxyAddressPayment)
+    
 
     const l4 = await proxyFact.createProxy(accounts[8], votingInstance.address, {
       from: accounts[0]
     });
     proxyAddressVoting = l4.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    //console.log('proxyAddressVoting', proxyAddressVoting)
+    
 
     const l5 = await proxyFact.createProxy(accounts[8], paramsInstance.address, {
       from: accounts[0]
     });
     proxyAddressParams = l5.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    //console.log('proxyAddressParams', proxyAddressParams)
+    
 
     const l6 = await proxyFact.createProxy(accounts[8], votingRewardInstance.address, {
       from: accounts[0]
     });
     proxyAddressPoll = l6.logs.find(l => l.event === 'ProxyCreated').args.proxy
-    //console.log('proxyAddressPoll', proxyAddressPoll)
+    
 
 
     // set admin to storage
@@ -166,7 +166,7 @@ contract('Voting Test 2', async (accounts) => {
       from: accounts[0]
     });
 
-    //console.log('done storage')
+    
     let bbo = await BBOTest.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
@@ -183,7 +183,7 @@ contract('Voting Test 2', async (accounts) => {
     await bbo.transfer(accounts[5], 900e18, {
       from: accounts[0]
     });
-    //console.log('bbo: ', bbo.address);
+    
 
 
 
@@ -270,7 +270,7 @@ contract('Voting Test 2', async (accounts) => {
   it("set params", async () => {
     let params = await BBParams.at(proxyAddressParams);
     await params.addAdmin(accounts[0], true);
-    await params.setVotingParams(100e18, 1000000e18, 60, 300e18, 24 * 60 * 60, 24 * 60 * 60,
+    await params.setVotingParams(100e18, 1000000e18, 300e18, 24 * 60 * 60, 24 * 60 * 60,
       24 * 60 * 60, 10e18,  {
         from: accounts[0]
       });
@@ -283,12 +283,12 @@ contract('Voting Test 2', async (accounts) => {
     let re = await params.getVotingParams({
       from: accounts[0]
     });
-    ////console.log(re);
+    
   });
 
   it("set setFreelancerParams", async () => {
     let params = await BBParams.at(proxyAddressParams);
-    await params.setFreelancerParams(24 * 60 * 60, {
+    await params.setFreelancerParams(24 * 60 * 60,24 * 60 * 60,  {
       from: accounts[0]
     });
     return true;
@@ -299,7 +299,7 @@ contract('Voting Test 2', async (accounts) => {
     let re = await params.getFreelancerParams({
       from: accounts[0]
     });
-    ////console.log(re);
+    
   });
 
 
@@ -315,17 +315,17 @@ contract('Voting Test 2', async (accounts) => {
     await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
-
+    
     let bbo = await BBOTest.at(bboAddress);
     let xxx = await bbo.balanceOf(userA, {
       from: userA
     });
 
     let bl = await getBalance(bbo, userB);
-    console.log('bbo balance userB before dispute: ', bl);
+    
 
     let bbl = await getBalance(bbo, userA);
-    console.log('bbo balance userA before dispute: ', bbl);
+    
 
     
     var userB = accounts[2];
@@ -365,8 +365,8 @@ contract('Voting Test 2', async (accounts) => {
       from: userB
     });
 
-    //console.log('bbo balance userA Affter : ',  xxxy );
-    //console.log('bbo balance userB Before : ',  xxxz );
+    
+    
 
 
 
@@ -389,7 +389,7 @@ contract('Voting Test 2', async (accounts) => {
       gasPrice: '20000000000' // default gas price in wei, 20 gwei in this case
     });
 
-    console.log('PollStarted Event');
+    
 
     try {
       await myContract.getPastEvents('PollStarted', {
@@ -402,18 +402,18 @@ contract('Voting Test 2', async (accounts) => {
       }, function (error, events) {
         //TODO
         if (error) {
-          //console.log('error filter');
+          
           //console.s.log(error);
         }
-        // //console.log(JSON.stringify( events)); 
+        
       }).then(function (events) {
-        console.log(events) // same results as the optional callback above
+        
       });
 
 
 
     } catch (e) {
-      //console.log(e);
+      
     }
 
    
@@ -445,11 +445,11 @@ contract('Voting Test 2', async (accounts) => {
       from: userD
     });
 
-    console.log('commit OK');
+    
 
   } catch(e) {
 
-    console.log('commit FAIL');
+    
 
 
     return true;
@@ -483,8 +483,8 @@ contract('Voting Test 2', async (accounts) => {
 
       let blv = await getBalance(bbo, userA);
       let bl = await getBalance(bbo, userB);
-      console.log('bbo balance userB before finalizePoll: ', bl);
-      console.log('bbo balance userA before finalizePoll: ', blv);
+      
+      
 
 
       let votingRight = await BBDispute.at(proxyAddressPoll);
@@ -498,16 +498,16 @@ contract('Voting Test 2', async (accounts) => {
       });
 
       let blc = await getBalance(bbo, userA);
-      console.log('bbo balance userB after finalizePoll: ', xxx);
-      console.log('bbo balance userA after finalizePoll: ', blc);
+      
+      
 
 
-      console.log('UserA finalizePoll OK ');
+      
 
       return false;
     } catch (e) {
-      console.log('UserA finalizePoll FAIL');
-      //console.log(e);
+      
+      
       return true;
     }
 
@@ -524,11 +524,11 @@ contract('Voting Test 2', async (accounts) => {
       let info_ = await votingRight.getPoll(jobHash4 + 'kk', {
         from: userB
       });
-      //console.log(JSON.stringify( info_ ));
+      
       let bbo = await BBOTest.at(bboAddress);
 
       let bl = await getBalance(bbo, userB);
-      console.log('bbo balance userB before finalizePoll: ', bl);
+      
 
 
       //claimReward
@@ -540,13 +540,13 @@ contract('Voting Test 2', async (accounts) => {
         from: userB
       });
 
-      console.log('bbo balance userB after finalizePoll: ', xxx);
-      //console.log('OKKKKKKKKKKK');
+      
+      
 
       return true;
     } catch (e) {
-      //console.log('LOIiiiiiiiiiiiiiiiiiiiii');
-      //console.log(e);
+      
+      
       return false;
     }
 
@@ -565,12 +565,12 @@ contract('Voting Test 2', async (accounts) => {
       });
 
 
-      console.log('userB finalizePoll agian OK ');
+      
 
       return false;
     } catch (e) {
-      console.log('userB finalizePoll again FAIL');
-      //console.log(e);
+      
+      
       return true;
     }
 
