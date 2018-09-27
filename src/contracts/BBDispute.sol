@@ -12,7 +12,8 @@ contract BBDispute is BBStandard{
   event PollStarted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollAgainsted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes);
-
+  event PollWhiteFlaged(bytes32 indexed jobHash);
+  event PollExtended(bytes32 indexed jobHash);
  
   function canCreatePoll(bytes jobHash) private returns (bool r){
     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
@@ -142,7 +143,6 @@ contract BBDispute is BBStandard{
     bbs.setUint(BBLib.toB32(jobHash, pollId,'EVEIDENCE_ENDDATE'), evidenceEndDate);
     bbs.setUint(BBLib.toB32(jobHash, pollId,'COMMIT_ENDDATE'), commitEndDate);
     bbs.setUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'), revealEndDate);
-    bbs.setUint(BBLib.toB32(jobHash, pollId,'VOTE_QUORUM'),bbs.getUint(keccak256('VOTE_QUORUM')) );
     // save creator proofHash
     bbs.setBytes(BBLib.toB32(jobHash, pollId,'CREATOR_PROOF'), proofHash);
 
@@ -171,6 +171,50 @@ contract BBDispute is BBStandard{
 
     bbs.setBytes(BBLib.toB32(jobHash, pollId,'AGAINST_PROOF'), againstProofHash);
     emit PollAgainsted(keccak256(jobHash), againstProofHash, msg.sender);
+  }
+
+  function whiteflagPoll(bytes jobHash) public{
+    uint256 pollId = getPollID(jobHash);
+    require(canCreatePoll(jobHash)==true);
+    require(isDisputingJob(jobHash)==true);
+    (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
+    require(jobOwnerVotes==0);
+    require(freelancerVotes==0);
+    address creator = bbs.getAddress(BBLib.toB32(jobHash, 'POLL_STARTED'));
+    require(creator!=address(0x0));
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
+    address winner = (msg.sender==jobOwner)?freelancer:jobOwner;
+    bbs.setAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'), winner);
+    uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId,'STAKED_DEPOSIT',creator));
+    //refun money staked for winner
+    require(bbo.transfer(winner, bboStake));
+    // cal finalizePayment
+    assert(payment.finalizeDispute(jobHash));
+    emit PollWhiteFlaged(keccak256(jobHash));
+  }
+
+  function extendPoll(bytes jobHash) public{
+    require(canCreatePoll(jobHash)==true);
+    require(isDisputingJob(jobHash)==true);
+    (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
+    require(jobOwnerVotes==0);
+    require(freelancerVotes==0);
+    
+    uint256 pollId = getPollID(jobHash);
+    uint commitDuration = bbs.getUint(keccak256('COMMIT_DURATION'));
+    require(commitDuration > 0);
+    uint revealDuration = bbs.getUint(keccak256('REVEAL_DURATION'));
+    require(revealDuration > 0);
+    // commitEndDate
+    uint commitEndDate = block.timestamp.add(commitDuration);
+    // revealEndDate
+    uint revealEndDate = commitEndDate.add(revealDuration);
+
+    bbs.setUint(BBLib.toB32(jobHash, pollId,'COMMIT_ENDDATE'), commitEndDate);
+    bbs.setUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'), revealEndDate);
+
+    emit PollExtended(keccak256(jobHash));
   }
 
 }
