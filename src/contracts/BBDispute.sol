@@ -24,6 +24,11 @@ contract BBDispute is BBStandard{
     address winner = bbs.getAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER'));
     return(jobStatus == 4 && winner==address(0x0));
   }
+  function isDisputingJob(bytes jobHash) private returns(bool){
+    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'STATUS'));
+    address winner = bbs.getAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER'));
+    return(jobStatus == 6 && winner==address(0x0));
+  }
   function isAgaintsPoll(bytes jobHash) public constant returns(bool){
     return BBLib.toB32(bbs.getBytes(BBLib.toB32(jobHash, getPollID(jobHash),'AGAINST_PROOF')))!=BBLib.toB32("");
   }
@@ -64,6 +69,8 @@ contract BBDispute is BBStandard{
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
+        // status to 4
+        bbs.setUint(BBLib.toB32(jobHash, 'STATUS'), 4);
         //TODO reset POLL
       }else{
         bbs.setAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
@@ -127,6 +134,9 @@ contract BBDispute is BBStandard{
     // require sender must staked 
     uint256 bboStake = bbs.getUint(keccak256('STAKED_DEPOSIT'));
     require(bbo.transferFrom(msg.sender, address(this), bboStake));
+    //set status to 6
+
+    bbs.setUint(BBLib.toB32(jobHash ,'STATUS'), 6);
     // save staked tokens
     // incres pollId
     pollId = pollId.add(1);
@@ -155,7 +165,7 @@ contract BBDispute is BBStandard{
   {
     uint256 pollId = getPollID(jobHash);
     require(canCreatePoll(jobHash)==true);
-    require(isDisputeJob(jobHash)==true);
+    require(isDisputingJob(jobHash)==true);
 
     address creator = bbs.getAddress(BBLib.toB32(jobHash, 'POLL_STARTED'));
     require(creator!=0x0);

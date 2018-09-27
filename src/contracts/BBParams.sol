@@ -23,6 +23,7 @@ contract BBParams is BBFreelancer{
 
   function setFreelancerParams(uint256 paymentLimitTimestamp, uint256 rejectedPaymentLimitTimestamp) onlyAdmin public {
   	require(paymentLimitTimestamp > 0);
+    require(rejectedPaymentLimitTimestamp > 0);
     bbs.setUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'), paymentLimitTimestamp);
     bbs.setUint(keccak256('REJECTED_PAYMENT_LIMIT_TIMESTAMP'), rejectedPaymentLimitTimestamp);
   
