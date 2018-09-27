@@ -39,4 +39,25 @@ contract BBStandard is Ownable {
           require( anyToken.transfer(owner, anyToken.balanceOf(this)) );
       }
   }
+
+  function checkOwnerOfJob(address sender, bytes jobHash) public returns (bool) {
+      return (bbs.getAddress(keccak256(jobHash)) == sender);
+  }
+
+  function checkJobStart(bytes jobHash) public returns (bool) {
+      return (bbs.getUint(keccak256(abi.encodePacked(jobHash, 'STATUS'))) != 0x0);
+  }
+
+  function checkJobCancel(address sender ,bytes jobHash) public returns (bool) {
+      return bbs.getBool(keccak256(abi.encodePacked(jobHash, sender, 'CANCEL')));
+  }
+
+  function checkJobExpired(bytes jobHash) public returns (bool) {
+      return (now > bbs.getUint(keccak256(abi.encodePacked(jobHash, 'EXPIRED'))));
+  }
+
+   function checkJobHasFreelancer(bytes jobHash) public returns (bool) {
+      return (bbs.getAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER'))) != 0x0);
+  }
+
 }

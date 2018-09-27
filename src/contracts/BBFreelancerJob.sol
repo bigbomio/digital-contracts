@@ -22,7 +22,7 @@ contract BBFreelancerJob is BBFreelancer {
     payment = BBFreelancerPayment(paymentAddress);
   }
 
-  event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
+  event JobCreated(bytes jobHash, uint256 jobID, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
   event JobCanceled(bytes jobHash);
   event JobStarted(bytes jobHash);
   event JobFinished(bytes jobHash);
@@ -67,13 +67,16 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setAddress(keccak256(jobHash), msg.sender);
     // save expired timestamp
     bbs.setUint(BBLib.toB32(jobHash, 'EXPIRED'), expired);
-
+    //Save jobHash by jobID
+    uint256 jobID = BBLib.bytesToUint(jobHash);
+    //bbs.setUint(BBLib.toB32(jobHash, 'JOB_ID'),jobID);
+    bbs.setBytes(BBLib.toB32(jobID), jobHash);
     // save time freelancer can done this job
     bbs.setUint(BBLib.toB32(jobHash, 'ESTIMATE_TIME'), estimateTime);
     // save budget 
     bbs.setUint(BBLib.toB32(jobHash, 'BUDGET'), budget);
  
-    emit JobCreated(jobHash, msg.sender, expired, category, budget, estimateTime);
+    emit JobCreated(jobHash, jobID, msg.sender, expired, category, budget, estimateTime);
   }
     // hirer  cancel job
   /**
