@@ -52,13 +52,13 @@ event PaymentAccepted(bytes jobHash, address indexed sender);
 Event for loging payment rejected.
 
 ---
-event PaymentRejected(bytes jobHash, address indexed sender);
+event PaymentRejected(bytes jobHash, address indexed sender, uint reason);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 | `sender`       | address       |  user call reject payment  |
-
+| `reason`       | uint       |  reason for rejection  |
 
 
 ### DisputeFinalized
@@ -91,12 +91,13 @@ Modifiers: `isOwnerJob`
 Hirer reject the payment when the freelancer done the job
 
 ---
-function rejectPayment(bytes jobHash) public 
+function rejectPayment(bytes jobHash, uint reason) public 
   isOwnerJob(jobHash)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `reason`       | uint       |  reason for rejection  |
 
 Modifiers: `isOwnerJob`
 
