@@ -377,6 +377,7 @@ contract('BBFreelancer Test', async (accounts) => {
       var jobLog = await job.createJob(jobHash + 'z', expiredTime, timeBid, 500e18, 'banner', {
         from: userA
       });
+      console.log(JSON.stringify(jobLog.logs));
       var jobLog1 = await job.startJob(jobHash + 'z', {
         from: userB
       });

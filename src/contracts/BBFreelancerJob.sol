@@ -68,8 +68,10 @@ contract BBFreelancerJob is BBFreelancer {
     // save expired timestamp
     bbs.setUint(BBLib.toB32(jobHash, 'EXPIRED'), expired);
     //Save jobHash by jobID
-    uint256 jobID = BBLib.bytesToUint(jobHash);
-    //bbs.setUint(BBLib.toB32(jobHash, 'JOB_ID'),jobID);
+    uint256 jobID = bbs.getUint(BBLib.toB32('JOB_ID'));
+    jobID++;
+    bbs.setUint(BBLib.toB32('JOB_ID'),jobID);
+
     bbs.setBytes(BBLib.toB32(jobID), jobHash);
     // save time freelancer can done this job
     bbs.setUint(BBLib.toB32(jobHash, 'ESTIMATE_TIME'), estimateTime);
@@ -111,6 +113,9 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 1);
     //Begin set time start job
     bbs.setUint(BBLib.toB32(jobHash,'JOB_STARTED_TIMESTAMP'), now);
+    //Make sure client and freelancer have interacted
+    bbs.setBool(keccak256(abi.encodePacked(bbs.getAddress(keccak256(jobHash)),msg.sender)), true);
+
     emit JobStarted(jobHash);
   }
   // freelancer finish Job
