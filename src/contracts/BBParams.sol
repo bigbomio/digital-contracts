@@ -21,13 +21,14 @@ contract BBParams is BBFreelancer{
     isAdm = admins[admin];
   }
 
-  function setFreelancerParams(uint256 paymentLimitTimestamp) onlyAdmin public {
+  function setFreelancerParams(uint256 paymentLimitTimestamp, uint256 rejectedPaymentLimitTimestamp) onlyAdmin public {
   	require(paymentLimitTimestamp > 0);
     bbs.setUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'), paymentLimitTimestamp);
+    bbs.setUint(keccak256('REJECTED_PAYMENT_LIMIT_TIMESTAMP'), rejectedPaymentLimitTimestamp);
   
   }
-  function getFreelancerParams() public view returns(uint256){
-  	return (bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP')));
+  function getFreelancerParams() public view returns(uint256, uint256){
+  	return (bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP')), bbs.getUint(keccak256('REJECTED_PAYMENT_LIMIT_TIMESTAMP')));
   }
 
   function setVotingParams(uint256 minVotes, uint256 maxVotes, uint256 voteQuorum,
