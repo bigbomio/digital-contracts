@@ -338,9 +338,10 @@ contract('Voting Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
+    let xxx = await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
+    console.log(JSON.stringify(xxx.logs));
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
 
