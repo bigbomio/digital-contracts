@@ -8,9 +8,9 @@ module.exports = async function(deployer) {
 
    if(deployer.network_id == 3){
 
-     proxyAddressJob = '0x62aa93f9dffec25daf9d2955d468194e996e8c87';
-     proxyAddressBid = '0x0ff11890ef301dfd0fb37e423930b391836c69c9';
-     proxyAddressPayment = '0x7b7e6f2b02a48bd24b5b1554fafff5f70547ab0a';
+     proxyAddressJob = '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec';
+     proxyAddressBid = '0x39abc4386a817b5d8a4b008e022b446637e2a1eb';
+     proxyAddressPayment = '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f';
       // create bb contract
      let jobInstance = await BBFreelancerJob.deployed();
      let bidInstance = await BBFreelancerBid.deployed();
