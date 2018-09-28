@@ -365,10 +365,6 @@ contract('Voting Test 2', async (accounts) => {
       from: userB
     });
 
-    
-    
-
-
 
     let voting = await BBDispute.at(proxyAddressPoll);
     let proofHash = 'proofHashxxkk';
@@ -380,41 +376,42 @@ contract('Voting Test 2', async (accounts) => {
       from: userB
     });
 
-    let r = await voting.startPoll(jobHash4 + 'kk', proofHash, {
+    let l = await voting.startPoll(jobHash4 + 'kk', proofHash, {
       from: userB
     });
-    let jh = jobHash4 + 'kk';
-    var myContract = await new web3.eth.Contract(voting.abi, voting.address, {
-      from: userA, // default from address
-      gasPrice: '20000000000' // default gas price in wei, 20 gwei in this case
-    });
+
+    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
+    assert.equal(web3.utils.sha3(jobHash4 + 'kk'), jobHashRs);
+    // let jh = jobHash4 + 'kk';
+    // var myContract = await new web3.eth.Contract(voting.abi, voting.address, {
+    //   from: userA, // default from address
+    //   gasPrice: '20000000000' // default gas price in wei, 20 gwei in this case
+    // });
 
     
 
-    try {
-      await myContract.getPastEvents('PollStarted', {
-        filter: {
-          owner: userB,
-          jobHash: jh
-        }, // filter by owner, category
-        fromBlock: 0, // should use recent number
-        toBlock: 'latest'
-      }, function (error, events) {
-        //TODO
-        if (error) {
+    // try {
+    //   await myContract.getPastEvents('PollStarted', {
+    //     filter: {
+    //       owner: userB,
+    //       jobHash: jh
+    //     }, // filter by owner, category
+    //     fromBlock: 0, // should use recent number
+    //     toBlock: 'latest'
+    //   }, function (error, events) {
+    //     //TODO
+    //     if (error) {
           
-          //console.s.log(error);
-        }
+    //       //console.s.log(error);
+    //     }
         
-      }).then(function (events) {
+    //   }).then(function (events) {
         
-      });
+    //   });
 
-
-
-    } catch (e) {
+    // } catch (e) {
       
-    }
+    // }
 
    
   });
@@ -445,13 +442,9 @@ contract('Voting Test 2', async (accounts) => {
       from: userD
     });
 
-    
-
+    return false;
   } catch(e) {
-
-    
-
-
+  
     return true;
   }
    
@@ -473,50 +466,8 @@ contract('Voting Test 2', async (accounts) => {
     });
   }
 
-  it("[Fail] UserA finalizePoll", async () => {
-    try {
-
-      var userA = accounts[0];
-      var userB = accounts[2];
-
-      let bbo = await BBOTest.at(bboAddress);
-
-      let blv = await getBalance(bbo, userA);
-      let bl = await getBalance(bbo, userB);
-      
-      
-
-
-      let votingRight = await BBDispute.at(proxyAddressPoll);
-
-
-      await votingRight.finalizePoll(jobHash4 + 'kk', {
-        from: userA
-      });
-      let xxx = await bbo.balanceOf(userB, {
-        from: userB
-      });
-
-      let blc = await getBalance(bbo, userA);
-      
-      
-
-
-      
-
-      return false;
-    } catch (e) {
-      
-      
-      return true;
-    }
-
-  });
-
-
   it("finalizePoll", async () => {
-    try {
-
+  
       var userB = accounts[2];
 
       let votingRight = await BBDispute.at(proxyAddressPoll);
@@ -524,31 +475,26 @@ contract('Voting Test 2', async (accounts) => {
       let info_ = await votingRight.getPoll(jobHash4 + 'kk', {
         from: userB
       });
-      
+
+          
       let bbo = await BBOTest.at(bboAddress);
 
       let bl = await getBalance(bbo, userB);
-      
 
+      let isAgian = await votingRight.isAgaintsPoll(jobHash4 + 'kk', {
+        from: userB
+      });
 
+     
       //claimReward
       await votingRight.finalizePoll(jobHash4 + 'kk', {
         from: userB
       });
-
       let xxx = await bbo.balanceOf(userB, {
         from: userB
       });
 
-      
-      
-
-      return true;
-    } catch (e) {
-      
-      
-      return false;
-    }
+      assert(bl.c[0] < xxx.c[0]);
 
   });
 
@@ -563,9 +509,6 @@ contract('Voting Test 2', async (accounts) => {
       await votingRight.finalizePoll(jobHash4 + 'kk', {
         from: userB
       });
-
-
-      
 
       return false;
     } catch (e) {
