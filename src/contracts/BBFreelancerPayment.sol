@@ -87,7 +87,7 @@ contract BBFreelancerPayment is BBFreelancer{
             return bbo.transfer(owner, lastDeposit);
           }
       } else {
-        address freelancer = bbs.getAddress(keccak256(jobHash, 'FREELANCER'));
+        address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
         uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
         require(bid > 0);
         require(lastDeposit > bid);

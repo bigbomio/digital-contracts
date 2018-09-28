@@ -42,5 +42,20 @@ contract BBFreelancer is BBStandard{
     _;
   }
   
+  function isOwnerOfJob(address sender, bytes jobHash) public view returns (bool) {
+      return (bbs.getAddress(keccak256(jobHash)) == sender);
+  }
+  function isJobStart(bytes jobHash) public view returns (bool) {
+      return (bbs.getUint(keccak256(abi.encodePacked(jobHash, 'STATUS'))) != 0x0);
+  }
+  function isJobCancel(address sender ,bytes jobHash) public view returns (bool) {
+      return bbs.getBool(keccak256(abi.encodePacked(jobHash, sender, 'CANCEL')));
+  }
+  function isJobExpired(bytes jobHash) public view returns (bool) {
+      return (now > bbs.getUint(keccak256(abi.encodePacked(jobHash, 'EXPIRED'))));
+  }
+  function isJobHasFreelancer(bytes jobHash) public view returns (bool) {
+      return (bbs.getAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER'))) != 0x0);
+  }
   
 }
