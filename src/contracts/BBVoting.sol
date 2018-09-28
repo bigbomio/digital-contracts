@@ -20,9 +20,9 @@ contract BBVoting is BBStandard{
   function getPollID(bytes jobHash) private constant returns(uint256 r){
     r = bbs.getUint(BBLib.toB32(jobHash,'POLL_COUNTER'));
   }
-  modifier isDisputeJob(bytes jobHash){
+  modifier isDisputingJob(bytes jobHash){
     uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
-    require(jobStatus == 4);
+    require(jobStatus == 6);
     require(bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'))==address(0x0));
     _;
   }
@@ -70,7 +70,7 @@ contract BBVoting is BBStandard{
    * @param secretHash Hash of Choice address and salt uint
    */
   function commitVote(bytes jobHash, bytes32 secretHash, uint256 tokens) public 
-  isDisputeJob(jobHash)
+  isDisputingJob(jobHash)
   {
     uint256 pollId = getPollID(jobHash);
     uint256 minVotes = bbs.getUint(keccak256('MIN_VOTES'));
@@ -113,7 +113,7 @@ contract BBVoting is BBStandard{
   * @param salt salt
   */
   function revealVote(bytes jobHash, address choice, uint salt) public 
-  isDisputeJob(jobHash)
+  isDisputingJob(jobHash)
   {
     uint256 pollId = getPollID(jobHash);
     require(isAgaintsPoll(jobHash)==true);
