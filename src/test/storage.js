@@ -77,10 +77,10 @@ contract('BBStorage Test', async (accounts) => {
     try {
 
       await storage.addAdmin(accounts[0], false);  
-      console.log('Can remove self');
+
     return false;
   } catch (e) {
-    //console.log('Can not remove self');
+    
     return true;
   }
    });
@@ -107,7 +107,7 @@ contract('BBStorage Test', async (accounts) => {
     return false;
  
   } catch (e) {
-    //console.log('FAILSEEEEE');
+    
     return true;
   }});
 })
