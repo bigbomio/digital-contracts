@@ -4,7 +4,7 @@ contract('BBStorage Test', async (accounts) => {
   it("init", async() => {
    let storage = await BBStorage.new({from: accounts[0]});
    storageAddress = storage.address;
-   await storage.addAdmin(accounts[1], {from: accounts[0]} );
+   await storage.addAdmin(accounts[1], true, {from: accounts[0]} );
   });
   it("get/set value", async() => {
    let storage = await BBStorage.at(storageAddress);
@@ -66,8 +66,8 @@ contract('BBStorage Test', async (accounts) => {
   });
   it("add/remove admin", async() => {
    let storage = await BBStorage.at(storageAddress);
-   await storage.addAdmin(accounts[2]);
-   await storage.removeAdmin(accounts[2]);
+   await storage.addAdmin(accounts[2], true);
+   await storage.addAdmin(accounts[2], false);
   });
 
 
@@ -75,11 +75,12 @@ contract('BBStorage Test', async (accounts) => {
    it("remove self", async() => {
     let storage = await BBStorage.at(storageAddress);
     try {
-      await storage.removeAdmin(accounts[0]);  
+
+      await storage.addAdmin(accounts[0], false);  
       console.log('Can remove self');
     return false;
   } catch (e) {
-    console.log('Can not remove self');
+    //console.log('Can not remove self');
     return true;
   }
    });
@@ -87,8 +88,8 @@ contract('BBStorage Test', async (accounts) => {
    it("add double admin", async() => {
     try {
     let storage = await BBStorage.at(storageAddress);
-    await storage.addAdmin(accounts[2]);
-    await storage.addAdmin(accounts[2]);
+    await storage.addAdmin(accounts[2], true);
+    await storage.addAdmin(accounts[2], true);
     return false;
  
   } catch (e) {
@@ -99,14 +100,14 @@ contract('BBStorage Test', async (accounts) => {
   it("remove double admin", async() => {
     try {
     let storage = await BBStorage.at(storageAddress);
-    await storage.addAdmin(accounts[2]);
-    await storage.removeAdmin(accounts[0]);
-    await storage.removeAdmin(accounts[2]);
-    console.log('OKKKK');
+
+    await storage.addAdmin(accounts[2], true);
+    await storage.addAdmin(accounts[0], false);
+    await storage.addAdmin(accounts[2], false);
     return false;
  
   } catch (e) {
-    console.log('FAILSEEEEE');
+    //console.log('FAILSEEEEE');
     return true;
   }});
 })
