@@ -97,7 +97,7 @@ contract BBFreelancerJob is BBFreelancer {
       require(now > timeStartJob + bidTime);
     }
     bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
-    payment.refundBBO(jobHash);
+    require(payment.refundBBO(jobHash));
     emit JobCanceled(jobHash);
   }
   // freelancer start Job

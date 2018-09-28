@@ -110,8 +110,9 @@ contract BBDispute is BBStandard{
     require(isDisputeJob(jobHash)==true);
     require(canCreatePoll(jobHash)==true);
     require(bbs.getAddress(BBLib.toB32(jobHash, 'POLL_STARTED'))==address(0x0));
-    
-
+    return doStartPoll(jobHash, proofHash);
+  }
+  function doStartPoll(bytes jobHash, bytes proofHash) internal {
     uint256 pID = getPollID(jobHash);
     uint evidenceDuration = bbs.getUint(BBLib.toB32('EVIDENCE_DURATION'));
     require(evidenceDuration > 0);
@@ -125,6 +126,7 @@ contract BBDispute is BBStandard{
     uint commitEndDate = evidenceEndDate.add(commitDuration);
     // revealEndDate
     uint revealEndDate = commitEndDate.add(revealDuration);
+    
     // require sender must staked 
     uint256 bboStake = bbs.getUint(BBLib.toB32('STAKED_DEPOSIT'));
     require(bbo.transferFrom(msg.sender, address(this), bboStake));
@@ -163,6 +165,10 @@ contract BBDispute is BBStandard{
     require(creator!=0x0);
     require(creator!=msg.sender);
     require(bbs.getUint(BBLib.toB32(jobHash, pID,'EVEIDENCE_ENDDATE')) > now);
+    return doAgainstPoll(jobHash, againstProofHash, pID, creator);
+  }
+  function doAgainstPoll(bytes jobHash, bytes againstProofHash, uint256 pID, address creator) internal 
+  {
     // require sender must staked bbo equal the creator
     uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pID,'STAKED_DEPOSIT',creator));
     require(bbo.transferFrom(msg.sender, address(this), bboStake));
@@ -170,7 +176,7 @@ contract BBDispute is BBStandard{
 
     bbs.setBytes(BBLib.toB32(jobHash, pID,'AGAINST_PROOF'), againstProofHash);
     emit PollAgainsted(BBLib.toB32(jobHash), againstProofHash, msg.sender);
-  }
+  } 
 
   function whiteflagPoll(bytes jobHash) public{
     uint256 pID = getPollID(jobHash);

@@ -142,7 +142,11 @@ contract BBFreelancerBid is BBFreelancer{
     uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
     require(bid > 0);
     require(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) !=true);
+    return doAcceptBid(jobHash, freelancer, bid);
     
+  }
+
+  function doAcceptBid(bytes jobHash, address freelancer, uint256 bid) internal {
     uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'));
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), freelancer);
