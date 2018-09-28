@@ -54,15 +54,23 @@ contract BBFreelancerPayment is BBFreelancer{
    * @dev 
    * @param jobHash Job Hash
    */
-  function claimePayment(bytes jobHash) public isFreelancerOfJob(jobHash)
+  function claimePayment(bytes jobHash) public
   {
-    require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 2);
-    uint256 finishDate = bbs.getUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'));
-    uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
-    require((finishDate+paymentLimitTimestamp) <= now );
-    //require((finishDate+(14*24*3600)) < now );
+    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
+    address jobOwner = bbs.getAddress(keccak256(jobHash));
+    require(msg.sender == freelancer || msg.sender == jobOwner);
+    if(msg.sender == freelancer){
+      require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 2);
+      uint256 finishDate = bbs.getUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'));
+      uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
+      require((finishDate+paymentLimitTimestamp) <= now );
+    }else{
+      require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 4);
+      uint256 rejectedEndTimestamp = bbs.getUint(BBLib.toB32(jobHash,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'));
+      require(rejectedEndTimestamp <= now );
+    }
     bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 5);
-    uint256 bid = bbs.getUint(BBLib.toB32(jobHash,msg.sender));
+    uint256 bid = bbs.getUint(BBLib.toB32(jobHash,freelancer));
     require(bbo.transfer(msg.sender, bid));
     emit PaymentClaimed(keccak256(jobHash), msg.sender);
   }
