@@ -85,7 +85,8 @@ contract BBFreelancerPayment is BBFreelancer{
           bbs.setUint(BBLib.toB32(jobHash, owner,'DEPOSIT'), 0);
           if(lastDeposit > 0) {
             return bbo.transfer(owner, lastDeposit);
-          }
+          }else
+            return true;
       } else {
         address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
         uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
