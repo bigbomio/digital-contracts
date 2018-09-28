@@ -12,7 +12,7 @@ contract BBDispute is BBStandard{
   event PollStarted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollAgainsted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes);
-  event PollWhiteFlaged(bytes32 indexed jobHash);
+  event PollWhiteFlaged(bytes32 indexed jobHash, address indexed creator);
   event PollExtended(bytes32 indexed jobHash);
  
   function canCreatePoll(bytes jobHash) private constant returns (bool r){
@@ -193,9 +193,9 @@ contract BBDispute is BBStandard{
     //refun money staked for users
     require(bbo.transfer(jobOwner, bboStake));
     require(bbo.transfer(freelancer, bboStake));
-    // cal finalizePayment
+    // // cal finalizePayment
     assert(payment.finalizeDispute(jobHash));
-    emit PollWhiteFlaged(BBLib.toB32(jobHash));
+    emit PollWhiteFlaged(BBLib.toB32(jobHash), msg.sender);
   }
 
   function extendPoll(bytes jobHash) public{
