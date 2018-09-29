@@ -70,8 +70,8 @@ contract BBDispute is BBStandard{
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
-        // status to 4
-        bbs.setUint(BBLib.toB32(jobHash, 'STATUS'), 4);
+        // status to 6, move to extendPoll
+        bbs.setUint(BBLib.toB32(jobHash, 'STATUS'), 6);
         //TODO reset POLL
       }else{
         bbs.setAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
@@ -183,8 +183,7 @@ contract BBDispute is BBStandard{
     require(canCreatePoll(jobHash)==true);
     require(isDisputingJob(jobHash)==true);
     (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
-    require(jobOwnerVotes==0);
-    require(freelancerVotes==0);
+    require(jobOwnerVotes==freelancerVotes);
     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
     address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
     address winner = (msg.sender==jobOwner)?freelancer:jobOwner;
@@ -202,9 +201,8 @@ contract BBDispute is BBStandard{
     require(canCreatePoll(jobHash)==true);
     require(isDisputingJob(jobHash)==true);
     (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
-    require(jobOwnerVotes==0);
-    require(freelancerVotes==0);
-    
+    require(jobOwnerVotes== freelancerVotes);
+
     uint256 pID = getPollID(jobHash);
     uint commitDuration = bbs.getUint(BBLib.toB32('COMMIT_DURATION'));
     require(commitDuration > 0);
