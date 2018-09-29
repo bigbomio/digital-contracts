@@ -183,7 +183,8 @@ contract BBDispute is BBStandard{
     require(canCreatePoll(jobHash)==true);
     require(isDisputingJob(jobHash)==true);
     (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
-    require(jobOwnerVotes==freelancerVotes);
+    require(jobOwnerVotes==0);
+    require(freelancerVotes==0);
     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
     address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
     address winner = (msg.sender==jobOwner)?freelancer:jobOwner;
@@ -201,8 +202,7 @@ contract BBDispute is BBStandard{
     require(canCreatePoll(jobHash)==true);
     require(isDisputingJob(jobHash)==true);
     (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
-    require(jobOwnerVotes== freelancerVotes);
-
+    require(jobOwnerVotes== freelancerVotes);    
     uint256 pID = getPollID(jobHash);
     uint commitDuration = bbs.getUint(BBLib.toB32('COMMIT_DURATION'));
     require(commitDuration > 0);
