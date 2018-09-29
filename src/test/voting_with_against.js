@@ -1170,7 +1170,7 @@ contract('Voting Test 3', async (accounts) => {
         from: userB
       });
       
-      assert.equal(l[4], 4);
+      assert.equal(l[4], 6);
 
   });
 

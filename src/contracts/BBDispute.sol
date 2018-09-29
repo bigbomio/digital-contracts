@@ -12,7 +12,7 @@ contract BBDispute is BBStandard{
   event PollStarted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollAgainsted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
   event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes);
-  event PollWhiteFlaged(bytes32 indexed jobHash, address indexed creator);
+  event PollWhiteFlaged(bytes32 indexed jobHash);
   event PollExtended(bytes32 indexed jobHash);
  
   function canCreatePoll(bytes jobHash) private constant returns (bool r){
@@ -70,8 +70,8 @@ contract BBDispute is BBStandard{
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
-        // status to 4
-        bbs.setUint(BBLib.toB32(jobHash, 'STATUS'), 4);
+        // status to 6, move to extendPoll
+        bbs.setUint(BBLib.toB32(jobHash, 'STATUS'), 6);
         //TODO reset POLL
       }else{
         bbs.setAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'), (jobOwnerVotes>freelancerVotes)?jobOwner:freelancer);
@@ -193,18 +193,16 @@ contract BBDispute is BBStandard{
     //refun money staked for users
     require(bbo.transfer(jobOwner, bboStake));
     require(bbo.transfer(freelancer, bboStake));
-    // // cal finalizePayment
+    // cal finalizePayment
     assert(payment.finalizeDispute(jobHash));
-    emit PollWhiteFlaged(BBLib.toB32(jobHash), msg.sender);
+    emit PollWhiteFlaged(BBLib.toB32(jobHash));
   }
 
   function extendPoll(bytes jobHash) public{
     require(canCreatePoll(jobHash)==true);
     require(isDisputingJob(jobHash)==true);
     (uint jobOwnerVotes, uint freelancerVotes) = getPoll(jobHash);
-    require(jobOwnerVotes==0);
-    require(freelancerVotes==0);
-    
+    require(jobOwnerVotes== freelancerVotes);    
     uint256 pID = getPollID(jobHash);
     uint commitDuration = bbs.getUint(BBLib.toB32('COMMIT_DURATION'));
     require(commitDuration > 0);
