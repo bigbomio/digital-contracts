@@ -162,7 +162,19 @@ function finishJob(bytes jobHash) public
 Modifiers: `isNotOwnerJob`, `isFreelancerOfJob`
 
 
+### status
+Job status mapping
 
+---
 
+| status             | Description                 |
+| ------------- | ---------------------------:|
+| `0`     | Job Initial|
+| `1`     | Job Started|
+| `2`     | Job Finished|
+| `4`     | Job Payment Rejected|
+| `5`     | Job Payment Claimed|
+| `6`     | Job has Dispute (in-voting)|
+| `9`     | Job Payment Accepted |
 
 

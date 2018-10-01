@@ -12,6 +12,8 @@ BBDispute is the contract implements Poll creation actions for creating dispute 
      * [PollStarted](#pollstarted)
      * [PollAgainsted](#pollagainsted)
      * [PollFinalized](#pollfinalized)
+     * [PollWhiteFlaged](#pollwhiteflaged)
+     * [PollExtended](#pollextended)
   * [Functions](#functions)
      * [setPayment](#setpayment)
      * [isAgaintsPoll](#isagaintspoll)
@@ -19,6 +21,8 @@ BBDispute is the contract implements Poll creation actions for creating dispute 
      * [againstPoll](#againstpoll)
      * [getPoll](#getpoll)
      * [finalizePoll](#finalizepoll)
+     * [whiteflagPoll](#whiteflagpoll)
+     * [extendPoll](#extendpoll)
 
 
 ## Events
@@ -59,6 +63,30 @@ event PollFinalized(bytes jobHash, uint256 jobOwnerVotes, uint256 freelancerVote
 | `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
 | `jobOwnerVotes`       | uint256       |  number of votes for the hirer of this job  |
 | `freelancerVotes`       | uint256       |  number of votes for the freelancer of this job  |
+
+### PollWhiteFlaged
+Event for logging White-Flaged.
+
+---
+event PollWhiteFlaged(bytes32 indexed jobHash, address indexed creator);
+
+
+| Parameter     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+| `creator`       | address       |  who fire white-flag a dispute  |
+
+
+### PollExtended
+Event for logging Extend a Voting duration.
+
+---
+event PollExtended(bytes32 indexed jobHash);
+
+
+| Parameter     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
 
 
 
@@ -138,4 +166,28 @@ function finalizePoll(bytes jobHash) public
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+
+
+### whiteflagPoll
+White-flag a Poll
+
+---
+function whiteflagPoll(bytes jobHash) public
+
+| Parameter     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+
+
+### extendPoll
+Extend a Poll
+
+---
+function extendPoll(bytes jobHash) public
+
+| Parameter     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+
+
 
