@@ -4,7 +4,7 @@ import './BBFreelancer.sol';
 
 contract BBRating is BBFreelancer {
 
-    event Rating(address candidate, address whoRate, uint value, bytes commentHash);
+    event Rating(address indexed candidate, address whoRate, uint value, bytes commentHash);
 
     function checkInteractJob(address client, address freelancer) returns (bool) {
         if(bbs.getBool(keccak256(abi.encodePacked(client,freelancer)))) {

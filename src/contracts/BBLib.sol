@@ -43,5 +43,5 @@ library BBLib {
 	      out |= bytes32(b[i] & 0xFF) >> (i * 8);
 	    }
 	    return out;
-  	}  
+  	}
 }
