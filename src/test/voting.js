@@ -766,7 +766,7 @@ contract('Voting Test', async (accounts) => {
     assert.equal(userA, sender);
   });
 
-  it("Rating ", async () => {
+  it("Rating B->A", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
@@ -776,6 +776,18 @@ contract('Voting Test', async (accounts) => {
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
     assert.equal(userA, jj.candidate);
+  });
+
+  it("Rating A->B", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userA = accounts[0];
+    var userB = accounts[2];
+    let commentHash = 'sfvsjhfvdsj';
+    let l = await rating.rate(userB, 4, commentHash, {
+      from: userA
+    });
+    let jj = l.logs.find(l => l.event === 'Rating').args
+    assert.equal(userB, jj.candidate);
   });
 
   it("[Fail] Rating again", async () => {
