@@ -273,7 +273,9 @@ contract('Voting Test', async (accounts) => {
     await votingReward.setBBO(bboAddress, {
       from: accounts[0]
     });
-    await votingReward.setPayment(proxyAddressPayment, {from: accounts[0]})
+    await votingReward.setPayment(proxyAddressPayment, {
+      from: accounts[0]
+    })
 
     await bid.setPaymentContract(proxyAddressPayment, {
       from: accounts[0]
@@ -289,11 +291,17 @@ contract('Voting Test', async (accounts) => {
     await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
+    await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', {
+      from: userA
+    });
     //Bid Job
     var userB = accounts[2];
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     var timeDone = 3 * 24 * 3600; // 3 days
     await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
+      from: userB
+    });
+    await bid.createBid(jobHash4 + 'done', 400e18, timeDone, {
       from: userB
     });
 
@@ -307,11 +315,20 @@ contract('Voting Test', async (accounts) => {
     await bid.acceptBid(jobHash4 + 'd', userB, {
       from: userA
     });
+    await bid.acceptBid(jobHash4 + 'done', userB, {
+      from: userA
+    });
 
     await job.startJob(jobHash4 + 'd', {
       from: userB
     });
+    await job.startJob(jobHash4 + 'done', {
+      from: userB
+    });
     await job.finishJob(jobHash4 + 'd', {
+      from: userB
+    });
+    await job.finishJob(jobHash4 + 'done', {
       from: userB
     });
 
@@ -370,6 +387,9 @@ contract('Voting Test', async (accounts) => {
     });
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     await payment.rejectPayment(jobHash4, 1, {
+      from: userA
+    });
+    await payment.acceptPayment(jobHash4 + 'done', {
       from: userA
     });
 
@@ -691,7 +711,7 @@ contract('Voting Test', async (accounts) => {
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     await payment.rejectPayment(jobHash5, 1, {
       from: userA
-});
+    });
 
   });
   it("start poll for jobHash5", async () => {
@@ -729,7 +749,7 @@ contract('Voting Test', async (accounts) => {
     assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
   });
   it("fast forward to 24h after commit vote poll jobHash5", function () {
-    var fastForwardTime = 2* 24 * 3600 + 1;
+    var fastForwardTime = 2 * 24 * 3600 + 1;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
 
@@ -738,9 +758,9 @@ contract('Voting Test', async (accounts) => {
   });
   it("extend time when no one commit vote", async () => {
     let voting = await BBDispute.at(proxyAddressDispute);
-    
+
     var userA = accounts[0];
-    
+
     let l = await voting.extendPoll(jobHash5, {
       from: userA
     });
@@ -756,7 +776,7 @@ contract('Voting Test', async (accounts) => {
 
     let voting = await BBDispute.at(proxyAddressDispute);
     var userA = accounts[0];
-    
+
     let l = await voting.whiteflagPoll(jobHash5, {
       from: userA
     });
@@ -768,14 +788,27 @@ contract('Voting Test', async (accounts) => {
 
   it("Rating B->A", async () => {
     let rating = await BBRating.at(proxyAddressRating);
-    var userA = accounts[0];
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(userA, 4, commentHash, {
+    let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
       from: userB
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
-    assert.equal(userA, jj.candidate);
+    assert.equal(userB, jj.whoRate);
+  });
+
+  it("[Fail] not freelancer Rating ", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userB = accounts[3];
+    let commentHash = 'sfvsjhfvdsj';
+    try {
+      let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
+        from: userB
+      });
+      return false;
+    } catch (e) {
+      return true;
+    }
   });
 
   it("Rating A->B", async () => {
@@ -783,11 +816,11 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(userB, 4, commentHash, {
+    let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
       from: userA
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
-    assert.equal(userB, jj.candidate);
+    assert.equal(userA, jj.whoRate);
   });
 
   it("[Fail] Rating again", async () => {
@@ -796,11 +829,11 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(userA, 4, commentHash, {
+      let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
         from: userB
       });
       let jj = l.logs.find(l => l.event === 'Rating').args
-      //console.log(JSON.stringify(jj));
+      console.log(JSON.stringify(jj));
       return false;
     } catch (e) {
       return true;

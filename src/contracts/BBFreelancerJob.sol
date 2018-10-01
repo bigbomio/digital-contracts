@@ -113,9 +113,7 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 1);
     //Begin set time start job
     bbs.setUint(BBLib.toB32(jobHash,'JOB_STARTED_TIMESTAMP'), now);
-    //Make sure client and freelancer have interacted
-    bbs.setBool(keccak256(abi.encodePacked(bbs.getAddress(keccak256(jobHash)),msg.sender)), true);
-
+    
     emit JobStarted(jobHash);
   }
   // freelancer finish Job

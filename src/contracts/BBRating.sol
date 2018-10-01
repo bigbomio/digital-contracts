@@ -1,29 +1,28 @@
 pragma solidity ^0.4.24;
 
 import './BBFreelancer.sol';
+import './BBLib.sol';
+
 
 contract BBRating is BBFreelancer {
 
-    event Rating(address indexed candidate, address whoRate, uint value, bytes commentHash);
+    event Rating(bytes32 indexed jobHash, address whoRate, uint value, bytes commentHash);
 
-    function checkInteractJob(address client, address freelancer) returns (bool) {
-        if(bbs.getBool(keccak256(abi.encodePacked(client,freelancer)))) {
-            return true;
-        } else {
-            return bbs.getBool(keccak256(abi.encodePacked(freelancer,client)));
-        }
-    }
 
-    function rate(address candidate, uint value, bytes commentHash) public {
-        require(checkInteractJob(msg.sender, candidate));
+    function rate(bytes jobHash, uint value, bytes commentHash) public {
+        address owner = bbs.getAddress(keccak256(jobHash));
+        address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
+        require(msg.sender == owner || msg.sender == freelancer);
+        uint jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+        require(jobStatus == 5 || jobStatus == 9);
         require(value > 0);
         require(value <= 5);
-        require(bbs.getUint(keccak256(abi.encodePacked(msg.sender, candidate))) <= 0);
+        require(bbs.getUint(keccak256(abi.encodePacked(msg.sender, jobHash))) <= 0);
         //Save rating value
-        bbs.setUint(keccak256(abi.encodePacked(msg.sender, candidate)),value);
+        bbs.setUint(keccak256(abi.encodePacked(msg.sender, jobHash)),value);
         //Save comment Hash
-        bbs.setBytes(keccak256(abi.encodePacked(msg.sender, candidate,'COMMENT')),commentHash);
+        bbs.setBytes(keccak256(abi.encodePacked(msg.sender, jobHash,'COMMENT')),commentHash);
 
-        emit Rating(candidate, msg.sender, value, commentHash);
+        emit Rating(keccak256(jobHash), msg.sender, value, commentHash);
     }
 }

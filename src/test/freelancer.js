@@ -993,19 +993,6 @@ contract('BBFreelancer Test', async (accounts) => {
     });
   }
 
-  // it("Owner cancel bid", async () => {
-  //   var userC = accounts[0];
-  //   let bid = await BBFreelancerBid.at(proxyAddressBid);
-
-  //   var jobLog = await bid.cancelBid(jobHash, {
-  //     from: userC
-  //   });
-  
-  //   const jobHashRs = jobLog.logs.find(l => l.event === 'BidCanceled').args.jobHash
-  //   assert.equal(web3.utils.sha3(jobHash), jobHashRs);
-
-  // });
-
   it("[Fail] UserD cancel job", async () => {
     var userB = accounts[1];
     var userD = accounts[4];
@@ -1378,6 +1365,8 @@ contract('BBFreelancer Test', async (accounts) => {
     });
 
   });
+
+
   it("fast forward to 24h after locked", function () {
     var fastForwardTime = 24 * 3600 + 1;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
