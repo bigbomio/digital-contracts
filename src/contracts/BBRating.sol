@@ -6,7 +6,7 @@ import './BBLib.sol';
 
 contract BBRating is BBFreelancer {
 
-    event Rating(bytes32 indexed jobHash, address whoRate, uint value, bytes commentHash);
+    event Rating(bytes32 indexed jobHash, address  whoRate, address indexed candidate, uint value, bytes commentHash);
 
 
     function rate(bytes jobHash, uint value, bytes commentHash) public {
@@ -20,9 +20,25 @@ contract BBRating is BBFreelancer {
         require(bbs.getUint(keccak256(abi.encodePacked(msg.sender, jobHash))) <= 0);
         //Save rating value
         bbs.setUint(keccak256(abi.encodePacked(msg.sender, jobHash)),value);
-        //Save comment Hash
-        bbs.setBytes(keccak256(abi.encodePacked(msg.sender, jobHash,'COMMENT')),commentHash);
 
-        emit Rating(keccak256(jobHash), msg.sender, value, commentHash);
+        address candidate = owner;
+        if(msg.sender == owner) {
+            candidate = freelancer;
+        }
+        uint totalRate = bbs.getUint(keccak256(abi.encodePacked(candidate, 'RATE')));
+        totalRate = totalRate.add(value);
+        bbs.setUint(keccak256(abi.encodePacked(candidate,'RATE')),totalRate);
+
+        uint totalUser = bbs.getUint(keccak256(abi.encodePacked(candidate, 'USER')));
+        totalUser = totalUser.add(1);
+        bbs.setUint(keccak256(abi.encodePacked(candidate,'USER')),totalUser);
+
+        emit Rating(keccak256(jobHash), msg.sender, candidate,value, commentHash);
     }
+
+    function getRating(address user) public constant returns (uint, uint) {
+        uint totalRate = bbs.getUint(keccak256(abi.encodePacked(user, 'RATE')));
+        uint totalUser = bbs.getUint(keccak256(abi.encodePacked(user, 'USER')));
+        return (totalUser, totalRate);
+    } 
 }
