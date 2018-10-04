@@ -240,6 +240,9 @@ contract('Voting Test', async (accounts) => {
     await rating.setStorage(storage.address, {
       from: accounts[0]
     });
+    await rating.addProxy(proxyAddressJob, {
+      from: accounts[0]
+    });
 
     let voting = await BBVoting.at(proxyAddressVoting);
     await voting.transferOwnership(accounts[0], {
@@ -810,7 +813,7 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(jobHash4 + 'done', 3, commentHash, {
+    let l = await rating.rate(proxyAddressJob ,jobHash4 + 'done', 3, commentHash, {
       from: userB
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -821,7 +824,7 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userC = accounts[3];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(jobHash4 + 'yes', 5, commentHash, {
+    let l = await rating.rate(proxyAddressJob, jobHash4 + 'yes', 5, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -834,7 +837,7 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[3];
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
+      let l = await rating.rate(proxyAddressJob ,jobHash4 + 'done', 4, commentHash, {
         from: userB
       });
       return false;
@@ -843,12 +846,28 @@ contract('Voting Test', async (accounts) => {
     }
   });
 
+  it("[Fail] Rating wrong proxyAdress", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userA = accounts[0];
+    let commentHash = 'sfvsjhfvdsj';
+    try {
+    await rating.rate(proxyAddressBid, jobHash4 + 'done', 4, commentHash, {
+      from: userA
+    });
+    return false;
+
+  } catch(e) {
+    return true;
+  }
+    
+  });
+
   it("Rating A->B", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
+    let l = await rating.rate(proxyAddressJob, jobHash4 + 'done', 4, commentHash, {
       from: userA
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -862,7 +881,7 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(jobHash4 + 'done', 4, commentHash, {
+      let l = await rating.rate(proxyAddressJob,jobHash4 + 'done', 4, commentHash, {
         from: userB
       });
       let jj = l.logs.find(l => l.event === 'Rating').args
@@ -879,7 +898,7 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[1];
     let commentHash = 'sfvsjdhfvdsj';
     try {
-      let l = await rating.rate(userA, 4, commentHash, {
+      let l = await rating.rate(proxyAddressJob, userA, 4, commentHash, {
         from: userB
       });
       let jj = l.logs.find(l => l.event === 'Rating').args
@@ -894,7 +913,7 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
-    let l = await rating.getRating(userB, {
+    let l = await rating.getRating(proxyAddressJob, userB, {
       from: userA
     });
     //console.log(JSON.stringify(l));
@@ -904,7 +923,7 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
-    let l = await rating.getRating(userA, {
+    let l = await rating.getRating(proxyAddressJob ,userA, {
       from: userA
     });
    // console.log(JSON.stringify(l));
