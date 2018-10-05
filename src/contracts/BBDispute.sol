@@ -9,11 +9,11 @@ contract BBDispute is BBStandard{
   function setPayment(address p) onlyOwner public  {
     payment = BBFreelancerPayment(p);
   }
-  event PollStarted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
-  event PollAgainsted(bytes32 indexed jobHash, bytes proofHash, address indexed creator);
-  event PollFinalized(bytes32 indexed jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes);
-  event PollWhiteFlaged(bytes32 indexed jobHash, address indexed creator);
-  event PollExtended(bytes32 indexed jobHash);
+  event PollStarted(bytes32 indexed indexJobHash, bytes proofHash, address indexed creator, bytes jobHash);
+  event PollAgainsted(bytes32 indexed indexJobHash, address indexed creator,  bytes proofHash, bytes jobHash);
+  event PollFinalized(bytes32 indexed indexJobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bytes jobHash);
+  event PollWhiteFlaged(bytes32 indexed indexJobHash, address indexed creator, bytes jobHash);
+  event PollExtended(bytes32 indexed indexJobHash, bytes jobHash);
  
   function canCreatePoll(bytes jobHash) private constant returns (bool r){
     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
@@ -81,7 +81,7 @@ contract BBDispute is BBStandard{
         assert(payment.finalizeDispute(jobHash));
       }
     }
-    emit PollFinalized(BBLib.toB32(jobHash), jobOwnerVotes, freelancerVotes);
+    emit PollFinalized(BBLib.toB32(jobHash), jobOwnerVotes, freelancerVotes, jobHash);
   }
 
   
@@ -147,7 +147,7 @@ contract BBDispute is BBStandard{
     // save creator proofHash
     bbs.setBytes(BBLib.toB32(jobHash, pID,'CREATOR_PROOF'), proofHash);
 
-    emit PollStarted(BBLib.toB32(jobHash), proofHash, msg.sender);
+    emit PollStarted(BBLib.toB32(jobHash), proofHash, msg.sender, jobHash);
   }
   /**
   * @dev againstPoll
@@ -175,7 +175,8 @@ contract BBDispute is BBStandard{
     bbs.setUint(BBLib.toB32(jobHash, pID,'STAKED_DEPOSIT',msg.sender), bboStake);
 
     bbs.setBytes(BBLib.toB32(jobHash, pID,'AGAINST_PROOF'), againstProofHash);
-    emit PollAgainsted(BBLib.toB32(jobHash), againstProofHash, msg.sender);
+
+    emit PollAgainsted(BBLib.toB32(jobHash), msg.sender, againstProofHash, jobHash);
   } 
 
   function whiteflagPoll(bytes jobHash) public{
@@ -195,7 +196,7 @@ contract BBDispute is BBStandard{
     require(bbo.transfer(freelancer, bboStake));
     // // cal finalizePayment
     assert(payment.finalizeDispute(jobHash));
-    emit PollWhiteFlaged(BBLib.toB32(jobHash), msg.sender);
+    emit PollWhiteFlaged(BBLib.toB32(jobHash), msg.sender, jobHash);
   }
 
   function extendPoll(bytes jobHash) public{
@@ -218,7 +219,7 @@ contract BBDispute is BBStandard{
     bbs.setUint(BBLib.toB32(jobHash, pID,'COMMIT_ENDDATE'), commitEndDate);
     bbs.setUint(BBLib.toB32(jobHash, pID,'REVEAL_ENDDATE'), revealEndDate);
 
-    emit PollExtended(BBLib.toB32(jobHash));
+    emit PollExtended(BBLib.toB32(jobHash), jobHash);
   }
 
 }

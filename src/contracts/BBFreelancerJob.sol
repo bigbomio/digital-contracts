@@ -131,4 +131,16 @@ contract BBFreelancerJob is BBFreelancer {
     emit JobFinished(jobHash);
   }
 
+  function allowVoting(bytes jobHash) public view returns(bool r) {
+    //TODO
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+    r = (msg.sender==jobOwner || msg.sender==freelancer);
+    if(r == true){
+      uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'STATUS'));
+      address winner = bbs.getAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER'));
+      r = (jobStatus == 4 && winner==address(0x0));
+    }
+  }
+
 }

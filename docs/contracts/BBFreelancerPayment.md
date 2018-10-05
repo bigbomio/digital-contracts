@@ -24,27 +24,28 @@ BBFreelancerPayment is the contract control the payment for Freelancer app
 
 ## Events
 
+
 ### PaymentClaimed
 Event for loging payment claimed.
 
 ---
-event PaymentClaimed(bytes jobHash, address indexed sender);
-
+event PaymentClaimed(bytes32 indexed indexJobHash, address indexed sender, bytes jobHash);
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `indexJobHash`       | bytes32       |  Hash of the job store on IPFS  |
 | `sender`       | address       |  user call claim payment  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 ### PaymentClaimed
 Event for loging payment accepted.
 
 ---
-event PaymentAccepted(bytes jobHash, address indexed sender);
-
+event PaymentAccepted(bytes32 indexed indexJobHash, address indexed sender, bytes jobHash);
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `indexJobHash`       | bytes32       |  Hash of the job store on IPFS  |
 | `sender`       | address       |  user call accept payment  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 
 
@@ -52,25 +53,28 @@ event PaymentAccepted(bytes jobHash, address indexed sender);
 Event for loging payment rejected.
 
 ---
-event PaymentRejected(bytes jobHash, address indexed sender, uint reason);
+event PaymentRejected(bytes32 indexed indexJobHash, address indexed sender, uint reason, uint256 rejectedTimestamp, bytes jobHash);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `indexJobHash`       | bytes32       |  Hash of the job store on IPFS  |
 | `sender`       | address       |  user call reject payment  |
 | `reason`       | uint       |  reason for rejection  |
+| `rejectedTimestamp`       | uint       |  rejected timetamp  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 
 ### DisputeFinalized
 Event for loging payment claim.
 
 ---
-event DisputeFinalized(bytes jobHash, address indexed winner);
+event DisputeFinalized(bytes32 indexed indexJobHash, address indexed winner, bytes jobHash);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `indexJobHash`       | bytes32       |  Hash of the job store on IPFS  |
 | `winner`       | address       | address has won the dispute  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 ## Functions
 

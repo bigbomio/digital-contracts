@@ -259,489 +259,489 @@ contract('Voting Test', async (accounts) => {
     });
 
   });
-  it("[Fail] start voting poll without dispute", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var estimatedTime = 3 * 24 * 3600; // 3 days
-    //Create Job
-    await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
-      from: userA
-    });
-    //Bid Job
-    var userB = accounts[2];
-    let bid = await BBFreelancerBid.at(proxyAddressBid);
-    var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
-      from: userB
-    });
+  // it("[Fail] start voting poll without dispute", async () => {
+  //   let job = await BBFreelancerJob.at(proxyAddressJob);
+  //   var userA = accounts[0];
+  //   var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+  //   var estimatedTime = 3 * 24 * 3600; // 3 days
+  //   //Create Job
+  //   await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+  //     from: userA
+  //   });
+  //   //Bid Job
+  //   var userB = accounts[2];
+  //   let bid = await BBFreelancerBid.at(proxyAddressBid);
+  //   var timeDone = 3 * 24 * 3600; // 3 days
+  //   await bid.createBid(jobHash4 + 'd', 400e18, timeDone, {
+  //     from: userB
+  //   });
 
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(bid.address, 0, {
-      from: userA
-    });
-    await bbo.approve(bid.address, Math.pow(2, 255), {
-      from: userA
-    });
-    await bid.acceptBid(jobHash4 + 'd', userB, {
-      from: userA
-    });
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(bid.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(bid.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   await bid.acceptBid(jobHash4 + 'd', userB, {
+  //     from: userA
+  //   });
 
-    await job.startJob(jobHash4 + 'd', {
-      from: userB
-    });
-    await job.finishJob(jobHash4 + 'd', {
-      from: userB
-    });
+  //   await job.startJob(jobHash4 + 'd', {
+  //     from: userB
+  //   });
+  //   await job.finishJob(jobHash4 + 'd', {
+  //     from: userB
+  //   });
 
-    //Create poll 
-    try {
-      let voting = await BBDispute.at(proxyAddressDispute);
-      let proofHash = 'proofHashc';
-      let l = await voting.startPoll(jobHash4 + 'd', proofHash, {
-        from: userB
-      });
-
-
-      return false;
-
-    } catch (e) {
-
-      return true;
-
-    }
-
-  });
-
-  it("start other job for dispute voting", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var estimatedTime = 3 * 24 * 3600; // 3 days
-
-    await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
-      from: userA
-    });
-    var userB = accounts[2];
-    let bid = await BBFreelancerBid.at(proxyAddressBid);
-
-    var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash4, 400e18, timeDone, {
-      from: userB
-    });
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(bid.address, 0, {
-      from: userA
-    });
-    await bbo.approve(bid.address, Math.pow(2, 255), {
-      from: userA
-    });
-    await bid.acceptBid(jobHash4, userB, {
-      from: userA
-    });
-
-    await job.startJob(jobHash4, {
-      from: userB
-    });
-    await job.finishJob(jobHash4, {
-      from: userB
-    });
-    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    await payment.rejectPayment(jobHash4, 1, {
-      from: userA
-    });
-
-  });
-  it("set params", async () => {
-    let params = await BBParams.at(proxyAddressParams);
-    await params.addAdmin(accounts[0], true);
-    await params.setVotingParams(100e18, 1000000e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
-      24 * 60 * 60, 10e18, {
-        from: accounts[0]
-      });
-    return true;
-  });
-  it("[Fail] set params MinVotes > MaxVotes", async () => {
-    let params = await BBParams.at(proxyAddressParams);
-    try {
-      await params.setVotingParams(100e18, 10e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
-        24 * 60 * 60, 10e18, {
-          from: accounts[0]
-        });
-
-      return false;
-
-    } catch (e) {
-
-      return true;
-    }
-
-  });
-  it("[Fail] UserC start poll", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHash';
-    var userB = accounts[3];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userB
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userB
-    });
-    try {
-      await voting.startPoll(jobHash4, proofHash, {
-        from: userB
-      });
-
-      return false;
-    } catch (e) {
+  //   //Create poll 
+  //   try {
+  //     let voting = await BBDispute.at(proxyAddressDispute);
+  //     let proofHash = 'proofHashc';
+  //     let l = await voting.startPoll(jobHash4 + 'd', proofHash, {
+  //       from: userB
+  //     });
 
 
-      return true;
-    }
+  //     return false;
 
-  });
-  it("start poll", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHash';
-    var userB = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userB
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userB
-    });
-    let l = await voting.startPoll(jobHash4, proofHash, {
-      from: userB
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
-    assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
-  });
-  it("against poll", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHashAgainst';
-    var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userA
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userA
-    });
-    let l = await voting.againstPoll(jobHash4, proofHash, {
-      from: userA
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
-    assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
-  });
-  it("[Fail] Owner against poll", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHashAgainst';
-    var userA = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userA
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userA
-    });
-    try {
-      let l = await voting.againstPoll(jobHash4, proofHash, {
-        from: userA
-      });
+  //   } catch (e) {
 
-      return false;
+  //     return true;
 
-    } catch (e) {
+  //   }
 
+  // });
 
-      return true;
-    }
+  // it("start other job for dispute voting", async () => {
+  //   let job = await BBFreelancerJob.at(proxyAddressJob);
+  //   var userA = accounts[0];
+  //   var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+  //   var estimatedTime = 3 * 24 * 3600; // 3 days
 
+  //   await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
+  //     from: userA
+  //   });
+  //   var userB = accounts[2];
+  //   let bid = await BBFreelancerBid.at(proxyAddressBid);
 
-  });
-  it("[Fail] against poll with invalid jobHash", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHashAgainst';
-    var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userA
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userA
-    });
-    try {
-      let l = await voting.againstPoll(jobHash4 + 'okko', proofHash, {
-        from: userA
-      });
+  //   var timeDone = 3 * 24 * 3600; // 3 days
+  //   await bid.createBid(jobHash4, 400e18, timeDone, {
+  //     from: userB
+  //   });
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(bid.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(bid.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   await bid.acceptBid(jobHash4, userB, {
+  //     from: userA
+  //   });
 
+  //   await job.startJob(jobHash4, {
+  //     from: userB
+  //   });
+  //   await job.finishJob(jobHash4, {
+  //     from: userB
+  //   });
+  //   let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+  //   await payment.rejectPayment(jobHash4, 1, {
+  //     from: userA
+  //   });
 
+  // });
+  // it("set params", async () => {
+  //   let params = await BBParams.at(proxyAddressParams);
+  //   await params.addAdmin(accounts[0], true);
+  //   await params.setVotingParams(100e18, 1000000e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
+  //     24 * 60 * 60, 10e18, {
+  //       from: accounts[0]
+  //     });
+  //   return true;
+  // });
+  // it("[Fail] set params MinVotes > MaxVotes", async () => {
+  //   let params = await BBParams.at(proxyAddressParams);
+  //   try {
+  //     await params.setVotingParams(100e18, 10e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
+  //       24 * 60 * 60, 10e18, {
+  //         from: accounts[0]
+  //       });
 
-      return false;
+  //     return false;
 
-    } catch (e) {
+  //   } catch (e) {
 
+  //     return true;
+  //   }
 
-      return true;
-    }
+  // });
+  // it("[Fail] UserC start poll", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHash';
+  //   var userB = accounts[3];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userB
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userB
+  //   });
+  //   try {
+  //     await voting.startPoll(jobHash4, proofHash, {
+  //       from: userB
+  //     });
 
-  });
-
-  it("against poll", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHashAgainst';
-    var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userA
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userA
-    });
-    let l = await voting.againstPoll(jobHash4, proofHash, {
-      from: userA
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
-    assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
-  });
-  it("reqest voting rights", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[1];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userC
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userC
-    });
-    let l = await voting.requestVotingRights(200e18, {
-      from: userC
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
-    assert.equal(userC, jobHashRs);
-  });
-  it("fast forward to 24h after start poll", function () {
-    var fastForwardTime = 24 * 3600 + 1;
-    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
-      return Helpers.sendPromise('evm_mine', []).then(function () {
+  //     return false;
+  //   } catch (e) {
 
 
-      });
-    });
-  });
-  it("[Fail] commit vote without votingRigt", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[3];
-    var secretHash = web3.utils.soliditySha3(accounts[2], 123);
-    try {
-      let l = await voting.commitVote(jobHash4, secretHash, 200e18, {
-        from: userC
-      });
+  //     return true;
+  //   }
 
-      return false;
-    } catch (e) {
+  // });
+  // it("start poll", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHash';
+  //   var userB = accounts[2];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userB
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userB
+  //   });
+  //   let l = await voting.startPoll(jobHash4, proofHash, {
+  //     from: userB
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.indexJobHash
+  //   assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
+  // });
+  // it("against poll", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHashAgainst';
+  //   var userA = accounts[0];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   let l = await voting.againstPoll(jobHash4, proofHash, {
+  //     from: userA
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.indexJobHash
+  //   assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
+  // });
+  // it("[Fail] Owner against poll", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHashAgainst';
+  //   var userA = accounts[2];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   try {
+  //     let l = await voting.againstPoll(jobHash4, proofHash, {
+  //       from: userA
+  //     });
 
-      return true;
-    }
+  //     return false;
 
-  });
-  it("commit vote ", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[1];
-    var secretHash = web3.utils.soliditySha3(accounts[2], 123);
-    let l = await voting.commitVote(jobHash4, secretHash, 200e18, {
-      from: userC
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'VoteCommitted').args.jobHash
-    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
-  });
-  it("re-commit vote ", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[1];
-    var secretHash = web3.utils.soliditySha3(accounts[2], 123);
-    let l = await voting.commitVote(jobHash4, secretHash, 300e18, {
-      from: userC
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'VoteCommitted').args.jobHash
-    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
-  });
-  it("fast forward to 24h after commit vote poll", function () {
-    var fastForwardTime = 24 * 3600 + 1;
-    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
-      return Helpers.sendPromise('evm_mine', []).then(function () {
+  //   } catch (e) {
 
-      });
-    });
-  });
 
-  it("[Fail] reveal vote with missing address", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[1];
-    try {
-      await voting.revealVote(jobHash4, accounts[3], 123, {
-        from: userC
-      });
+  //     return true;
+  //   }
 
-      return false;
-    } catch (e) {
 
-      return true;
-    }
+  // });
+  // it("[Fail] against poll with invalid jobHash", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHashAgainst';
+  //   var userA = accounts[0];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   try {
+  //     let l = await voting.againstPoll(jobHash4 + 'okko', proofHash, {
+  //       from: userA
+  //     });
 
-  });
-  it("[Fail] reveal vote with missing salt", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[1];
-    try {
-      await voting.revealVote(jobHash4, accounts[2], 124, {
-        from: userC
-      });
 
-      return false;
-    } catch (e) {
 
-      return true;
-    }
+  //     return false;
 
-  });
+  //   } catch (e) {
 
-  it("[Fail] reveal vote with missing voter", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[3];
-    try {
-      await voting.revealVote(jobHash4, accounts[2], 123, {
-        from: userC
-      });
 
-      return false;
-    } catch (e) {
+  //     return true;
+  //   }
 
-      return true;
-    }
+  // });
 
-  });
+  // it("against poll", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHashAgainst';
+  //   var userA = accounts[0];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   let l = await voting.againstPoll(jobHash4, proofHash, {
+  //     from: userA
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.indexJobHash
+  //   assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
+  // });
+  // it("reqest voting rights", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[1];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userC
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userC
+  //   });
+  //   let l = await voting.requestVotingRights(200e18, {
+  //     from: userC
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
+  //   assert.equal(userC, jobHashRs);
+  // });
+  // it("fast forward to 24h after start poll", function () {
+  //   var fastForwardTime = 24 * 3600 + 1;
+  //   return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+  //     return Helpers.sendPromise('evm_mine', []).then(function () {
 
-  it("reveal vote ", async () => {
-    let voting = await BBVoting.at(proxyAddressVoting);
-    var userC = accounts[1];
-    let l = await voting.revealVote(jobHash4, accounts[2], 123, {
-      from: userC
-    });
-    const a = l.logs.find(l => l.event === 'VoteRevealed').args
 
-    const jobHashRs = a.jobHash
-    assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
-  });
-  it("start other job for dispute voting", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
-    var estimatedTime = 3 * 24 * 3600; // 3 days
+  //     });
+  //   });
+  // });
+  // it("[Fail] commit vote without votingRigt", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[3];
+  //   var secretHash = web3.utils.soliditySha3(accounts[2], 123);
+  //   try {
+  //     let l = await voting.commitVote(jobHash4, secretHash, 200e18, {
+  //       from: userC
+  //     });
 
-    await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner', {
-      from: userA
-    });
-    var userB = accounts[2];
-    let bid = await BBFreelancerBid.at(proxyAddressBid);
+  //     return false;
+  //   } catch (e) {
 
-    var timeDone = 3 * 24 * 3600; // 3 days
-    await bid.createBid(jobHash5, 400e18, timeDone, {
-      from: userB
-    });
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(bid.address, 0, {
-      from: userA
-    });
-    await bbo.approve(bid.address, Math.pow(2, 255), {
-      from: userA
-    });
-    await bid.acceptBid(jobHash5, userB, {
-      from: userA
-    });
+  //     return true;
+  //   }
 
-    await job.startJob(jobHash5, {
-      from: userB
-    });
-    await job.finishJob(jobHash5, {
-      from: userB
-    });
-    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
-    await payment.rejectPayment(jobHash5, 1, {
-      from: userA
-    });
+  // });
+  // it("commit vote ", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[1];
+  //   var secretHash = web3.utils.soliditySha3(accounts[2], 123);
+  //   let l = await voting.commitVote(jobHash4, secretHash, 200e18, {
+  //     from: userC
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'VoteCommitted').args.jobHash
+  //   assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  // });
+  // it("re-commit vote ", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[1];
+  //   var secretHash = web3.utils.soliditySha3(accounts[2], 123);
+  //   let l = await voting.commitVote(jobHash4, secretHash, 300e18, {
+  //     from: userC
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'VoteCommitted').args.jobHash
+  //   assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  // });
+  // it("fast forward to 24h after commit vote poll", function () {
+  //   var fastForwardTime = 24 * 3600 + 1;
+  //   return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+  //     return Helpers.sendPromise('evm_mine', []).then(function () {
 
-  });
-  it("start poll for jobHash5", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHash';
-    var userB = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userB
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userB
-    });
-    let l = await voting.startPoll(jobHash5, proofHash, {
-      from: userB
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
-    assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
-  });
-  it("against poll for jobHash5", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
-    let proofHash = 'proofHashAgainst';
-    var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, {
-      from: userA
-    });
-    await bbo.approve(voting.address, Math.pow(2, 255), {
-      from: userA
-    });
-    let l = await voting.againstPoll(jobHash5, proofHash, {
-      from: userA
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
-    assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
-  });
-  it("fast forward to 24h after commit vote poll jobHash5", function () {
-    var fastForwardTime = 2* 24 * 3600 + 1;
-    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
-      return Helpers.sendPromise('evm_mine', []).then(function () {
+  //     });
+  //   });
+  // });
 
-      });
-    });
-  });
-  it("extend time when no one commit vote", async () => {
-    let voting = await BBDispute.at(proxyAddressDispute);
+  // it("[Fail] reveal vote with missing address", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[1];
+  //   try {
+  //     await voting.revealVote(jobHash4, accounts[3], 123, {
+  //       from: userC
+  //     });
+
+  //     return false;
+  //   } catch (e) {
+
+  //     return true;
+  //   }
+
+  // });
+  // it("[Fail] reveal vote with missing salt", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[1];
+  //   try {
+  //     await voting.revealVote(jobHash4, accounts[2], 124, {
+  //       from: userC
+  //     });
+
+  //     return false;
+  //   } catch (e) {
+
+  //     return true;
+  //   }
+
+  // });
+
+  // it("[Fail] reveal vote with missing voter", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[3];
+  //   try {
+  //     await voting.revealVote(jobHash4, accounts[2], 123, {
+  //       from: userC
+  //     });
+
+  //     return false;
+  //   } catch (e) {
+
+  //     return true;
+  //   }
+
+  // });
+
+  // it("reveal vote ", async () => {
+  //   let voting = await BBVoting.at(proxyAddressVoting);
+  //   var userC = accounts[1];
+  //   let l = await voting.revealVote(jobHash4, accounts[2], 123, {
+  //     from: userC
+  //   });
+  //   const a = l.logs.find(l => l.event === 'VoteRevealed').args
+
+  //   const jobHashRs = a.jobHash
+  //   assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
+  // });
+  // it("start other job for dispute voting", async () => {
+  //   let job = await BBFreelancerJob.at(proxyAddressJob);
+  //   var userA = accounts[0];
+  //   var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+  //   var estimatedTime = 3 * 24 * 3600; // 3 days
+
+  //   await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner', {
+  //     from: userA
+  //   });
+  //   var userB = accounts[2];
+  //   let bid = await BBFreelancerBid.at(proxyAddressBid);
+
+  //   var timeDone = 3 * 24 * 3600; // 3 days
+  //   await bid.createBid(jobHash5, 400e18, timeDone, {
+  //     from: userB
+  //   });
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(bid.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(bid.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   await bid.acceptBid(jobHash5, userB, {
+  //     from: userA
+  //   });
+
+  //   await job.startJob(jobHash5, {
+  //     from: userB
+  //   });
+  //   await job.finishJob(jobHash5, {
+  //     from: userB
+  //   });
+  //   let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+  //   await payment.rejectPayment(jobHash5, 1, {
+  //     from: userA
+  //   });
+
+  // });
+  // it("start poll for jobHash5", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHash';
+  //   var userB = accounts[2];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userB
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userB
+  //   });
+  //   let l = await voting.startPoll(jobHash5, proofHash, {
+  //     from: userB
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.indexJobHash
+  //   assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
+  // });
+  // it("against poll for jobHash5", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   let proofHash = 'proofHashAgainst';
+  //   var userA = accounts[0];
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.approve(voting.address, 0, {
+  //     from: userA
+  //   });
+  //   await bbo.approve(voting.address, Math.pow(2, 255), {
+  //     from: userA
+  //   });
+  //   let l = await voting.againstPoll(jobHash5, proofHash, {
+  //     from: userA
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.indexJobHash
+  //   assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
+  // });
+  // it("fast forward to 24h after commit vote poll jobHash5", function () {
+  //   var fastForwardTime = 2* 24 * 3600 + 1;
+  //   return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+  //     return Helpers.sendPromise('evm_mine', []).then(function () {
+
+  //     });
+  //   });
+  // });
+  // it("extend time when no one commit vote", async () => {
+  //   let voting = await BBDispute.at(proxyAddressDispute);
     
-    var userA = accounts[0];
+  //   var userA = accounts[0];
     
-    let l = await voting.extendPoll(jobHash5, {
-      from: userA
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollExtended').args.jobHash
-    assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
-  });
-  it("white-flag Poll when no one commit vote", async () => {
+  //   let l = await voting.extendPoll(jobHash5, {
+  //     from: userA
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollExtended').args.indexJobHash
+  //   assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
+  // });
+  // it("white-flag Poll when no one commit vote", async () => {
 
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.transfer(proxyAddressPayment, 100000e18, {
-      from: accounts[0]
-    });
+  //   let bbo = await BBOTest.at(bboAddress);
+  //   await bbo.transfer(proxyAddressPayment, 100000e18, {
+  //     from: accounts[0]
+  //   });
 
-    let voting = await BBDispute.at(proxyAddressDispute);
-    var userA = accounts[0];
+  //   let voting = await BBDispute.at(proxyAddressDispute);
+  //   var userA = accounts[0];
     
-    let l = await voting.whiteflagPoll(jobHash5, {
-      from: userA
-    });
-    const jobHashRs = l.logs.find(l => l.event === 'PollWhiteFlaged').args.jobHash
-    const sender = l.logs.find(l => l.event === 'PollWhiteFlaged').args.creator
-    assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
-    assert.equal(userA, sender);
-  });
+  //   let l = await voting.whiteflagPoll(jobHash5, {
+  //     from: userA
+  //   });
+  //   const jobHashRs = l.logs.find(l => l.event === 'PollWhiteFlaged').args.indexJobHash
+  //   const sender = l.logs.find(l => l.event === 'PollWhiteFlaged').args.creator
+  //   assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
+  //   assert.equal(userA, sender);
+  // });
 });
