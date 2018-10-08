@@ -9,7 +9,7 @@ contract BBDispute is BBStandard{
   function setPayment(address p) onlyOwner public  {
     payment = BBFreelancerPayment(p);
   }
-  event PollStarted(bytes32 indexed indexJobHash, bytes proofHash, address indexed creator, bytes jobHash);
+  event PollStarted(bytes32 indexed indexJobHash, bytes proofHash, address indexed creator, bytes jobHash, uint256 evidenceEndDate, uint256 commitEndDate, uint256 revealEndDate);
   event PollAgainsted(bytes32 indexed indexJobHash, address indexed creator,  bytes proofHash, bytes jobHash);
   event PollFinalized(bytes32 indexed indexJobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bytes jobHash);
   event PollWhiteFlaged(bytes32 indexed indexJobHash, address indexed creator, bytes jobHash);
@@ -147,7 +147,7 @@ contract BBDispute is BBStandard{
     // save creator proofHash
     bbs.setBytes(BBLib.toB32(jobHash, pID,'CREATOR_PROOF'), proofHash);
 
-    emit PollStarted(BBLib.toB32(jobHash), proofHash, msg.sender, jobHash);
+    emit PollStarted(BBLib.toB32(jobHash), proofHash, msg.sender, jobHash, evidenceEndDate, commitEndDate, revealEndDate);
   }
   /**
   * @dev againstPoll

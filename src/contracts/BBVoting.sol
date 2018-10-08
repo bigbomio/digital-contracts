@@ -125,42 +125,19 @@ contract BBVoting is BBStandard{
     bbs.setAddress(BBLib.toB32(pollID,'CHOICE',msg.sender), choice);
     emit VoteRevealed(msg.sender, pollID, secretHash);
   }
-  // /**
-  // * @dev claimReward for poll
-  // * @param pollID Job Hash
-  // *
-  // */
-  // function claimReward(uint256 pollID) public {
-  //   require(bbs.getUint(BBLib.toB32(pollID,'REVEAL_ENDDATE'))<=now);
-  //   require(bbs.getBool(BBLib.toB32(pollID,'REWARD_CLAIMED',msg.sender))!= true);
-  //   uint256 numReward = calcReward(pollID);
-  //   require (numReward > 0);
-  //   // set claimed to true
-  //   bbs.setBool(BBLib.toB32(pollID,'REWARD_CLAIMED',msg.sender), true);
-  //   require(bbo.transferFrom(bboReward, msg.sender, numReward));
-  // }
-  // /**
-  // * @dev calcReward calculate the reward
-  // * @param pollID Job Hash
-  // *
-  // */
-  // //TODO
-  // function calcReward(uint256 pollID) constant public returns(uint256 numReward){
-  //   (uint256 pollStatus, bytes memory relatedTo,address creator,address relatedAddr) = getPoll(pollID);
-  //   address winner = bbs.getAddress(BBLib.toB32(relatedTo, 'DISPUTE_WINNER'));
-  //   require(winner!=address(0x0));
-  //   address choice = bbs.getAddress(BBLib.toB32(pollID, 'CHOICE',msg.sender));
-  //   if(choice == winner){
-  //     uint256 votes = bbs.getUint(BBLib.toB32(pollID, 'VOTES',msg.sender));
-  //     uint256 totalVotes = bbs.getUint(BBLib.toB32(pollID, 'VOTE_FOR',choice));
-  //     uint256 bboStake = bbs.getUint(BBLib.toB32(pollID, 'STAKED_DEPOSIT',choice));
-  //     numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
-  //   }else{
-  //     //TODO
-  //     numReward = bbs.getUint(keccak256('BBO_REWARDS'));
-  //   }
-  // }
+  function updatePoll(uint256 pollID,bool whiteFlag) public {
+    (uint256 pollStatus, uint256 pollType, bytes memory relatedTo,address creator,address relatedAddr) = getPollDetail(pollID);
+    require(pollStatus == 1);
+    require(relatedAddr.delegatecall(bytes4(keccak256("allowVoting(bytes)")),relatedTo));
+    require(bbs.getUint(BBLib.toB32(pollID,'COMMIT_ENDDATE'))< now);
+    if(whiteFlag){
 
+    }else{
+
+    }
+
+
+  }
   function getPollID(uint256 pollType, bytes relatedTo) public view returns(uint256 pollID){
     pollID = bbs.getUint(BBLib.toB32(relatedTo, pollType,'POLL'));
   }
@@ -212,7 +189,7 @@ contract BBVoting is BBStandard{
     emit PollStarted(pollID, pollType, msg.sender, relatedTo);
 
   }
-  function getPoll(uint256 pollID) public constant returns(uint256, uint256, bytes, address, address) {
+  function getPollDetail(uint256 pollID) public constant returns(uint256, uint256, bytes, address, address) {
     uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
     uint256 pollType = bbs.getUint(BBLib.toB32(pollID,'POLL_TYPE'));
     bytes memory relatedTo = bbs.getBytes(BBLib.toB32(pollID,'RELATED_TO'));
@@ -220,8 +197,11 @@ contract BBVoting is BBStandard{
     address relatedAddr = bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
     return (pollStatus, pollType, relatedTo, creator, relatedAddr);
   }
+  // function getPollResult(uint256 pollID) public view returns(uint256, uint256, uint256){
+
+  // }
   function addPollOption(uint256 pollID, bytes pollOption) public {
-    (uint256 pollStatus, uint256 pollType, bytes memory relatedTo,address creator,address relatedAddr) = getPoll(pollID);
+    (uint256 pollStatus, uint256 pollType, bytes memory relatedTo,address creator,address relatedAddr) = getPollDetail(pollID);
     require(pollStatus == 1);
     require(relatedAddr.delegatecall(bytes4(keccak256("allowVoting(bytes)")),relatedTo));
     require(bbs.getUint(BBLib.toB32(pollID,'ADDOPTION_ENDDATE')) > now);
