@@ -7,6 +7,7 @@ pragma solidity ^0.4.24;
 
 import './BBStandard.sol';
 import './BBLib.sol';
+import './BBVotingInterface.sol';
 /**
  * @title BBVoting contract 
  */
@@ -136,7 +137,7 @@ contract BBVoting is BBStandard{
     (,uint256 commitEndDate,uint256 revealEndDate) = getPollStage(pollID);
     (, uint256 commitDuration,uint256 revealDuration,) = getPollParams(pollType);
     require(pollStatus == 1);
-    require(relatedAddr.delegatecall(bytes4(keccak256("allowVoting(bytes)")),relatedTo));
+    require(allowVoting( relatedAddr,  relatedTo));
     require(commitEndDate < now);
     require(revealEndDate > now);
     require(hasVote== false);
@@ -170,10 +171,13 @@ contract BBVoting is BBStandard{
       r = (pollStatus == 1);
     }
   }
+  function allowVoting(address relatedAddr, bytes relatedTo) private returns(bool c){
+     return BBVotingInterface(relatedAddr).allowVoting(msg.sender, relatedTo);
+  }
   function startPoll(uint256 pollType, bytes relatedTo, bytes extraData) public {
     address relatedAddr = bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
     // make sure the voting having the allowVoting method :v 
-    require(relatedAddr.delegatecall(bytes4(keccak256("allowVoting(bytes)")),relatedTo));
+    require(allowVoting(relatedAddr,relatedTo));
     require(hasVoting(pollType, relatedTo)!=true);
     //TODO
     return _doStartPoll(pollType, relatedTo, extraData);
@@ -235,7 +239,7 @@ contract BBVoting is BBStandard{
   function addPollOption(uint256 pollID, bytes pollOption) public {
     (uint256 pollStatus,, bytes memory relatedTo,address creator,address relatedAddr,) = getPollDetail(pollID);
     require(pollStatus == 1);
-    require(relatedAddr.delegatecall(bytes4(keccak256("allowVoting(bytes)")),relatedTo));
+    require(allowVoting(relatedAddr, relatedTo));
     require(bbs.getUint(BBLib.toB32(pollID,'ADDOPTION_ENDDATE')) > now);
     return _doAddPollOption(pollID, creator, pollOption);
   }
