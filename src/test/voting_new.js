@@ -26,6 +26,8 @@ var jobHash3 = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr3';
 var jobHash4 = 'QmSn1wGTpz1';
 var jobHash5 = 'QmSn1wGTpz2'
 var jobID=0;
+
+var pollID=0;
 var proxyAddressJob = '';
 var proxyAddressBid = '';
 var proxyAddressPayment = '';
@@ -156,6 +158,16 @@ it("start job for dispute voting", async () => {
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     await payment.rejectPayment(jobHash4, 1, { from: userA});
 
+    var userB = accounts[2];
+    await bbo.approve(proxyAddressVoting, 0, { from: userB });
+    await bbo.approve(proxyAddressVoting, Math.pow(2, 255), { from: userB });
+    
+    var userA = accounts[0];
+    await bbo.approve(proxyAddressVoting, 0, { from: userA });
+    await bbo.approve(proxyAddressVoting, Math.pow(2, 255), { from: userA });
+    var userC = accounts[1];
+    await bbo.approve(proxyAddressVoting, 0, { from: userC });
+    await bbo.approve(proxyAddressVoting, Math.pow(2, 255), { from: userC });
 });
 it("set params", async () => {
     let params = await BBParams.at(proxyAddressParams);
@@ -170,13 +182,167 @@ it("start poll", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
-    await bbo.approve(voting.address, 0, { from: userB });
-    await bbo.approve(voting.address, Math.pow(2, 255), { from: userB });
     let l = await voting.startPoll(1, jobID, proofHash, { from: userB });
-    console.log(l.logs);
     const returnJobID = l.logs.find(l => l.event === 'PollStarted').args.relatedTo
+    pollID = l.logs.find(l => l.event === 'PollStarted').args.pollID;
     assert.equal(jobID.toString(), returnJobID.toString());
 });
+it("add Poll Option", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    let proofHash = 'proofHashAgainst';
+    var userA = accounts[0];
+    
+    let l = await voting.addPollOption(pollID , proofHash, { from: userA });
 
+    const pollIDRs = l.logs.find(l => l.event === 'PollOptionAdded').args.pollID
+    assert.equal(pollID.toString(), pollIDRs.toString());
+});
+
+it("reqest voting rights", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    
+    let l = await voting.requestVotingRights(200e18, {
+      from: userC
+  });
+    const rs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
+    assert.equal(userC, rs);
+});
+it("fast forward to 24h after start poll", function() {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function() {
+      return Helpers.sendPromise('evm_mine', []).then(function() {
+
+
+      });
+  });
+});
+
+it("commit vote ", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    var secretHash = web3.utils.soliditySha3(accounts[2], 123);
+    let l = await voting.commitVote(pollID, secretHash, 200e18, { from: userC });
+    const rs = l.logs.find(l => l.event === 'VoteCommitted').args.pollID
+    assert.equal(pollID.toString(), rs.toString());
+});
+it("re-commit vote ", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    var secretHash = web3.utils.soliditySha3(accounts[2], 123);
+    let l = await voting.commitVote(pollID, secretHash, 300e18, { from: userC });
+    const rs = l.logs.find(l => l.event === 'VoteCommitted').args.pollID
+    assert.equal(pollID.toString(), rs.toString());
+});
+it("fast forward to 24h after commit vote poll", function() {
+    var fastForwardTime = 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function() {
+      return Helpers.sendPromise('evm_mine', []).then(function() {
+
+      });
+  });
+});
+it("reveal vote ", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    let l = await voting.revealVote(pollID, accounts[2], 123, { from: userC });
+    const a = l.logs.find(l => l.event === 'VoteRevealed').args.pollID
+    assert.equal(pollID.toString(), a.toString());
+});
+it("start other job for dispute voting", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
+    var estimatedTime = 3 * 24 * 3600; // 3 days
+
+    let l0 = await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner', { from: userA });
+    jobID = l0.logs.find(l => l.event === 'JobCreated').args.jobID
+    var userB = accounts[2];
+    let bid = await BBFreelancerBid.at(proxyAddressBid);
+
+    var timeDone = 3 * 24 * 3600; // 3 days
+    await bid.createBid(jobHash5, 400e18, timeDone, { from: userB });
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(bid.address, 0, { from: userA });
+    await bbo.approve(bid.address, Math.pow(2, 255), { from: userA });
+    await bid.acceptBid(jobHash5, userB, { from: userA });
+
+    await job.startJob(jobHash5, { from: userB });
+    await job.finishJob(jobHash5, { from: userB });
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    await payment.rejectPayment(jobHash5, 1, { from: userA});
+
+    var userB = accounts[2];
+    await bbo.approve(proxyAddressVoting, 0, { from: userB });
+    await bbo.approve(proxyAddressVoting, Math.pow(2, 255), { from: userB });
+    
+    var userA = accounts[0];
+    await bbo.approve(proxyAddressVoting, 0, { from: userA });
+    await bbo.approve(proxyAddressVoting, Math.pow(2, 255), { from: userA });
+    var userC = accounts[1];
+    await bbo.approve(proxyAddressVoting, 0, { from: userC });
+    await bbo.approve(proxyAddressVoting, Math.pow(2, 255), { from: userC });
+});
+
+it("start poll jobHash5", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    let proofHash = 'proofHash';
+    var userB = accounts[2];
+    let l = await voting.startPoll(1, jobID, proofHash, { from: userB });
+    const returnJobID = l.logs.find(l => l.event === 'PollStarted').args.relatedTo
+    pollID = l.logs.find(l => l.event === 'PollStarted').args.pollID;
+    assert.equal(jobID.toString(), returnJobID.toString());
+});
+it("add Poll Option jobHash5", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    let proofHash = 'proofHashAgainst';
+    var userA = accounts[0];
+    
+    let l = await voting.addPollOption(pollID , proofHash, { from: userA });
+
+    const pollIDRs = l.logs.find(l => l.event === 'PollOptionAdded').args.pollID
+    assert.equal(pollID.toString(), pollIDRs.toString());
+});
+
+it("fast forward to 24h after commit vote poll jobHash5", function() {
+    var fastForwardTime = 2 * 24 * 3600 + 1;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function() {
+      return Helpers.sendPromise('evm_mine', []).then(function() {
+
+      });
+  });
+});
+it("extend time when no one commit vote", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userA = accounts[0];
+    let l = await voting.updatePoll(pollID, false, { from: userA });
+    const rs = l.logs.find(l => l.event === 'PollUpdated').args.pollID
+    const whiteFlag = l.logs.find(l => l.event === 'PollUpdated').args.whiteFlag
+    assert.equal(pollID.toString(), rs.toString());
+    assert.equal(false, whiteFlag);
+});
+it("white-flag Poll when no one commit vote", async () => {
+
+    let bbo = await BBOTest.at(bboAddress);
+    var userA = accounts[0];
+    let voting = await BBVoting.at(proxyAddressVoting);
+    
+    let l = await voting.updatePoll(pollID, true, { from: userA });
+    const rs = l.logs.find(l => l.event === 'PollUpdated').args.pollID
+    const whiteFlag = l.logs.find(l => l.event === 'PollUpdated').args.whiteFlag
+    assert.equal(pollID.toString(), rs.toString());
+    assert.equal(true, whiteFlag);
+});
+it("[FAIL] white-flag Poll again should fail", async () => {
+
+    let bbo = await BBOTest.at(bboAddress);
+    var userA = accounts[0];
+    let voting = await BBVoting.at(proxyAddressVoting);
+    try{
+        let l = await voting.updatePoll(pollID, true, { from: userA });
+    }catch(e){
+        return true;
+    }
+    
+});
 });
