@@ -7,11 +7,13 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
+import './BBRatingInterface.sol';
+
 
 /**
  * @title BBFreelancerJob
  */
-contract BBFreelancerJob is BBFreelancer {
+contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
    BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
@@ -131,5 +133,49 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'), now);
     emit JobFinished(jobHash);
   }
+
+  function allowRating(address owner ,uint256 jobID) public view returns(bool r) {
+    bytes memory jobHash = bbs.getBytes(keccak256(abi.encodePacked(jobID)));
+    // address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+    // address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+    // r = (owner == jobOwner || owner == freelancer);
+    // if(r == true) {
+    //   uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'STATUS'));
+    //   r = (jobStatus == 5 || jobStatus == 9);
+    // }
+    r = true;
+  }
+
+  // function doRating(bytes jobHash, uint256 value) public view returns (bool) {
+  //   address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+  //   address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+
+  //   require(bbs.getUint(keccak256(abi.encodePacked(msg.sender, jobHash,'VALUE'))) <= 0);
+  //   bbs.setUint(keccak256(abi.encodePacked(msg.sender, jobHash,'VALUE')),value);
+
+  //   address candidate = owner;
+  //   if(msg.sender == owner) {
+  //      candidate = freelancer;
+  //   }
+  //   uint totalRate = bbs.getUint(keccak256(abi.encodePacked(candidate,'RATE')));
+  //   totalRate = totalRate.add(value);
+  //   bbs.setUint(keccak256(abi.encodePacked(candidate,'RATE')),totalRate);
+
+  //   uint totalUser = bbs.getUint(keccak256(abi.encodePacked(candidate,'USER')));
+  //   totalUser = totalUser.add(1);
+  //   bbs.setUint(keccak256(abi.encodePacked(candidate,'USER')),totalUser);
+  // }
+
+  // event GetRating(address jobOwner, address freelancer);
+
+  function getRating(bytes jobHash) public view returns (bytes) {
+     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+    // address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+
+    return jobHash;
+
+    //emit GetRating(jobOwner, freelancer);
+  }  
+
 
 }

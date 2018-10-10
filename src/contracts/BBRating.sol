@@ -2,49 +2,38 @@ pragma solidity ^0.4.24;
 
 import './BBFreelancer.sol';
 import './BBLib.sol';
+import './BBRatingInterface.sol';
 
 
 contract BBRating is BBFreelancer {
 
-    event Rating(address indexed addressProxy, bytes32 indexed jobHash, address  whoRate, address indexed candidate, uint value, bytes commentHash);
+    event Rating(address indexed relatedAddress, bytes relatedTo, address  whoRate, uint256 value, bytes commentHash, bool isAllowRating);
 
-
-    function addProxy(address addressProxy) public onlyOwner {
-        require(addressProxy!=address(0x0));
-        bbs.setBool(keccak256(abi.encodePacked(addressProxy)), true);
+    function addRelatedAddress(bytes key, address relatedAddress) public onlyOwner {
+        require(relatedAddress!=address(0x0));
+        bbs.setAddress(keccak256(abi.encodePacked(key)), relatedAddress);
     }
 
-    function rate(address addressProxy,bytes jobHash, uint value, bytes commentHash) public {
-        require( bbs.getBool(keccak256(abi.encodePacked(addressProxy))) == true);
-        address owner = bbs.getAddress(keccak256(jobHash));
-        address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
-        require(msg.sender == owner || msg.sender == freelancer);
-        uint jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
-        require(jobStatus == 5 || jobStatus == 9);
+    function allowRating(address relatedAddr, uint256 relatedTo) private returns(bool c){
+        return BBRatingInterface(relatedAddr).allowRating(msg.sender, relatedTo);
+    }
+
+    function rate(bytes key, uint256 relatedTo, uint value, bytes commentHash) public {
+        address relatedAddress = bbs.getAddress(keccak256(abi.encodePacked(key)));
+        require(relatedAddress != address(0x0));
         require(value > 0);
         require(value <= 5);
-        require(bbs.getUint(keccak256(abi.encodePacked(addressProxy,msg.sender, jobHash))) <= 0);
-        //Save rating value
-        bbs.setUint(keccak256(abi.encodePacked(addressProxy,msg.sender, jobHash)),value);
+        bool isAllowRating = allowRating(relatedAddress, relatedTo);
+       // bytes memory rs = BBRatingInterface(relatedAddress).getRating(relatedTo);
+        //require();
+        //require(relatedAddress.delegatecall(bytes4(keccak256("doRating(bytes,uint256)")),relatedTo, value));
 
-        address candidate = owner;
-        if(msg.sender == owner) {
-            candidate = freelancer;
-        }
-        uint totalRate = bbs.getUint(keccak256(abi.encodePacked(addressProxy, candidate, 'RATE')));
-        totalRate = totalRate.add(value);
-        bbs.setUint(keccak256(abi.encodePacked(addressProxy,candidate,'RATE')),totalRate);
-
-        uint totalUser = bbs.getUint(keccak256(abi.encodePacked(addressProxy,candidate, 'USER')));
-        totalUser = totalUser.add(1);
-        bbs.setUint(keccak256(abi.encodePacked(addressProxy,candidate,'USER')),totalUser);
-
-        emit Rating(addressProxy ,keccak256(jobHash), msg.sender, candidate,value, commentHash);
+        emit Rating(relatedAddress, commentHash, msg.sender, value, commentHash,isAllowRating);
     }
 
-    function getRating(address addressProxy,address user) public constant returns (uint, uint) {
-        uint totalRate = bbs.getUint(keccak256(abi.encodePacked(addressProxy,user, 'RATE')));
-        uint totalUser = bbs.getUint(keccak256(abi.encodePacked(addressProxy,user, 'USER')));
-        return (totalUser, totalRate);
+    function getRating(bytes key, bytes relatedTo) public {
+        address relatedAddress = bbs.getAddress(keccak256(abi.encodePacked(key)));
+        //require(relatedAddress.delegatecall(bytes4(keccak256("getRating(bytes)")),relatedTo));
+        //uint256 result = relatedAddress.delegatecall(bytes4(keccak256("getRating(bytes)")),relatedTo);
     } 
 }
