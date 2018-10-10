@@ -61,6 +61,9 @@ var proxyAddressDispute = '';
 var proxyAddressParams = '';
 var bboAddress = '';
 var storageAddress = '';
+var jobID_A;
+var jobID_B;
+
 contract('Voting Test', async (accounts) => {
 
   it("initialize contract", async () => {
@@ -242,7 +245,7 @@ contract('Voting Test', async (accounts) => {
       from: accounts[0]
     });
     
-    await rating.addRelatedAddress(KEY_JOB_ADDRESS, jobInstance.address, {
+    await rating.addRelatedAddress(KEY_JOB_ADDRESS, proxyAddressJob, {
       from: accounts[0]
     });
 
@@ -296,12 +299,14 @@ contract('Voting Test', async (accounts) => {
     await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
-    await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', {
+    let l = await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
-    await job.createJob(jobHash4 + 'yes', expiredTime, estimatedTime, 500e18, 'banner', {
+    jobID_A = l.logs.find(l => l.event === 'JobCreated').args.jobID;
+    l = await job.createJob(jobHash4 + 'yes', expiredTime, estimatedTime, 500e18, 'banner', {
       from: userA
     });
+    jobID_B = l.logs.find(l => l.event === 'JobCreated').args.jobID;
     //Bid Job
     var userB = accounts[2];
     var userC = accounts[3];
@@ -815,22 +820,23 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS , '1', 4, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS , jobID_A, 4, commentHash, {
       from: userB
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
-    console.log(jj)
-    //assert.equal(userB, jj.whoRate);
+  //  console.log(jobID_A);
+   // console.log(jj)
+    assert.equal(userB, jj.whoRate);
   });
 
-  return; 
+
 
 
   it("Rating C->A", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userC = accounts[3];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, jobHash4 + 'yes', 5, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_B, 5, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -843,7 +849,7 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[3];
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,jobHash4 + 'yes', 4, commentHash, {
+      let l = await rating.rate(KEY_JOB_ADDRESS ,jobID_B, 4, commentHash, {
         from: userB
       });
       return false;
@@ -859,7 +865,7 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, jobHash4 + 'yes', 5, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_A, 5, commentHash, {
       from: userA
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -874,7 +880,7 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS,jobHash4 + 'yes', 4, commentHash, {
+      let l = await rating.rate(KEY_JOB_ADDRESS, jobID_A, 4, commentHash, {
         from: userA
       });
       let jj = l.logs.find(l => l.event === 'Rating').args
@@ -891,11 +897,11 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[1];
     let commentHash = 'sfvsjdhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS, jobHash4 + 'yes', 4, commentHash, {
+      let l = await rating.rate(KEY_JOB_ADDRESS, '2', 4, commentHash, {
         from: userB
       });
       let jj = l.logs.find(l => l.event === 'Rating').args
-      //console.log(JSON.stringify(jj));
+      console.log(JSON.stringify(jj));
       return false;
     } catch (e) {
       return true;
@@ -906,22 +912,21 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
-    let l = await rating.getRating(KEY_JOB_ADDRESS, jobHash4 + 'yes', {
+    let lk = await rating.getRating(KEY_JOB_ADDRESS, userB,{
       from: userA
     });
-    console.log(JSON.stringify(l.logs));
+   // console.log(JSON.stringify(lk));
     return true;
   });
   it("Get Client Rating", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
-    let l = await rating.getRating(KEY_JOB_ADDRESS , jobHash4 + 'yes', {
-      from: userA
+    let l = await rating.getRating(KEY_JOB_ADDRESS, userA,{
+      from: userB
     });
-    let jj = l.logs.find(l => l.event === 'GetRating')
-
-    console.log(JSON.stringify(jj));
+    
+   // console.log(JSON.stringify(l));
     return true;
 
   });
