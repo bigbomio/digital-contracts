@@ -7,11 +7,12 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
+import './BBVotingInterface.sol';
 
 /**
  * @title BBFreelancerJob
  */
-contract BBFreelancerJob is BBFreelancer {
+contract BBFreelancerJob is BBFreelancer, BBVotingInterface {
    BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
@@ -131,11 +132,12 @@ contract BBFreelancerJob is BBFreelancer {
     emit JobFinished(jobHash);
   }
 
-  function allowVoting(bytes jobHash) public view returns(bool r) {
+  function allowVoting(address owner, uint256 jobID) public view returns(bool r) {
     //TODO
+    bytes memory jobHash = bbs.getBytes(BBLib.toB32(jobID));
     address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
     address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
-    r = (msg.sender==jobOwner || msg.sender==freelancer);
+    r = (owner==jobOwner || owner==freelancer);
     if(r == true){
       uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'STATUS'));
       address winner = bbs.getAddress(BBLib.toB32(jobHash,'DISPUTE_WINNER'));
