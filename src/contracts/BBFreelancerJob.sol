@@ -145,31 +145,32 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     }
   }
 
-  function doRating(address sender, uint256 jobID, uint256 value) public view {
-    bytes memory jobHash = bbs.getBytes(keccak256(abi.encodePacked(jobID)));
-    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+    function getRelatedTo(address sender, uint256 jobID) public view returns (bytes32) {
+        bytes memory jobHash = bbs.getBytes(keccak256(abi.encodePacked(jobID)));
+        address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+        address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
 
-    require(bbs.getUint(keccak256(abi.encodePacked(sender, jobHash,'VALUE'))) <= 0);
-    bbs.setUint(keccak256(abi.encodePacked(sender, jobHash,'VALUE')),value);
-
-    address candidate = jobOwner;
-    if(sender == jobOwner) {
-       candidate = freelancer;
+        if(sender == jobOwner) {
+          return keccak256(abi.encodePacked(freelancer));
+        }
+        return keccak256(abi.encodePacked(jobOwner));
     }
-    uint totalStar = bbs.getUint(keccak256(abi.encodePacked(candidate,'STAR')));
-    totalStar = totalStar.add(value);
-    bbs.setUint(keccak256(abi.encodePacked(candidate,'STAR')),totalStar);
 
-    uint totalRate = bbs.getUint(keccak256(abi.encodePacked(candidate,'RATE')));
-    totalRate = totalRate.add(1);
-    bbs.setUint(keccak256(abi.encodePacked(candidate,'RATE')),totalRate);
-  }
+      function getRating(address relatedAddress, uint256 jobID) public view returns (uint256, uint256, uint256, uint256) {
 
-   function getRating(address candidate) public view returns (uint256 totalStar, uint256 totalRate) {
-      totalStar = bbs.getUint(keccak256(abi.encodePacked(candidate,'STAR')));
-      totalRate = bbs.getUint(keccak256(abi.encodePacked(candidate,'RATE')));
-   }
+        bytes memory jobHash = bbs.getBytes(keccak256(abi.encodePacked(jobID)));
+        address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
+        address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+
+        uint totalStarClient = bbs.getUint(keccak256(abi.encodePacked(relatedAddress, keccak256(abi.encodePacked(jobOwner)))));
+        uint totalRateClient = bbs.getUint(keccak256(abi.encodePacked(relatedAddress, keccak256(abi.encodePacked(jobOwner)),'RATE')));
+
+        uint totalStarFreelancer = bbs.getUint(keccak256(abi.encodePacked(relatedAddress, keccak256(abi.encodePacked(freelancer)))));
+        uint totalRateFreelancer = bbs.getUint(keccak256(abi.encodePacked(relatedAddress, keccak256(abi.encodePacked(freelancer)),'RATE')));
+
+        return (totalStarClient, totalRateClient, totalStarFreelancer, totalRateFreelancer);
+      }
+
 
 
 }

@@ -817,8 +817,9 @@ contract('Voting Test', async (accounts) => {
   });
 
   it("Rating B->A", async () => {
-    let rating = await BBRating.at(proxyAddressRating);
     var userB = accounts[2];
+    let rating = await BBRating.at(proxyAddressRating);
+
     let commentHash = 'sfvsjhfvdsj';
     let l = await rating.rate(KEY_JOB_ADDRESS , jobID_A, 4, commentHash, {
       from: userB
@@ -831,12 +832,33 @@ contract('Voting Test', async (accounts) => {
 
 
 
-
-  it("Rating C->A", async () => {
+  it("Rating C->A 1 star", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userC = accounts[3];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_B, 5, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_B, 1, commentHash, {
+      from: userC
+    });
+    let jj = l.logs.find(l => l.event === 'Rating').args
+    assert.equal(userC, jj.whoRate);
+  });
+
+  it("Rating C->A agian 3 star", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userC = accounts[3];
+    let commentHash = 'sfvsjhfvdsj';
+    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_B, 3, commentHash, {
+      from: userC
+    });
+    let jj = l.logs.find(l => l.event === 'Rating').args
+    assert.equal(userC, jj.whoRate);
+  });
+
+  it("Rating C->A agian 2 star", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userC = accounts[3];
+    let commentHash = 'sfvsjhfvdsj';
+    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_B, 2, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -846,12 +868,13 @@ contract('Voting Test', async (accounts) => {
 
   it("[Fail] not freelancer Rating ", async () => {
     let rating = await BBRating.at(proxyAddressRating);
-    var userB = accounts[3];
+    var userB = accounts[4];
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,jobID_B, 4, commentHash, {
+      let l = await rating.rate(KEY_JOB_ADDRESS ,jobID_B, 1, commentHash, {
         from: userB
       });
+      console.log('[Fail] not freelancer Rating  OK');
       return false;
     } catch (e) {
       return true;
@@ -865,7 +888,7 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_A, 5, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, jobID_A, 3, commentHash, {
       from: userA
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -874,22 +897,6 @@ contract('Voting Test', async (accounts) => {
   });
 
 
-  it("[Fail] Rating again A->B", async () => {
-    let rating = await BBRating.at(proxyAddressRating);
-    var userA = accounts[0];
-    var userB = accounts[2];
-    let commentHash = 'sfvsjhfvdsj';
-    try {
-      let l = await rating.rate(KEY_JOB_ADDRESS, jobID_A, 4, commentHash, {
-        from: userA
-      });
-      let jj = l.logs.find(l => l.event === 'Rating').args
-      console.log('Rating again : ',JSON.stringify(jj));
-      return false;
-    } catch (e) {
-      return true;
-    }
-  });
 
   it("[Fail] Rating without interact Job", async () => {
     let rating = await BBRating.at(proxyAddressRating);
@@ -912,21 +919,22 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
-    let lk = await rating.getRating(KEY_JOB_ADDRESS, userB,{
+    let lk = await rating.getRating(KEY_JOB_ADDRESS, jobID_B,{
       from: userA
     });
-   // console.log(JSON.stringify(lk));
+    //console.log(JSON.stringify(lk));
     return true;
   });
   it("Get Client Rating", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
     var userB = accounts[2];
-    let l = await rating.getRating(KEY_JOB_ADDRESS, userA,{
+    let l = await rating.getRating(KEY_JOB_ADDRESS, jobID_A,{
       from: userB
     });
-    
-   // console.log(JSON.stringify(l));
+
+      
+    //console.log(JSON.stringify(l));
     return true;
 
   });
