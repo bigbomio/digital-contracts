@@ -1,11 +1,11 @@
 pragma solidity ^0.4.24;
 
-import './BBFreelancer.sol';
+import './BBStandard.sol';
 import './BBLib.sol';
 import './BBRatingInterface.sol';
 
 
-contract BBRating is BBFreelancer {
+contract BBRating is BBStandard {
 
     event Rating(address indexed relatedAddress, uint256 relatedTo, address indexed whoRate, address indexed rateTo,uint256 totalStar, uint256 totalUser ,uint256 star, bytes commentHash);
 
