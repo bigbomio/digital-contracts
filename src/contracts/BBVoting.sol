@@ -62,12 +62,12 @@ contract BBVoting is BBStandard{
    */
   function commitVote(uint256 pollID, bytes32 secretHash, uint256 tokens) public 
   {
-    uint256 minVotes = bbs.getUint(keccak256('MIN_VOTES'));
-    uint256 maxVotes = bbs.getUint(keccak256('MAX_VOTES'));
+    //uint256 minVotes = bbs.getUint(keccak256('MIN_VOTES'));
+    //uint256 maxVotes = bbs.getUint(keccak256('MAX_VOTES'));
     uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
     require(pollStatus == 1);
-    require(tokens >= minVotes);
-    require(tokens <= maxVotes);
+    //require(tokens >= minVotes);
+    //require(tokens <= maxVotes);
     (uint256 addPollOptionEndDate,uint256 commitEndDate, ) = helper.getPollStage(pollID);
     
     require(addPollOptionEndDate<now);
@@ -125,21 +125,27 @@ contract BBVoting is BBStandard{
     (, uint256 commitDuration,uint256 revealDuration,) = helper.getPollParams(pollType);
     require(pollStatus == 1);
     require(allowVoting( relatedAddr,  relatedTo));
-    require(commitEndDate < now);
     require(revealEndDate > now);
     require(hasVote== false);
     if(whiteFlag){
       return _doWhiteFlag(pollID);
     }else{
+      require(commitEndDate < now);
       return _doExtendPoll(pollID, commitDuration, revealDuration);
     }
   }
+  function _doWithdrawStakeToken(uint256 pollID) private returns(bool){
+    uint256 stakedBBO = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender));
+    if(stakedBBO > 0){
+      bbs.setUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender), 0);
+      require(bbo.transfer(msg.sender, stakedBBO));
+      return true;
+    }
+    return false;
+  }
   function _doWhiteFlag(uint256 pollID) private {
     assert(_doWithdrawStakeToken(pollID));
-    bbs.deleteUint(BBLib.toB32(pollID, 'POLL_OPTION_NUM', msg.sender));
-    //
-    uint256 numOption = bbs.getUint(BBLib.toB32(pollID, 'NUM_OPTION'));
-    bbs.setUint(BBLib.toB32(pollID, 'NUM_OPTION'), numOption.sub(1));
+    bbs.deleteBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender));
     emit PollUpdated(pollID, true );
   }
   function _doExtendPoll(uint256 pollID, uint256 commitDuration,uint256 revealDuration) private {
@@ -208,14 +214,7 @@ contract BBVoting is BBStandard{
     }
     return true;
   }
-  function _doWithdrawStakeToken(uint256 pollID) private returns(bool){
-    uint256 stakedBBO = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender));
-    if(stakedBBO > 0){
-      bbs.setUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender), 0);
-      require(bbo.transfer(msg.sender, stakedBBO));
-    }
-    return true;
-  }
+  
   function _doAddPollOption(uint256 pollID, address creator, bytes pollOption) private {
     uint256 bboStake = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',creator));
     assert(_doStakeToken(pollID, bboStake));

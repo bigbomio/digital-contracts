@@ -69,8 +69,60 @@ contract BBVotingHelper is BBStandard{
     uint256 pollID = getPollID(pollType, relatedTo);
     if(pollID > 0) {
       uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
-      r = (pollStatus == 1);
+      uint256 revealEndDate = bbs.getUint(BBLib.toB32(pollID,'REVEAL_ENDDATE'));
+      r = (pollStatus == 1 && revealEndDate < now);
     }
   }
 
+  /**
+  * @dev claimReward for poll
+  * @param pollID Job Hash
+  *
+  */
+  function claimReward(uint256 pollID) public {
+    require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
+    require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender))!= true);
+    uint256 numReward = calcReward(pollID);
+    require (numReward > 0);
+    // set claimed to true
+    bbs.setBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender), true);
+    // todo
+    require(bbo.transfer(msg.sender, numReward));
+  }
+  /**
+  * @dev calcReward calculate the reward
+  * @param pollID Job Hash
+  *
+  */
+  function calcReward(uint256 pollID) constant public returns(uint256 numReward){
+    (bool isFinished, address winner, bool hasVote) = getPollWinner(pollID);
+    if(isFinished==true && hasVote == true){
+      address choice = bbs.getAddress(BBLib.toB32(pollID, 'CHOICE',msg.sender));
+      if(choice == winner){
+        uint256 votes = bbs.getUint(BBLib.toB32(pollID, 'VOTES',msg.sender));
+        uint256 totalVotes = bbs.getUint(BBLib.toB32(pollID, 'VOTE_FOR',choice));
+        uint256 bboStake = bbs.getUint(BBLib.toB32(pollID, 'STAKED_DEPOSIT',choice));
+        numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
+      }else{
+        (,uint256 pollType,,,,) = getPollDetail(pollID);
+        numReward = bbs.getUint(BBLib.toB32(pollType, 'BBO_REWARDS'));
+      }
+    }
+  }
+  function getPollWinner(uint256 pollID) constant public returns(bool isFinished, address winner, bool hasVote) {
+    (,,uint256 revealEndDate) = getPollStage(pollID);
+    (uint256 pollStatus,,,,,bool _hasVote) = getPollDetail(pollID);
+    isFinished = (revealEndDate <= now);
+    if(_hasVote==true){
+      hasVote = _hasVote;
+      (address[] memory addrs,uint256[] memory votes) = getPollResult(pollID);
+      uint256 max = 0;
+      for(uint256 i=0;i<votes.length;i ++){
+        if(max<votes[i]){
+          max = votes[i];
+          winner = addrs[i];
+        }
+      }
+    }
+  }
 }
