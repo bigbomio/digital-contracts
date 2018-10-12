@@ -46,7 +46,7 @@ function allowRating(address relatedAddr, address  rateTo, uint256 relatedTo) pr
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `relatedAddr`       | address       |  key of relatedAddress contract|
+| `relatedAddr`       | address       |  address of contract implement this function|
 |`rateTo`| address |address of rating|
 | `relatedTo`       | uint256   | id of to rate|
 
