@@ -1,15 +1,14 @@
 pragma solidity ^0.4.24;
 
 import './BBStandard.sol';
-import './BBLib.sol';
 import './BBRatingInterface.sol';
 
 
 contract BBRating is BBStandard {
 
-    event Rating(address indexed relatedAddress, uint256 relatedTo, address indexed whoRate, address indexed rateTo,uint256 totalStar, uint256 totalUser ,uint256 star, bytes commentHash);
+    event Rating(uint indexed key, uint256 relatedTo,  address indexed rateTo,uint256 totalStar, uint256 totalUser ,uint256 star, bytes commentHash);
 
-    function allowRating(address relatedAddr, address  rateTo, uint256 relatedTo) private returns(bool c){
+    function allowRating(address relatedAddr, address  rateTo, uint256 relatedTo) private returns(bool){
         return BBRatingInterface(relatedAddr).allowRating(msg.sender, rateTo, relatedTo);
     }
 
@@ -22,23 +21,23 @@ contract BBRating is BBStandard {
         require(value <= 5);
         require(allowRating(relatedAddress, rateTo, relatedTo));
 
-        uint lastStar = bbs.getUint(keccak256(abi.encodePacked(msg.sender, relatedAddress, relatedTo)));
-        require(lastStar != value);
+        uint lastStar = bbs.getUint(keccak256(abi.encodePacked(msg.sender, key, rateTo, relatedTo)));
         //update star to relatedTo of sender
-        bbs.setUint(keccak256(abi.encodePacked(msg.sender, relatedAddress, relatedTo)), value);
+        bbs.setUint(keccak256(abi.encodePacked(msg.sender, key, rateTo, relatedTo)), value);
 
-        uint lastTotalStar = bbs.getUint(keccak256(abi.encodePacked(relatedAddress, rateTo)));
+        uint lastTotalStar = bbs.getUint(keccak256(abi.encodePacked(key, rateTo)));
         //update total star of relatedTo
-        lastTotalStar = lastTotalStar + value - lastStar;
-        bbs.setUint(keccak256(abi.encodePacked(relatedAddress, rateTo)), lastTotalStar);
+        lastTotalStar = lastTotalStar.add(value);
+        lastTotalStar = lastTotalStar.sub(lastStar);
+        bbs.setUint(keccak256(abi.encodePacked(key, rateTo)), lastTotalStar);
 
-        uint lastTotalRate = bbs.getUint(keccak256(abi.encodePacked(relatedAddress, rateTo,'RATE')));
+        uint lastTotalRate = bbs.getUint(keccak256(abi.encodePacked(key, rateTo,'RATE')));
         if(lastStar == 0) {   
             lastTotalRate = lastTotalRate.add(1);
-            bbs.setUint(keccak256(abi.encodePacked(relatedAddress, rateTo,'RATE')), lastTotalRate);
+            bbs.setUint(keccak256(abi.encodePacked(key, rateTo,'RATE')), lastTotalRate);
         }
 
-        emit Rating(relatedAddress, relatedTo, msg.sender, rateTo,lastTotalStar, lastTotalRate, value, commentHash);
+        emit Rating(key, relatedTo, rateTo,lastTotalStar, lastTotalRate, value, commentHash);
     }
 
 

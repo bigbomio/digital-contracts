@@ -817,7 +817,7 @@ contract('Voting Test', async (accounts) => {
     assert.equal(userA, sender);
   });
 
-  it("Rating B->A", async () => {
+  it("Rating B->A 4 Star", async () => {
     var userB = accounts[2];
     var userA = accounts[0];
 
@@ -829,54 +829,54 @@ contract('Voting Test', async (accounts) => {
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
   //  console.log(jobID_A);
-   // console.log(JSON.stringify(jj));
-    assert.equal(userB, jj.whoRate);
+    //console.log(JSON.stringify(jj));
+    assert(4 ==  jj.star);
   });
 
 
 
-  it("Rating C->A 1 star", async () => {
+  it("Rating C->A 5 star", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userC = accounts[3];
     var userA = accounts[0];
 
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobID_B, 1, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobID_B, 5, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
-    assert.equal(userC, jj.whoRate);
+    assert(9  ==  jj.totalStar);
     //console.log(JSON.stringify(jj));
   });
 
-  it("Rating C->A agian 3 star", async () => {
+  it("Rating C->A agian 1 star", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userC = accounts[3];
     var userA = accounts[0];
     var userB = accounts[4];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobID_B, 3, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobID_B, 1, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
-    assert.equal(userC, jj.whoRate);
-   // console.log(JSON.stringify(jj));
+    assert( 5 ==  jj.totalStar);
+    //console.log(JSON.stringify(jj));
 
   });
 
-  it("Rating C->A agian 2 star", async () => {
+  it("Rating C->A agian 3 star", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userC = accounts[3];
     var userB = accounts[1];
     var userA = accounts[0];
 
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobID_B, 2, commentHash, {
+    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobID_B, 3, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
-    assert.equal(userC, jj.whoRate);
-   // console.log(JSON.stringify(jj));
+     assert( 7 ==  jj.totalStar);
+    //console.log(JSON.stringify(jj));
 
   });
 
@@ -898,6 +898,23 @@ contract('Voting Test', async (accounts) => {
     }
   });
 
+  it("[Fail] Rating wrong rateTo adress ", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userB = accounts[4];
+    var userA = accounts[0];
+
+    let commentHash = 'sfvsjhfvdsj';
+    try {
+      let l = await rating.rate(KEY_JOB_ADDRESS ,userB,jobID_B, 1, commentHash, {
+        from: userB
+      });
+      console.log('[Fail] Rating wrong rateTo adress');
+      return false;
+    } catch (e) {
+      return true;
+    }
+  });
+
   it("[Fail] Rating themself ", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userB = accounts[2];
@@ -908,7 +925,7 @@ contract('Voting Test', async (accounts) => {
       let l = await rating.rate(KEY_JOB_ADDRESS ,userB,jobID_B, 1, commentHash, {
         from: userB
       });
-      console.log('[Fail] Rating themself   OK');
+      console.log('[Fail] Rating themself  OK');
       return false;
     } catch (e) {
       return true;
@@ -916,7 +933,6 @@ contract('Voting Test', async (accounts) => {
   });
 
   
-
   it("Rating A->B", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userA = accounts[0];
@@ -927,8 +943,8 @@ contract('Voting Test', async (accounts) => {
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
     //console.log(jj);
-    assert.equal(userA, jj.whoRate);
-    //console.log(JSON.stringify(jj));
+    assert( 1 ==  jj.totalUser);
+   // console.log(JSON.stringify(jj));
 
   });
 
@@ -950,29 +966,5 @@ contract('Voting Test', async (accounts) => {
       return true;
     }
   });
-
-  // it("Get Freelancer Rating", async () => {
-  //   let rating = await BBRating.at(proxyAddressRating);
-  //   var userA = accounts[0];
-  //   var userB = accounts[2];
-  //   let lk = await rating.getRating(KEY_JOB_ADDRESS, jobID_B,{
-  //     from: userA
-  //   });
-  //   //console.log(JSON.stringify(lk));
-  //   return true;
-  // });
-  // it("Get Client Rating", async () => {
-  //   let rating = await BBRating.at(proxyAddressRating);
-  //   var userA = accounts[0];
-  //   var userB = accounts[2];
-  //   let l = await rating.getRating(KEY_JOB_ADDRESS, jobID_A,{
-  //     from: userB
-  //   });
-
-      
-    //console.log(JSON.stringify(l));
-  //  return true;
-
-  // });
 
 });
