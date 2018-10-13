@@ -158,17 +158,19 @@ contract BBVoting is BBStandard{
   function calcReward(bytes jobHash) constant public returns(uint256 numReward){
     uint256 pollId = getPollID(jobHash);
     address winner = bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'));
-    require(winner!=address(0x0));
-    address choice = bbs.getAddress(BBLib.toB32(jobHash, pollId, 'CHOICE',msg.sender));
-    if(choice == winner){
-      uint256 votes = bbs.getUint(BBLib.toB32(jobHash, pollId, 'VOTES',msg.sender));
-      uint256 totalVotes = bbs.getUint(BBLib.toB32(jobHash, pollId, 'VOTE_FOR',choice));
-      uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId, 'STAKED_DEPOSIT',choice));
+    bool isClaim = bbs.getBool(BBLib.toB32(jobHash,pollId,'REWARD_CLAIMED',msg.sender));
+    if(!isClaim && winner!=address(0x0)){
+      address choice = bbs.getAddress(BBLib.toB32(jobHash, pollId, 'CHOICE',msg.sender));
+      if(choice == winner){
+        uint256 votes = bbs.getUint(BBLib.toB32(jobHash, pollId, 'VOTES',msg.sender));
+        uint256 totalVotes = bbs.getUint(BBLib.toB32(jobHash, pollId, 'VOTE_FOR',choice));
+        uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pollId, 'STAKED_DEPOSIT',choice));
 
-      numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
+        numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
 
-    }else{
-      numReward = bbs.getUint(keccak256('BBO_REWARDS'));
+      }else{
+        numReward = bbs.getUint(keccak256('BBO_REWARDS'));
+      }
     }
   }
   
