@@ -1,0 +1,18 @@
+# Rinkeby Testnet
+```
+proxyAddressJob 0x71356605e4f79fd07b01cc187bdcbc1f4025db1f
+proxyAddressBid 0xf01cc898b9245930a345bec82423b87f602cb8e4
+proxyAddressPayment 0x22ce61d3c44e5a005a9b9f4485cfbc660c1c2ef3
+BBOAddress 0x2ddc511802a37039c42c6bdb36028b2f8992b0fe
+BBStorage: 0x7f4f85ed6fb35be5ab03272f95b73dfe4b491243
+
+var proxyFactAddress = '0x46820d60ca35cab8103a332804c8c889358ec66f';
+
+BBOFaucet: 0xab4c08e651c709644a58a6ebd8e1be3afa6aa34c
+
+paramsProxy 0xb1b1e7f9223bca9d66aa97b773935d4aec13165d
+disputeProxy 0x278636913d5203a057adb7e0521b8df9431bdaa5
+votingProxy 0x54a7cb877948518444e4c97c426cf47718ac94c3
+
+
+```
