@@ -42,3 +42,5 @@ notifications:
   slack:
     rooms:
       - bigbom-internalteam:ugjgOcYhFhkkUCp3CVQIzEtK#devs-on-github
+
+
