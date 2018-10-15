@@ -12,7 +12,7 @@ contract BBParams is BBFreelancer{
     _;
   }
 
-  function addAdmin(address admin, bool add) onlyOwner public {
+  function addAdmin(address admin, bool add) onlyAdmin public {
     require(admin!=address(0x0));
     admins[admin] = add;
     emit AdminAdded(admin, add);
@@ -61,7 +61,7 @@ contract BBParams is BBFreelancer{
   	bbs.getUint(keccak256('REVEAL_DURATION')), bbs.getUint(keccak256('BBO_REWARDS')));
   }
 
-   function addRelatedAddress(uint key, address relatedAddress) public onlyOwner {
+   function addRelatedAddress(uint key, address relatedAddress) public onlyAdmin {
         require(relatedAddress!=address(0x0));
         bbs.setAddress(keccak256(abi.encodePacked(key)), relatedAddress);
         emit AddRelatedAddress(key, relatedAddress);
