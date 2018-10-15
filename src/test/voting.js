@@ -422,8 +422,11 @@ contract('Voting Test', async (accounts) => {
 
   });
   it("set params", async () => {
+    try {
     let params = await BBParams.at(proxyAddressParams);
-    await params.addAdmin(accounts[0], true);
+    await params.addAdmin(accounts[0], true,{
+      from: accounts[0]
+    });
     await params.setVotingParams(100e18, 1000000e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
       24 * 60 * 60, 10e18, {
         from: accounts[0]
@@ -431,9 +434,14 @@ contract('Voting Test', async (accounts) => {
     await params.addRelatedAddress(KEY_JOB_ADDRESS, proxyAddressJob, {
         from: accounts[0]
       });
+    } catch(e) {
+      console.log('Loi set params');
+    }
    
     return true;
   });
+
+
   it("[Fail] set params MinVotes > MaxVotes", async () => {
     let params = await BBParams.at(proxyAddressParams);
     try {

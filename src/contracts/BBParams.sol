@@ -12,7 +12,7 @@ contract BBParams is BBFreelancer{
     _;
   }
 
-  function addAdmin(address admin, bool add) onlyAdmin public {
+  function addAdmin(address admin, bool add) onlyOwner public {
     require(admin!=address(0x0));
     admins[admin] = add;
     emit AdminAdded(admin, add);
