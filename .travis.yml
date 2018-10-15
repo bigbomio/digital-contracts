@@ -38,3 +38,7 @@ after_script:
   - sleep 5 
   - npm run coverage && cat coverage/lcov.info | coveralls
   
+notifications:
+  slack:
+    rooms:
+      - bigbom-internalteam:ugjgOcYhFhkkUCp3CVQIzEtK#devs-on-github
