@@ -788,7 +788,7 @@ contract('Voting Test', async (accounts) => {
     assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
   });
   it("fast forward to 24h after commit vote poll jobHash5", function () {
-    var fastForwardTime = 2 * 24 * 3600 + 1;
+    var fastForwardTime = 4 * 24 * 3600 + 1;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
 
