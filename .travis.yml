@@ -37,3 +37,4 @@ after_script:
   - testrpc-sc --gasLimit 0xfffffffffff --gasPrice 0x01 --network-id 777 -p 8545 > /dev/null &
   - sleep 5 
   - npm run coverage && cat coverage/lcov.info | coveralls
+  
