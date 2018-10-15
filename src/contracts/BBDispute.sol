@@ -46,7 +46,7 @@ contract BBDispute is BBStandard{
     require(isDisputingJob(jobHash)==true);
     address creator = bbs.getAddress(BBLib.toB32(jobHash, 'POLL_STARTED'));
     require(creator!=address(0x0));
-    require(bbs.getUint(BBLib.toB32(jobHash, pID,'EVEIDENCE_ENDDATE'))<=now);
+    require(bbs.getUint(BBLib.toB32(jobHash, pID,'EVIDENCE_ENDDATE'))<=now);
 
     uint256 bboStake = bbs.getUint(BBLib.toB32(jobHash, pID,'STAKED_DEPOSIT',creator));
 
@@ -98,7 +98,7 @@ contract BBDispute is BBStandard{
   }
   function getPollTiming(bytes jobHash) public view returns (uint256, uint256, uint256) {
     uint256 pID = getPollID(jobHash);
-    uint256 evidenceEndDate = bbs.getUint(BBLib.toB32(jobHash, pID,'EVEIDENCE_ENDDATE'));
+    uint256 evidenceEndDate = bbs.getUint(BBLib.toB32(jobHash, pID,'EVIDENCE_ENDDATE'));
     uint256 commitEndDate = bbs.getUint(BBLib.toB32(jobHash, pID,'COMMIT_ENDDATE'));
     uint256 revealEndDate = bbs.getUint(BBLib.toB32(jobHash, pID,'REVEAL_ENDDATE'));
     return (evidenceEndDate, commitEndDate, revealEndDate);
@@ -145,7 +145,7 @@ contract BBDispute is BBStandard{
     bbs.setAddress(BBLib.toB32(jobHash, 'POLL_STARTED'), msg.sender);
     
     // save evidence,commit, reveal EndDate
-    bbs.setUint(BBLib.toB32(jobHash, pID,'EVEIDENCE_ENDDATE'), evidenceEndDate);
+    bbs.setUint(BBLib.toB32(jobHash, pID,'EVIDENCE_ENDDATE'), evidenceEndDate);
     bbs.setUint(BBLib.toB32(jobHash, pID,'COMMIT_ENDDATE'), commitEndDate);
     bbs.setUint(BBLib.toB32(jobHash, pID,'REVEAL_ENDDATE'), revealEndDate);
     // save creator proofHash
@@ -168,7 +168,7 @@ contract BBDispute is BBStandard{
     address creator = bbs.getAddress(BBLib.toB32(jobHash, 'POLL_STARTED'));
     require(creator!=0x0);
     require(creator!=msg.sender);
-    require(bbs.getUint(BBLib.toB32(jobHash, pID,'EVEIDENCE_ENDDATE')) > now);
+    require(bbs.getUint(BBLib.toB32(jobHash, pID,'EVIDENCE_ENDDATE')) > now);
     return doAgainstPoll(jobHash, againstProofHash, pID, creator);
   }
   function doAgainstPoll(bytes jobHash, bytes againstProofHash, uint256 pID, address creator) internal 
