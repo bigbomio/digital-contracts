@@ -380,7 +380,7 @@ contract('Voting Test 2', async (accounts) => {
       from: userB
     });
 
-    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash4 + 'kk'), jobHashRs);
     // let jh = jobHash4 + 'kk';
     // var myContract = await new web3.eth.Contract(voting.abi, voting.address, {

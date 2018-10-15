@@ -415,7 +415,7 @@ contract('Voting Test', async (accounts) => {
     let l = await voting.startPoll(jobHash4, proofHash, {
       from: userB
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
   });
   it("against poll", async () => {
@@ -432,7 +432,7 @@ contract('Voting Test', async (accounts) => {
     let l = await voting.againstPoll(jobHash4, proofHash, {
       from: userA
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
   });
   it("[Fail] Owner against poll", async () => {
@@ -503,7 +503,7 @@ contract('Voting Test', async (accounts) => {
     let l = await voting.againstPoll(jobHash4, proofHash, {
       from: userA
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
   });
   it("reqest voting rights", async () => {
@@ -687,7 +687,7 @@ contract('Voting Test', async (accounts) => {
     let l = await voting.startPoll(jobHash5, proofHash, {
       from: userB
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollStarted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
   });
   it("against poll for jobHash5", async () => {
@@ -704,7 +704,7 @@ contract('Voting Test', async (accounts) => {
     let l = await voting.againstPoll(jobHash5, proofHash, {
       from: userA
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollAgainsted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
   });
   it("fast forward to 24h after commit vote poll jobHash5", function () {
@@ -720,10 +720,10 @@ contract('Voting Test', async (accounts) => {
     
     var userA = accounts[0];
     
-    let l = await voting.extendPoll(jobHash5, {
+    let l = await voting.updatePoll(jobHash5, false, {
       from: userA
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollExtended').args.jobHash
+    const jobHashRs = l.logs.find(l => l.event === 'PollUpdated').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
   });
   it("white-flag Poll when no one commit vote", async () => {
@@ -736,12 +736,10 @@ contract('Voting Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     var userA = accounts[0];
     
-    let l = await voting.whiteflagPoll(jobHash5, {
+    let l = await voting.updatePoll(jobHash5, true,{
       from: userA
     });
-    const jobHashRs = l.logs.find(l => l.event === 'PollWhiteFlaged').args.jobHash
-    const sender = l.logs.find(l => l.event === 'PollWhiteFlaged').args.creator
+    const jobHashRs = l.logs.find(l => l.event === 'PollUpdated').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash5), jobHashRs);
-    assert.equal(userA, sender);
   });
 });
