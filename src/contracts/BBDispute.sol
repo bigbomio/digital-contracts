@@ -195,7 +195,7 @@ contract BBDispute is BBStandard{
       //refun money staked for users
       require(bbo.transfer(jobOwner, bboStake));
       require(bbo.transfer(freelancer, bboStake));
-      // // cal finalizePayment
+      // cal finalizePayment
       assert(payment.finalizeDispute(jobHash));
       
     }else{
