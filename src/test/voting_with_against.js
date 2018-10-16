@@ -621,7 +621,7 @@ contract('Voting Test 3', async (accounts) => {
     });
     const a = l.logs.find(l => l.event === 'PollFinalized').args
 
-    assert.equal(web3.utils.sha3(jobHash4 + 'kk'), a.jobHash);
+    assert.equal(web3.utils.sha3(jobHash4 + 'kk'), a.indexJobHash);
 
   });
 
