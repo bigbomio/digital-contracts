@@ -1490,7 +1490,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'DisputeFinalized').args
     
-    const jobHashRs = jobHashRs1.jobHash
+    const jobHashRs = jobHashRs1.indexJobHash
      assert.equal(web3.utils.sha3(jobHash4), jobHashRs);
     assert.equal(userB, jobHashRs1.winner);
 
