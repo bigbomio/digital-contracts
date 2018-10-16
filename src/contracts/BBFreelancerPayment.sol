@@ -11,10 +11,10 @@ import './BBLib.sol';
  * @title BBFreelancerPayment
  */
 contract BBFreelancerPayment is BBFreelancer{
-  event PaymentClaimed(bytes32 jobHash, address indexed sender);
-  event PaymentAccepted(bytes32 jobHash, address indexed sender);
-  event PaymentRejected(bytes32 jobHash, address indexed sender, uint reason, uint256 rejectedTimestamp);
-  event DisputeFinalized(bytes32 jobHash, address indexed winner);
+  event PaymentClaimed(bytes32 indexed indexJobHash, address indexed sender, bytes jobHash);
+  event PaymentAccepted(bytes32 indexed indexJobHash, address indexed sender,  bytes jobHash);
+  event PaymentRejected(bytes32 indexed indexJobHash, address indexed sender, uint reason, uint256 rejectedTimestamp, bytes jobHash);
+  event DisputeFinalized(bytes32 indexed indexJobHash, address indexed winner,  bytes jobHash);
 
   // hirer ok with finish Job
   /**
@@ -31,7 +31,7 @@ contract BBFreelancerPayment is BBFreelancer{
     uint256 bid = bbs.getUint(BBLib.toB32(jobHash,freelancer));
     //TODO release funs
     require(bbo.transfer(freelancer, bid));
-    emit PaymentAccepted(keccak256(jobHash), msg.sender);
+    emit PaymentAccepted(keccak256(jobHash), msg.sender, jobHash);
   }
   // hirer not ok with finish Job
   /**
@@ -46,7 +46,7 @@ contract BBFreelancerPayment is BBFreelancer{
     bbs.setUint(BBLib.toB32(jobHash,'REASON'), reason);
     uint256 rejectedTimestamp = block.timestamp.add(bbs.getUint(keccak256('REJECTED_PAYMENT_LIMIT_TIMESTAMP')));
     bbs.setUint(BBLib.toB32(jobHash,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'), rejectedTimestamp);
-   emit PaymentRejected(keccak256(jobHash), msg.sender, reason, rejectedTimestamp);
+   emit PaymentRejected(keccak256(jobHash), msg.sender, reason, rejectedTimestamp, jobHash);
   }
   // freelancer claimeJob with finish Job but hirer not accept payment 
   // need proof of work
@@ -72,7 +72,7 @@ contract BBFreelancerPayment is BBFreelancer{
     bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 5);
     uint256 bid = bbs.getUint(BBLib.toB32(jobHash,freelancer));
     require(bbo.transfer(msg.sender, bid));
-    emit PaymentClaimed(keccak256(jobHash), msg.sender);
+    emit PaymentClaimed(keccak256(jobHash), msg.sender, jobHash);
   }
 
   /** 
@@ -121,7 +121,7 @@ contract BBFreelancerPayment is BBFreelancer{
     require(winner==freelancer||winner==jobOwner);
     bbs.setBool(BBLib.toB32(jobHash, 'PAYMENT_FINALIZED'), true);
     require(bbo.transfer(winner, bid));
-    emit DisputeFinalized(keccak256(jobHash), winner);
+    emit DisputeFinalized(keccak256(jobHash), winner, jobHash);
     return true;
   } 
 }
