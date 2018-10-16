@@ -58,7 +58,7 @@ var bboAddress = '';
 var storageAddress = '';
 
 contract('Voting Test 2', async (accounts) => {
-
+  return;
   it("initialize contract 2", async () => {
 
     // var filesrs = await ipfs.files.add(files);

@@ -65,7 +65,7 @@ var jobID_A;
 var jobID_B;
 
 contract('Voting Test', async (accounts) => {
-
+  return;
   it("initialize contract", async () => {
 
     // var filesrs = await ipfs.files.add(files);

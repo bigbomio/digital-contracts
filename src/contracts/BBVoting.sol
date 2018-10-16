@@ -21,7 +21,7 @@ contract BBVoting is BBStandard{
     r = bbs.getUint(BBLib.toB32(jobHash,'POLL_COUNTER'));
   }
   modifier isDisputingJob(bytes jobHash){
-    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash,'JOB_STATUS'));
     require(jobStatus == 6);
     require(bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'))==address(0x0));
     _;

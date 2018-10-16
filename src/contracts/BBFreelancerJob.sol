@@ -24,22 +24,22 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     payment = BBFreelancerPayment(paymentAddress);
   }
 
-  event JobCreated(bytes jobHash, uint256 jobID, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
-  event JobCanceled(bytes jobHash);
-  event JobStarted(bytes jobHash);
-  event JobFinished(bytes jobHash);
+  event JobCreated(bytes jobHash, uint256 indexed jobID, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
+  event JobCanceled(uint256 jobID);
+  event JobStarted(uint256 jobID);
+  event JobFinished(uint256 jobID);
 
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function getJob(bytes jobHash) public view returns(address, uint256, uint256, bool, uint256, address){
-    address owner = bbs.getAddress(keccak256(jobHash));
-    uint256 expired = bbs.getUint(BBLib.toB32(jobHash, 'EXPIRED'));
-    uint256 budget = bbs.getUint(BBLib.toB32(jobHash, 'BUDGET'));
-    bool cancel = bbs.getBool(BBLib.toB32(jobHash, 'CANCEL'));
-    uint256 status = bbs.getUint(BBLib.toB32(jobHash, 'STATUS'));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+  function getJob(uint256 jobID) public view returns(address, uint256, uint256, bool, uint256, address){
+    address owner = bbs.getAddress(BBLib.toB32(jobID));
+    uint256 expired = bbs.getUint(BBLib.toB32(jobID, 'JOB_EXPIRED'));
+    uint256 budget = bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET'));
+    bool cancel = bbs.getBool(BBLib.toB32(jobID, 'JOB_CANCEL'));
+    uint256 status = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobID, 'FREELANCER'));
     return (owner, expired, budget, cancel, status, freelancer);
 
   }
@@ -65,73 +65,76 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
 
     require(estimateTime > 0);
 
-    // save jobHash owner
-    bbs.setAddress(keccak256(jobHash), msg.sender);
-    // save expired timestamp
-    bbs.setUint(BBLib.toB32(jobHash, 'EXPIRED'), expired);
     //Save jobHash by jobID
     uint256 jobID = bbs.getUint(BBLib.toB32('JOB_ID'));
     jobID++;
-    bbs.setUint(BBLib.toB32('JOB_ID'),jobID);
+    // save jobHash owner
+    bbs.setAddress(BBLib.toB32(jobID), msg.sender);
+    bbs.setAddress(keccak256(jobHash), msg.sender);
 
+    // save expired timestamp
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_EXPIRED'), expired);
+    
+    bbs.setUint(BBLib.toB32('JOB_ID'),jobID);
+    //mapping jobID with jobHash
     bbs.setBytes(BBLib.toB32(jobID), jobHash);
     // save time freelancer can done this job
-    bbs.setUint(BBLib.toB32(jobHash, 'ESTIMATE_TIME'), estimateTime);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_ESTIMATE_TIME'), estimateTime);
     // save budget 
-    bbs.setUint(BBLib.toB32(jobHash, 'BUDGET'), budget);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_BUDGET'), budget);
  
     emit JobCreated(jobHash, jobID, msg.sender, expired, category, budget, estimateTime);
   }
     // hirer  cancel job
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function cancelJob(bytes jobHash) public 
-  isOwnerJob(jobHash)  {
+  function cancelJob(uint256 jobID) public 
+  isOwnerJob(jobID)  {
 
-    uint status = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+    uint status = bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS'));
     require(status == 0 || status == 1);
     if(status == 1) {
-      address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
-      uint bidTime = bbs.getUint(BBLib.toB32(jobHash, 'BID_TIME', freelancer));
-      uint timeStartJob = bbs.getUint(BBLib.toB32(jobHash, 'JOB_STARTED_TIMESTAMP'));
+      address freelancer = bbs.getAddress(BBLib.toB32(jobID, 'FREELANCER'));
+      uint bidTime = bbs.getUint(BBLib.toB32(jobID, 'BID_TIME', freelancer));
+      uint timeStartJob = bbs.getUint(BBLib.toB32(jobID, 'JOB_STARTED_TIMESTAMP'));
       require(now > timeStartJob + bidTime);
     }
-    bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
-    require(payment.refundBBO(jobHash));
-    emit JobCanceled(jobHash);
+    bbs.setBool(BBLib.toB32(jobID,'JOB_CANCEL'), true);
+    require(payment.refundBBO(jobID));
+    emit JobCanceled(jobID);
   }
   // freelancer start Job
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function startJob(bytes jobHash) public 
-  isNotCanceled(jobHash)
-  jobNotStarted(jobHash)
-  isFreelancerOfJob(jobHash) {
+  function startJob(uint256 jobID) public 
+  isNotCanceled(jobID)
+  jobNotStarted(jobID)
+  isFreelancerOfJob(jobID) {
     // set status to 1
-    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 1);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 1);
     //Begin set time start job
-    bbs.setUint(BBLib.toB32(jobHash,'JOB_STARTED_TIMESTAMP'), now);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STARTED_TIMESTAMP'), now);
     
-    emit JobStarted(jobHash);
+    emit JobStarted(jobID);
   }
   // freelancer finish Job
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function finishJob(bytes jobHash) public 
-  isNotOwnerJob(jobHash) 
-  isFreelancerOfJob(jobHash) {
+  function finishJob(uint256 jobID) public 
+  isNotOwnerJob(jobID) 
+  isFreelancerOfJob(jobID) {
     //status el 1
-    require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) ==1);
+    require(bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS')) ==1);
 
-    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 2);
-    bbs.setUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'), now);
-    emit JobFinished(jobHash);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 2);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_FINISHED_TIMESTAMP'), now);
+    emit JobFinished(jobID);
   }
 
   function allowRating(address sender ,address  rateTo, uint256 jobID) public view returns(bool) {
@@ -147,7 +150,7 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     if(sender == rateTo) {
       return false;
     }
-    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'STATUS'));
+    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'JOB_STATUS'));
     if(jobStatus != 5 && jobStatus != 9) {
        return false;
     }

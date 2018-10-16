@@ -12,6 +12,18 @@ library BBLib {
 	function toB32(uint256 a) internal pure returns (bytes32 r) {
 		r = keccak256(abi.encodePacked(a));
 	}
+	function toB32(uint256 a, bytes b) internal pure returns (bytes32 r) {
+		r = keccak256(abi.encodePacked(a, b));
+	}
+	function toB32(uint256 a, address b) internal pure returns (bytes32 r) {
+		r = keccak256(abi.encodePacked(a, b));
+	}
+	function toB32(uint256 a, address b, bytes c) internal pure returns (bytes32 r) {
+		r = keccak256(abi.encodePacked(a, b));
+	}
+	function toB32(uint256 a, bytes b, address c) internal pure returns (bytes32 r) {
+		r = keccak256(abi.encodePacked(a, b));
+	}
 	function toB32(bytes a, bytes b) internal pure returns (bytes32 r) {
 		r = keccak256(abi.encodePacked(a,b));
 	}
@@ -32,6 +44,9 @@ library BBLib {
 	}
 	function toB32(uint256 a, uint256 b,bytes c) internal pure returns (bytes32 r) {
 		r = keccak256(abi.encodePacked(a,b,c));
+	}
+	function toB32(uint256 a, uint256 b,bytes c, address d) internal pure returns (bytes32 r) {
+		r = keccak256(abi.encodePacked(a,b,c, d));
 	}
 	function toB32(bytes a, bytes b, address c) internal pure returns (bytes32 r) {
 		r = keccak256(abi.encodePacked(a,b,c));
