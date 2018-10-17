@@ -182,7 +182,7 @@ it("start poll", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let l = await voting.startPoll(1, jobID, proofHash, { from: userB });
+    let l = await voting.startPoll( userB, 1, jobID, proofHash, { from: userB });
     const returnJobID = l.logs.find(l => l.event === 'PollStarted').args.relatedTo
     pollID = l.logs.find(l => l.event === 'PollStarted').args.pollID;
     assert.equal(jobID.toString(), returnJobID.toString());
@@ -192,7 +192,7 @@ it("add Poll Option", async () => {
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
     
-    let l = await voting.addPollOption(pollID , proofHash, { from: userA });
+    let l = await voting.addPollOption(userA, pollID , proofHash, { from: userA });
 
     const pollIDRs = l.logs.find(l => l.event === 'PollOptionAdded').args.pollID
     assert.equal(pollID.toString(), pollIDRs.toString());
@@ -288,7 +288,7 @@ it("start poll jobHash5", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let l = await voting.startPoll(1, jobID, proofHash, { from: userB });
+    let l = await voting.startPoll(userB, 1, jobID, proofHash, { from: userB });
     const returnJobID = l.logs.find(l => l.event === 'PollStarted').args.relatedTo
     pollID = l.logs.find(l => l.event === 'PollStarted').args.pollID;
     assert.equal(jobID.toString(), returnJobID.toString());
@@ -298,7 +298,7 @@ it("add Poll Option jobHash5", async () => {
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
     
-    let l = await voting.addPollOption(pollID , proofHash, { from: userA });
+    let l = await voting.addPollOption(userA, pollID , proofHash, { from: userA });
 
     const pollIDRs = l.logs.find(l => l.event === 'PollOptionAdded').args.pollID
     assert.equal(pollID.toString(), pollIDRs.toString());
