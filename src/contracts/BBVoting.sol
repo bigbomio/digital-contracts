@@ -119,7 +119,7 @@ contract BBVoting is BBStandard{
     require(isAgaintsPoll(jobHash)==true);
     require(bbs.getUint(BBLib.toB32(jobHash, pollId,'COMMIT_ENDDATE'))<now);
     require(bbs.getUint(BBLib.toB32(jobHash, pollId,'REVEAL_ENDDATE'))>now);
-    require(bbs.getAddress(BBLib.toB32(jobHash, pollId,'CHOICE',msg.sender)) == address(0x0));
+    require(bbs.getAddress(BBLib.toB32(jobHash, pollId,'CHOICE',msg.sender)) == 0x0);
     uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     uint256 votes = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTES',msg.sender));
     // check staked vote

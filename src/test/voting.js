@@ -715,6 +715,21 @@ contract('Voting Test', async (accounts) => {
     const jobHashRs = a.jobHash
     assert.equal(jobHash4, web3.utils.hexToUtf8(jobHashRs));
   });
+  it("[FAIL]reveal vote double", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    var userC = accounts[1];
+    try{
+
+
+    let l = await voting.revealVote(jobHash4, accounts[2], 123, {
+      from: userC
+    });
+    console.log('reveal vote double FAIL');
+    return false;
+    }catch(e){
+      return true;
+    }
+  });
   it("start other job for dispute voting", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
