@@ -56,6 +56,9 @@ library BBLib {
 	function toB32(bytes a, uint256 b, bytes c, address d) internal pure returns (bytes32 r) {
 		r = keccak256(abi.encodePacked(a,b,c,d));
 	}
+	function toB32(bytes a, uint256 b, bytes32 c, bytes d) internal pure returns (bytes32 r) {
+		r = keccak256(abi.encodePacked(a,b,c,d));
+	}
 
 	function bytesToBytes32(bytes b) internal pure returns (bytes32) {
 	    bytes32 out;

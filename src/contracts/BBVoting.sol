@@ -124,7 +124,7 @@ contract BBVoting is BBStandard{
     (,uint256 commitEndDate,uint256 revealEndDate) = helper.getPollStage(pollID);
     (, uint256 commitDuration,uint256 revealDuration,) = helper.getPollParams(pollType);
     require(pollStatus == 1);
-    require(allowVoting( relatedAddr,  relatedTo));
+    require(allowVoting( msg.sender, relatedAddr,  relatedTo));
     require(revealEndDate > now);
     require(hasVote== false);
     if(whiteFlag){
@@ -134,17 +134,17 @@ contract BBVoting is BBStandard{
       return _doExtendPoll(pollID, commitDuration, revealDuration);
     }
   }
-  function _doWithdrawStakeToken(uint256 pollID) private returns(bool){
-    uint256 stakedBBO = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender));
-    if(stakedBBO > 0){
-      bbs.setUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender), 0);
-      require(bbo.transfer(msg.sender, stakedBBO));
-      return true;
-    }
-    return false;
-  }
+  // function _doWithdrawStakeToken(uint256 pollID) private returns(bool){
+  //   uint256 stakedBBO = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender));
+  //   if(stakedBBO > 0){
+  //     bbs.setUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender), 0);
+  //     require(bbo.transfer(msg.sender, stakedBBO));
+  //     return true;
+  //   }
+  //   return false;
+  // }
   function _doWhiteFlag(uint256 pollID) private {
-    assert(_doWithdrawStakeToken(pollID));
+    //assert(_doWithdrawStakeToken(pollID));
     bbs.deleteBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender));
     emit PollUpdated(pollID, true );
   }
@@ -154,27 +154,30 @@ contract BBVoting is BBStandard{
     emit PollUpdated(pollID, false);
   }
 
-  function allowVoting(address relatedAddr, uint256 relatedTo) private returns(bool c){
-     return BBVotingInterface(relatedAddr).allowVoting(msg.sender, relatedTo);
+  function allowVoting(address sender,address relatedAddr, uint256 relatedTo) private returns(bool c){
+     return BBVotingInterface(relatedAddr).allowVoting(sender, relatedTo);
   }
-  function startPoll(uint256 pollType, uint256 relatedTo, bytes extraData) public {
+  function startPoll(address sender, uint256 pollType, uint256 relatedTo, bytes extraData) public {
     address relatedAddr = bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
     // make sure the voting having the allowVoting method :v 
-    require(allowVoting(relatedAddr,relatedTo));
+    if(sender== address(0x0))
+      sender = msg.sender;
+    require(allowVoting(sender, relatedAddr,relatedTo));
     require(helper.hasVoting(pollType, relatedTo)!=true);
     //TODO
-    return _doStartPoll(pollType, relatedTo, extraData);
+
+    return _doStartPoll(sender, pollType, relatedTo, extraData);
   }
-  function _doStartPoll(uint256 pollType, uint256 relatedTo, bytes extraData) private {
+  function _doStartPoll(address sender, uint256 pollType, uint256 relatedTo, bytes extraData) private {
     //TODO
     (uint256 addOptionDuration, uint256 commitDuration,uint256 revealDuration, uint256 bboStake) = helper.getPollParams(pollType);
     // get current ID
     uint256 latestID  = bbs.getUint(BBLib.toB32('POLL_COUNTER'));
     uint256 pollID = latestID + 1;
     bbs.setUint(BBLib.toB32('POLL_COUNTER'), pollID);
-    assert(_doStakeToken( pollID, bboStake));
+    // assert(_doStakeToken( pollID, bboStake));
     // save startPoll address
-    bbs.setAddress(BBLib.toB32(pollID, 'POLL_STARTED'), msg.sender);
+    bbs.setAddress(BBLib.toB32(pollID, 'POLL_STARTED'), sender);
     
     // addPollOptionEndDate
     uint256 addPollOptionEndDate = block.timestamp.add(addOptionDuration);
@@ -193,44 +196,46 @@ contract BBVoting is BBStandard{
     // save pollID to relatedTo
     bbs.setUint(BBLib.toB32(relatedTo, pollType,'POLL'), pollID);
 
-    _doAddPollOption( pollID, msg.sender, extraData);
+    _doAddPollOption( pollID, sender, extraData);
 
-    emit PollStarted(pollID, pollType, msg.sender, relatedTo);
+    emit PollStarted(pollID, pollType, sender, relatedTo);
 
   }
   
-  function addPollOption(uint256 pollID, bytes pollOption) public {
+  function addPollOption(address sender, uint256 pollID, bytes pollOption) public {
     (uint256 pollStatus,, uint256 relatedTo,address creator,address relatedAddr,) = helper.getPollDetail(pollID);
     require(pollStatus == 1);
-    require(allowVoting(relatedAddr, relatedTo));
+    if(sender== address(0x0))
+      sender = msg.sender;
+    require(allowVoting(sender, relatedAddr, relatedTo));
     require(bbs.getUint(BBLib.toB32(pollID,'ADDOPTION_ENDDATE')) > now);
-    return _doAddPollOption(pollID, creator, pollOption);
+    return _doAddPollOption(pollID, sender, pollOption);
   }
-  function _doStakeToken(uint256 pollID, uint256 bboStake) private returns(bool) {
-    uint256 stakedBBO = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender));
-    if(bboStake.sub(stakedBBO) > 0){
-      require(bbo.transferFrom(msg.sender, address(this), bboStake.sub(stakedBBO)));
-      bbs.setUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender), bboStake);
-    }
-    return true;
-  }
+  // function _doStakeToken(uint256 pollID, uint256 bboStake) private returns(bool) {
+  //   uint256 stakedBBO = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender));
+  //   if(bboStake.sub(stakedBBO) > 0){
+  //     require(bbo.transferFrom(msg.sender, address(this), bboStake.sub(stakedBBO)));
+  //     bbs.setUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',msg.sender), bboStake);
+  //   }
+  //   return true;
+  // }
   
-  function _doAddPollOption(uint256 pollID, address creator, bytes pollOption) private {
-    uint256 bboStake = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',creator));
-    assert(_doStakeToken(pollID, bboStake));
-    if(BBLib.toB32(bbs.getBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender)))!=BBLib.toB32(''))
+  function _doAddPollOption(uint256 pollID, address sender, bytes pollOption) private {
+    // uint256 bboStake = bbs.getUint(BBLib.toB32(pollID,'STAKED_DEPOSIT',sender));
+    //assert(_doStakeToken(pollID, bboStake));
+    if(BBLib.toB32(bbs.getBytes(BBLib.toB32(pollID, 'POLL_OPTION', sender)))!=BBLib.toB32(''))
     {
       //update pollOption
-      bbs.setBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender), pollOption);
+      bbs.setBytes(BBLib.toB32(pollID, 'POLL_OPTION', sender), pollOption);
     }else{
       //add address sender
       uint256 numOption = bbs.getUint(BBLib.toB32(pollID, 'NUM_OPTION'));
       require(numOption < 10);
       bbs.setUint(BBLib.toB32(pollID, 'NUM_OPTION'), numOption.add(1));
-      bbs.setAddress(BBLib.toB32(pollID, 'OPTION_CREATOR', numOption.add(1)), msg.sender);
-      bbs.setBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender), pollOption);
+      bbs.setAddress(BBLib.toB32(pollID, 'OPTION_CREATOR', numOption.add(1)), sender);
+      bbs.setBytes(BBLib.toB32(pollID, 'POLL_OPTION', sender), pollOption);
     } 
-    emit PollOptionAdded(pollID, msg.sender, pollOption);
+    emit PollOptionAdded(pollID, sender, pollOption);
   }
   
 }
