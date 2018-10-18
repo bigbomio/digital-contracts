@@ -138,9 +138,8 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
   }
 
   function allowRating(address sender ,address  rateTo, uint256 jobID) public view returns(bool) {
-    bytes memory jobHash = bbs.getBytes(keccak256(abi.encodePacked(jobID)));
-    address jobOwner = bbs.getAddress(BBLib.toB32(jobHash));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash, 'FREELANCER'));
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobID, 'FREELANCER'));
     if(sender != jobOwner && sender != freelancer) {
       return false;
     }
@@ -150,7 +149,7 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     if(sender == rateTo) {
       return false;
     }
-    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash ,'JOB_STATUS'));
+    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobID ,'JOB_STATUS'));
     if(jobStatus != 5 && jobStatus != 9) {
        return false;
     }
