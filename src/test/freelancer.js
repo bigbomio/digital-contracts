@@ -367,7 +367,16 @@ contract('BBFreelancer Test', async (accounts) => {
 
   });
 
-  
+  it("get jobID by jobHash", async () => {
+    var userA = accounts[0];
+
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    let j = await job.getJobID(jobHash, {
+      from: userA
+    });
+
+    assert.equal(JSON.stringify(j),JSON.stringify(jobID));
+  });
 
 
   it("[Fail] start job without not bid", async () => {

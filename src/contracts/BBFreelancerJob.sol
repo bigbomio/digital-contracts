@@ -76,8 +76,8 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     bbs.setUint(BBLib.toB32(jobID, 'JOB_EXPIRED'), expired);
     
     bbs.setUint(BBLib.toB32('JOB_ID'),jobID);
-    //mapping jobID with jobHash
-    bbs.setBytes(BBLib.toB32(jobID), jobHash);
+    //mapping jobHash with jobID
+    bbs.setUint(BBLib.toB32(jobHash), jobID);
     // save time freelancer can done this job
     bbs.setUint(BBLib.toB32(jobID, 'JOB_ESTIMATE_TIME'), estimateTime);
     // save budget 
@@ -136,6 +136,11 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     bbs.setUint(BBLib.toB32(jobID,'JOB_FINISHED_TIMESTAMP'), now);
     emit JobFinished(jobID);
   }
+
+  function getJobID(bytes jobHash) public view returns(uint256){
+      return bbs.getUint(BBLib.toB32(jobHash));
+  }
+
 
   function allowRating(address sender ,address  rateTo, uint256 jobID) public view returns(bool) {
     address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
