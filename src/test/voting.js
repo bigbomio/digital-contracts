@@ -930,6 +930,22 @@ contract('Voting Test', async (accounts) => {
 
   });
 
+  it("[Fail] Rating themself ", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userB = accounts[3];
+
+    let commentHash = 'sfvsjhfvdsj';
+    try {
+      let l = await rating.rate(KEY_JOB_ADDRESS ,userB,jobIDC, 1, commentHash, {
+        from: userB
+      });
+      console.log('[Fail] Rating themself  OK');
+      return false;
+    } catch (e) {
+      return true;
+    }
+  });
+
 
 
   it("[Fail] not freelancer Rating ", async () => {
@@ -948,6 +964,24 @@ contract('Voting Test', async (accounts) => {
       return true;
     }
   });
+
+  it("[Fail] Rating wrong address", async () => {
+    let rating = await BBRating.at(proxyAddressRating);
+    var userB = accounts[3];
+    var userA = accounts[5];
+
+    let commentHash = 'sfvsjhfvdsj';
+    try {
+      let l = await rating.rate(KEY_JOB_ADDRESS ,userA,jobIDC, 1, commentHash, {
+        from: userB
+      });
+      console.log('[Fail] Rating wrong address  OK');
+      return false;
+    } catch (e) {
+      return true;
+    }
+  });
+
 
   
 
@@ -969,22 +1003,24 @@ contract('Voting Test', async (accounts) => {
     }
   });
 
-  it("[Fail] Rating themself ", async () => {
+ 
+  it("[Fail] Rating with dipute Job", async () => {
     let rating = await BBRating.at(proxyAddressRating);
     var userB = accounts[2];
     var userA = accounts[0];
 
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,userB,jobIDC, 1, commentHash, {
+      let l = await rating.rate(KEY_JOB_ADDRESS ,userA,jobIDD, 1, commentHash, {
         from: userB
       });
-      console.log('[Fail] Rating themself  OK');
+      console.log('[Fail] Rating with dipute Job OK');
       return false;
     } catch (e) {
       return true;
     }
   });
+
 
   
   it("Rating A->B", async () => {
