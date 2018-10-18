@@ -186,6 +186,8 @@ contract('BBFreelancer Test', async (accounts) => {
   });
 
   var jobID = 0;
+  var jobIR = 0;
+
   it("create new job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
@@ -483,11 +485,19 @@ contract('BBFreelancer Test', async (accounts) => {
 
     let jobIDx = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID;
 
+    jobLog =  await job.createJob(jobHash + 'xkopcc', expiredTime, timeBid, 1000e18, 'banner', {
+      from: userA
+    });
+
+    jobIDR = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID;
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
     var timeDone = 3 * 24 * 3600;
 
     await bid.createBid(jobIDx, 500e18, timeDone, {
+      from: userB
+    });
+    await bid.createBid(jobIDR, 500e18, timeDone, {
       from: userB
     });
 
@@ -507,6 +517,9 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userA
     });
     await bid.acceptBid(jobIDx, userB, {
+      from: userA
+    });
+    await bid.acceptBid(jobIDR, userB, {
       from: userA
     });
     let balancex = await getBalance(bbo, userA);
@@ -691,6 +704,10 @@ var jobIDd = 0;
     });
 
     await job.startJob(jobIDX, {
+      from: userB
+    });
+
+    await job.startJob(jobIDR, {
       from: userB
     });
 
@@ -1152,6 +1169,9 @@ var jobIDd = 0;
     var jobLog = await job.finishJob(jobID, {
       from: userB
     });
+    await job.finishJob(jobIDR, {
+      from: userB
+    });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'JobFinished').args
     
     const jobHashRs = jobHashRs1.jobID
@@ -1180,6 +1200,9 @@ var jobIDd = 0;
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
     var userA = accounts[0];
     var jobLog = await payment.rejectPayment(jobID, 1, {
+      from: userA
+    });
+    await payment.rejectPayment(jobIDR, 1, {
       from: userA
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentRejected').args
@@ -1392,6 +1415,18 @@ var jobIDd = 0;
     }
   });
 
+  it("Client claime payment", async () => {
+    var userB = accounts[0];
+
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+    var jobLog = await payment.claimePayment(jobIDR, {
+      from: userB
+    });
+    const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentClaimed').args
+    
+    const jobHashRs = jobHashRs1.jobID
+    assert.equal(JSON.stringify(jobIDR), JSON.stringify(jobHashRs));
+  });
 
   it("claime payment", async () => {
     var userB = accounts[2];
@@ -1405,6 +1440,7 @@ var jobIDd = 0;
     const jobHashRs = jobHashRs1.jobID
     assert.equal(JSON.stringify(jobIDc), JSON.stringify(jobHashRs));
   });
+
 
   var jobIDb;
 
