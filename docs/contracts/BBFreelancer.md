@@ -32,7 +32,7 @@ modifier jobNotExist(bytes jobHash)
 | `jobHash`       | bytes       | Hash of job stored in IPFS |
 
 ### isFreelancerOfJob
-Require the sender is the freelancer of this `Job Hash`
+Require the sender is the freelancer of this `Job ID`
 
 ---
 
@@ -40,51 +40,51 @@ modifier isFreelancerOfJob(bytes jobHash)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       | Hash of job stored in IPFS |
+| `jobID`       | uint256       | ID of Job |
 
 ### isNotOwnerJob
-Require the sender is not the owner of this `Job Hash`
+Require the sender is not the owner of this `Job ID`
 
 ---
 
-modifier isNotOwnerJob(bytes jobHash)
+modifier isNotOwnerJob(unit256 jobID)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       | Hash of job stored in IPFS |
+| `jobID`       | uint256       | ID of Job |
 
 ### isOwnerJob
-Require the sender is the owner of this `Job Hash`
+Require the sender is the owner of this `Job ID`
 
 ---
 
-modifier isOwnerJob(bytes jobHash)
+modifier isOwnerJob(unit256 jobID)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       | Hash of job stored in IPFS |
+| `jobID`       | uint256       | ID of Job |
 
 ### isNotCanceled
-Require this `Job Hash` is not canceled yet
+Require this `Job ID` is not canceled yet
 
 ---
 
-modifier isNotCanceled(bytes jobHash)
+modifier isNotCanceled(jobID uint256)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       | Hash of job stored in IPFS |
+| `jobID`       | uint256       | ID of Job |
 
 
 ### jobNotStarted
-Require this `Job Hash` is not started yet
+Require this `Job ID` is not started yet
 
 ---
 
-modifier jobNotStarted(bytes jobHash)
+modifier jobNotStarted(bytes uint256)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       | Hash of job stored in IPFS |
+| `jobID`       | uint256       | ID of Job |
 
 
