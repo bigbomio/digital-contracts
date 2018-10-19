@@ -28,22 +28,22 @@ BBFreelancerPayment is the contract control the payment for Freelancer app
 Event for loging payment claimed.
 
 ---
-event PaymentClaimed(bytes jobHash, address indexed sender);
+event PaymentClaimed(uint256 jobID, address indexed sender);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of Job  |
 | `sender`       | address       |  user call claim payment  |
 
 ### PaymentClaimed
 Event for loging payment accepted.
 
 ---
-event PaymentAccepted(bytes jobHash, address indexed sender);
+event PaymentAccepted(uint256 jobID, address indexed sender);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of Job  |
 | `sender`       | address       |  user call accept payment  |
 
 
@@ -56,7 +56,7 @@ event PaymentRejected(bytes jobHash, address indexed sender, uint reason);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of Job  |
 | `sender`       | address       |  user call reject payment  |
 | `reason`       | uint       |  reason for rejection  |
 
@@ -65,11 +65,11 @@ event PaymentRejected(bytes jobHash, address indexed sender, uint reason);
 Event for loging payment claim.
 
 ---
-event DisputeFinalized(bytes jobHash, address indexed winner);
+event DisputeFinalized(uint256 jobID, address indexed winner);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of Job  |
 | `winner`       | address       | address has won the dispute  |
 
 ## Functions
@@ -78,12 +78,12 @@ event DisputeFinalized(bytes jobHash, address indexed winner);
 Hirer accept the payment when the freelancer done the job
 
 ---
-function acceptPayment(bytes jobHash)  public 
+function acceptPayment(uint256 jobID)  public 
   isOwnerJob(jobHash)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 Modifiers: `isOwnerJob`
 
@@ -96,7 +96,7 @@ function rejectPayment(bytes jobHash, uint reason) public
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `reason`       | uint       |  reason for rejection  |
 
 Modifiers: `isOwnerJob`
@@ -105,11 +105,11 @@ Modifiers: `isOwnerJob`
 The freelancer can claim the payment if the hirer does not accept/reject after X duration.
 
 ---
-function claimePayment(bytes jobHash) public isFreelancerOfJob(jobHash)
+function claimePayment(uint256 jobID) public isFreelancerOfJob(jobHash)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job |
 
 Modifiers: `isFreelancerOfJob`
 
@@ -118,11 +118,11 @@ Modifiers: `isFreelancerOfJob`
 The freelancer can check the payment of this job for ready claim
 
 ---
-function checkPayment(bytes jobHash) public view returns(uint256, uint256)
+function checkPayment(uint256 jobID) public view returns(uint256, uint256)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 Returns:
 
@@ -139,7 +139,7 @@ Finalize dispute job and send payment for the winer
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job |
 
 
 ### refundBBO
@@ -150,7 +150,7 @@ function refundBBO(bytes jobHash) public  returns(bool) {
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 
 
