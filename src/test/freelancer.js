@@ -186,8 +186,9 @@ contract('BBFreelancer Test', async (accounts) => {
   });
 
   var jobID = 0;
+  var jobIDM = 0;
   var jobIR = 0;
-
+  var jobHashX = 'sadvsadjhkakaka';
   it("create new job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
@@ -201,6 +202,12 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userA
     });
     jobID =  jobLogtop.logs.find(l => l.event === 'JobCreated').args.jobID
+
+    jobLogtop = await job.createJob(jobHashX, expiredTime, timeBid, 500e18, 'top', {
+      from: userA
+    });
+    jobIDM = jobLogtop.logs.find(l => l.event === 'JobCreated').args.jobID 
+    
     var jobLogbt = await job.createJob(jobHash + 'bottom', expiredTime, timeBid, 400e18, 'bottom', {
       from: userA
     });
@@ -371,11 +378,11 @@ contract('BBFreelancer Test', async (accounts) => {
     var userA = accounts[0];
 
     let job = await BBFreelancerJob.at(proxyAddressJob);
-    let j = await job.getJobID(jobHash, {
+    let j = await job.getJobID(jobHashX, {
       from: userA
     });
 
-    assert.equal(JSON.stringify(j),JSON.stringify(jobID));
+    assert.equal(JSON.stringify(j),JSON.stringify(jobIDM));
   });
 
 
@@ -580,13 +587,13 @@ contract('BBFreelancer Test', async (accounts) => {
     let jobLog =  await job.createJob(jobHashWilcancel, expiredTime, timeBid, 500e18, 'banner', {
       from: userA
     });
-    let jobIDx = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID;
-    jobLog = await job.cancelJob(jobIDx, {
+    let jobIDxx = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID;
+    jobLog = await job.cancelJob(jobIDxx, {
       from: userA
     });
-     const jobID = jobLog.logs.find(l => l.event === 'JobCanceled').args.jobID
-
-     assert.equal(jobIDx, JSON.stringify(jobID)[1]);
+     const jobIDm = jobLog.logs.find(l => l.event === 'JobCanceled').args.jobID
+  
+     assert.equal(JSON.stringify(jobIDm), JSON.stringify(jobIDxx));
 
   });
 

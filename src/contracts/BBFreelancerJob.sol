@@ -70,14 +70,13 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     jobID++;
     // save jobHash owner
     bbs.setAddress(BBLib.toB32(jobID), msg.sender);
-    bbs.setAddress(keccak256(jobHash), msg.sender);
 
     // save expired timestamp
     bbs.setUint(BBLib.toB32(jobID, 'JOB_EXPIRED'), expired);
     
     bbs.setUint(BBLib.toB32('JOB_ID'),jobID);
     //mapping jobHash with jobID
-    bbs.setUint(BBLib.toB32(jobHash), jobID);
+    bbs.setUint(BBLib.toB32(jobHash,'JOB_HASH'), jobID);
     // save time freelancer can done this job
     bbs.setUint(BBLib.toB32(jobID, 'JOB_ESTIMATE_TIME'), estimateTime);
     // save budget 
@@ -138,7 +137,7 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
   }
 
   function getJobID(bytes jobHash) public view returns(uint256){
-      return bbs.getUint(BBLib.toB32(jobHash));
+      return bbs.getUint(BBLib.toB32(jobHash,'JOB_HASH'));
   }
 
 
