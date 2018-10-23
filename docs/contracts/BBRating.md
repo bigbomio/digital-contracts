@@ -29,9 +29,9 @@ Event for logging data of rating.
 | `jobID`       | uint256   | id of Job|
 | `whoRate` | address | address of user rate this |
 |`rateToAddress`| address |address of rating|
-|`totalStar`|uint256| totol star for address  |
+|`totalStar`|uint256| total star for address  |
 |`totalUser`| uint256 | total user rate  address|
-|`star`| uint256| value of rating of user (1 - 5)|
+|`star`| uint256| value rating of user (1 - 5)|
 |`commentHash`|bytes |Hash of the comment store on IPFS|
 
 ---
