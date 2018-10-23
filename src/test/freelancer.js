@@ -842,7 +842,7 @@ var jobIDd = 0;
 
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
-    var timeDone = 1; //days
+    var timeDone = 3 * 24 * 3600; //3 days
     
     await bid.createBid(jobID, 400e18, timeDone, {
       from: userB
@@ -1008,6 +1008,30 @@ var jobIDd = 0;
   });
 
 
+  it("[Fail] cancel job when freelancer don't work", async () => {
+    let job = await BBFreelancerJob.at(proxyAddressJob);
+    var userA = accounts[0];
+    try {
+    
+      var jobStatus = await job.getJob(jobID,{
+        from: userA
+      });
+
+      //console.log(JSON.stringify(jobStatus)); 
+
+      var jobLog = await job.cancelJob(jobID,{
+        from: userA
+      });
+      
+      console.log('[Fail] cancel job when freelancer do"t work');
+      return false;
+    } catch (e) {
+      
+
+      return true;
+    }
+
+  });
 
   it("[Fail] userC start working userB's job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
@@ -1122,23 +1146,6 @@ var jobIDd = 0;
 
 
 
-  it("[Fail] cancel job when freelancer don't work", async () => {
-    let job = await BBFreelancerJob.at(proxyAddressJob);
-    var userA = accounts[0];
-    try {
-      var jobLog = await job.cancelJob(jobID,{
-        from: userA
-      });
-      
-      console.log('[Fail] cancel job when freelancer do"t work');
-      return false;
-    } catch (e) {
-      
-
-      return true;
-    }
-
-  });
 
   it("[Fail] not freelancer of this job finish job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);

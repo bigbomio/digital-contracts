@@ -6,7 +6,7 @@ import './BBLib.sol';
 
 contract BBRating is BBStandard {
 
-    event Rating(uint256 jobID,  address indexed rateToAddress, uint256 totalStar, uint256 totalUser ,uint256 star, bytes commentHash);
+    event Rating(uint256 jobID,  address  whoRate, address indexed rateToAddress, uint256 totalStar, uint256 totalUser ,uint256 star, bytes commentHash);
 
     
     function allowRating(address sender, address rateToAddress, uint256 jobID) private view returns(bool) {
@@ -52,7 +52,7 @@ contract BBRating is BBStandard {
             bbs.setUint(keccak256(abi.encodePacked(rateToAddress,'RATE_USER')), lastTotalRate);
         }
 
-        emit Rating(jobID, rateToAddress, lastTotalStar, lastTotalRate, value, commentHash);
+        emit Rating(jobID, msg.sender, rateToAddress, lastTotalStar, lastTotalRate, value, commentHash);
     }
 
 
