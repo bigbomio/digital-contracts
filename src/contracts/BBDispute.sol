@@ -31,7 +31,7 @@ contract BBDispute is BBStandard{
   }
   function isAgaintsPoll(uint256 jobID) public constant returns(bool r){
     uint256 pID = getPollID(jobID);
-    bytes32 proofHash = BBLib.toB32(jobID, pID,'AGAINST_PROOF');
+    bytes32 proofHash = BBLib.toB32(jobID,'AGAINST_PROOF',pID);
     r = (BBLib.toB32(bbs.getBytes(proofHash)) != BBLib.toB32(""));
   }
   function getPollID(uint256 jobID) internal constant returns(uint256 r){
@@ -48,9 +48,9 @@ contract BBDispute is BBStandard{
     require(isDisputingJob(jobID)==true);
     address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
     require(creator!=address(0x0));
-    require(bbs.getUint(BBLib.toB32(jobID, pID,'EVIDENCE_ENDDATE'))<=now);
+    require(bbs.getUint(BBLib.toB32(jobID, 'EVIDENCE_ENDDATE', pID))<=now);
 
-    uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, pID,'STAKED_DEPOSIT',creator));
+    uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pID,creator));
 
     // check if not have against proof
     if(!isAgaintsPoll(jobID)){      
@@ -61,7 +61,7 @@ contract BBDispute is BBStandard{
       // cal finalizePayment
       assert(payment.finalizeDispute(jobID));
     }else{
-      require(bbs.getUint(BBLib.toB32(jobID, pID,'REVEAL_ENDDATE'))<=now);
+      require(bbs.getUint(BBLib.toB32(jobID, 'REVEAL_ENDDATE',pID))<=now);
      
       if(jobOwnerVotes == freelancerVotes){
         // cancel poll
@@ -94,15 +94,15 @@ contract BBDispute is BBStandard{
     uint256 pID = getPollID(jobID);
     address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
-    uint jobOwnerVotes = bbs.getUint(BBLib.toB32(jobID, pID,'VOTE_FOR',jobOwner));
-    uint freelancerVotes = bbs.getUint(BBLib.toB32(jobID, pID,'VOTE_FOR',freelancer));    
+    uint jobOwnerVotes = bbs.getUint(BBLib.toB32(jobID, 'VOTE_FOR',pID,jobOwner));
+    uint freelancerVotes = bbs.getUint(BBLib.toB32(jobID, 'VOTE_FOR',pID,freelancer));    
     return (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID);
   }
   function getPollTiming(uint256 jobID) public view returns (uint256, uint256, uint256) {
     uint256 pID = getPollID(jobID);
-    uint256 evidenceEndDate = bbs.getUint(BBLib.toB32(jobID, pID,'EVIDENCE_ENDDATE'));
-    uint256 commitEndDate = bbs.getUint(BBLib.toB32(jobID, pID,'COMMIT_ENDDATE'));
-    uint256 revealEndDate = bbs.getUint(BBLib.toB32(jobID, pID,'REVEAL_ENDDATE'));
+    uint256 evidenceEndDate = bbs.getUint(BBLib.toB32(jobID, 'EVIDENCE_ENDDATE' ,pID));
+    uint256 commitEndDate = bbs.getUint(BBLib.toB32(jobID, 'COMMIT_ENDDATE' ,pID));
+    uint256 revealEndDate = bbs.getUint(BBLib.toB32(jobID, 'REVEAL_ENDDATE',pID));
     return (evidenceEndDate, commitEndDate, revealEndDate);
   }
   /**
@@ -142,16 +142,16 @@ contract BBDispute is BBStandard{
     // incres pID
     pID = pID.add(1);
     bbs.setUint(BBLib.toB32(jobID, 'POLL_COUNTER'), pID);
-    bbs.setUint(BBLib.toB32(jobID, pID,'STAKED_DEPOSIT',msg.sender), bboStake);
+    bbs.setUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pID,msg.sender), bboStake);
     // save startPoll address
     bbs.setAddress(BBLib.toB32(jobID, 'POLL_STARTED'), msg.sender);
     
     // save evidence,commit, reveal EndDate
-    bbs.setUint(BBLib.toB32(jobID, pID,'EVEIDENCE_ENDDATE'), evidenceEndDate);
-    bbs.setUint(BBLib.toB32(jobID, pID,'COMMIT_ENDDATE'), commitEndDate);
-    bbs.setUint(BBLib.toB32(jobID, pID,'REVEAL_ENDDATE'), revealEndDate);
+    bbs.setUint(BBLib.toB32(jobID, 'EVEIDENCE_ENDDATE' ,pID), evidenceEndDate);
+    bbs.setUint(BBLib.toB32(jobID, 'COMMIT_ENDDATE',pID), commitEndDate);
+    bbs.setUint(BBLib.toB32(jobID, 'REVEAL_ENDDATE' ,pID), revealEndDate);
     // save creator proofHash
-    bbs.setBytes(BBLib.toB32(jobID, pID,'CREATOR_PROOF'), proofHash);
+    bbs.setBytes(BBLib.toB32(jobID, 'CREATOR_PROOF',pID), proofHash);
 
     emit PollStarted(jobID, proofHash, msg.sender);
   }
@@ -170,17 +170,17 @@ contract BBDispute is BBStandard{
     address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
     require(creator!=0x0);
     require(creator!=msg.sender);
-    require(bbs.getUint(BBLib.toB32(jobID, pID,'EVEIDENCE_ENDDATE')) > now);
+    require(bbs.getUint(BBLib.toB32(jobID, 'EVEIDENCE_ENDDATE',pID)) > now);
     return doAgainstPoll(jobID, againstProofHash, pID, creator);
   }
   function doAgainstPoll(uint256 jobID, bytes againstProofHash, uint256 pID, address creator) internal 
   {
     // require sender must staked bbo equal the creator
-    uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, pID,'STAKED_DEPOSIT',creator));
+    uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pID,creator));
     require(bbo.transferFrom(msg.sender, address(this), bboStake));
-    bbs.setUint(BBLib.toB32(jobID, pID,'STAKED_DEPOSIT',msg.sender), bboStake);
+    bbs.setUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT',pID,msg.sender), bboStake);
 
-    bbs.setBytes(BBLib.toB32(jobID, pID,'AGAINST_PROOF'), againstProofHash);
+    bbs.setBytes(BBLib.toB32(jobID, 'AGAINST_PROOF', pID), againstProofHash);
 
     emit PollAgainsted(jobID, msg.sender, againstProofHash);
   } 
@@ -193,7 +193,7 @@ contract BBDispute is BBStandard{
     require(freelancerVotes==0);    
     if(whiteFlag == true){
       bbs.setAddress(BBLib.toB32(jobID, 'DISPUTE_WINNER'), (msg.sender==jobOwner)?freelancer:jobOwner);
-      uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, pID,'STAKED_DEPOSIT',jobOwner));
+      uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT',pID,jobOwner));
       //refun money staked for users
       require(bbo.transfer(jobOwner, bboStake));
       require(bbo.transfer(freelancer, bboStake));
@@ -212,8 +212,8 @@ contract BBDispute is BBStandard{
       // revealEndDate
       revealEndDate = commitEndDate.add(revealDuration);
 
-      bbs.setUint(BBLib.toB32(jobID, pID,'COMMIT_ENDDATE'), commitEndDate);
-      bbs.setUint(BBLib.toB32(jobID, pID,'REVEAL_ENDDATE'), revealEndDate);
+      bbs.setUint(BBLib.toB32(jobID, 'COMMIT_ENDDATE',pID), commitEndDate);
+      bbs.setUint(BBLib.toB32(jobID, 'REVEAL_ENDDATE',pID), revealEndDate);
     }
     emit PollUpdated(jobID, whiteFlag);
   }

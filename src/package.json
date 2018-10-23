@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
+    "eth-gas-reporter": "^0.1.12",
     "sol-merger": "^0.1.2",
     "solidity-coverage": "^0.5.5"
   }

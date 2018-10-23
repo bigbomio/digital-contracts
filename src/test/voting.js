@@ -872,7 +872,7 @@ contract('Voting Test', async (accounts) => {
     let rating = await BBRating.at(proxyAddressRating);
     //console.log(jobIDB);
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS , userA, jobIDB, 4, commentHash, {
+    let l = await rating.rate(userA, jobIDB, 4, commentHash, {
       from: userB
     });
 
@@ -889,7 +889,7 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
 
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobIDC, 5, commentHash, {
+    let l = await rating.rate( userA,jobIDC, 5, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -904,7 +904,7 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
     var userB = accounts[4];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobIDC, 1, commentHash, {
+    let l = await rating.rate( userA,jobIDC, 1, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -921,7 +921,7 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
 
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userA,jobIDC, 3, commentHash, {
+    let l = await rating.rate(userA,jobIDC, 3, commentHash, {
       from: userC
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -936,7 +936,7 @@ contract('Voting Test', async (accounts) => {
 
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,userB,jobIDC, 1, commentHash, {
+      let l = await rating.rate(userB,jobIDC, 1, commentHash, {
         from: userB
       });
       console.log('[Fail] Rating themself  OK');
@@ -955,7 +955,7 @@ contract('Voting Test', async (accounts) => {
 
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,userA,jobIDC, 1, commentHash, {
+      let l = await rating.rate(userA,jobIDC, 1, commentHash, {
         from: userB
       });
       console.log('[Fail] not freelancer Rating  OK');
@@ -972,7 +972,7 @@ contract('Voting Test', async (accounts) => {
 
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,userA,jobIDC, 1, commentHash, {
+      let l = await rating.rate(userA,jobIDC, 1, commentHash, {
         from: userB
       });
       console.log('[Fail] Rating wrong address  OK');
@@ -993,7 +993,7 @@ contract('Voting Test', async (accounts) => {
 
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,userB,jobIDC, 1, commentHash, {
+      let l = await rating.rate(userB,jobIDC, 1, commentHash, {
         from: userB
       });
       console.log('[Fail] Rating wrong rateTo adress');
@@ -1011,7 +1011,7 @@ contract('Voting Test', async (accounts) => {
 
     let commentHash = 'sfvsjhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS ,userA,jobIDD, 1, commentHash, {
+      let l = await rating.rate(userA,jobIDD, 1, commentHash, {
         from: userB
       });
       console.log('[Fail] Rating with dipute Job OK');
@@ -1028,7 +1028,7 @@ contract('Voting Test', async (accounts) => {
     var userA = accounts[0];
     var userB = accounts[2];
     let commentHash = 'sfvsjhfvdsj';
-    let l = await rating.rate(KEY_JOB_ADDRESS, userB,jobIDB, 3, commentHash, {
+    let l = await rating.rate(userB,jobIDB, 3, commentHash, {
       from: userA
     });
     let jj = l.logs.find(l => l.event === 'Rating').args
@@ -1046,7 +1046,7 @@ contract('Voting Test', async (accounts) => {
     var userB = accounts[1];
     let commentHash = 'sfvsjdhfvdsj';
     try {
-      let l = await rating.rate(KEY_JOB_ADDRESS, userA, jobIDC, 4, commentHash, {
+      let l = await rating.rate(userA, jobIDC, 4, commentHash, {
         from: userB
       });
       let jj = l.logs.find(l => l.event === 'Rating').args

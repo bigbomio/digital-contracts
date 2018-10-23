@@ -581,9 +581,11 @@ contract('Voting Test 3', async (accounts) => {
       from: userE
     });
 
-    let voter  = l.logs.find(l => l.event === 'VoteRevealed').args.voter;
+    let voter  = l2.logs.find(l => l.event === 'VoteRevealed').args.voter;
 
-    assert.equal(userC, voter);
+    //console.log(JSON.stringify(jobIDA));
+
+    assert.equal(userD, voter);
   });
 
   
@@ -625,9 +627,10 @@ contract('Voting Test 3', async (accounts) => {
     let l = await votingRight.finalizePoll(jobIDA, {
       from: userB
     });
-    const jobID = l.logs.find(l => l.event === 'PollFinalized').args.jobID
+    const jobIDz = l.logs.find(l => l.event === 'PollFinalized').args.jobID
+    //console.log(JSON.stringify(jobIDA));
 
-    assert.equal(JSON.stringify(jobIDA),JSON.stringify(jobID));
+    assert.equal(JSON.stringify(jobIDA),JSON.stringify(jobIDz));
 
   });
 
@@ -654,6 +657,7 @@ contract('Voting Test 3', async (accounts) => {
 
 
     let votingRight = await BBVoting.at(proxyAddressVoting);
+    //console.log(JSON.stringify(jobIDA));
 
     await votingRight.claimReward(jobIDA, {
       from: userC

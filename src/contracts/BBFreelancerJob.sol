@@ -7,13 +7,12 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
-import './BBRatingInterface.sol';
 
 
 /**
  * @title BBFreelancerJob
  */
-contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
+contract BBFreelancerJob is BBFreelancer {
    BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**

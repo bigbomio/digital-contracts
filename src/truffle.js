@@ -52,6 +52,13 @@ module.exports = {
       network_id: 777, // Match any network id
     }
   },
+  mocha: {
+    reporter: 'eth-gas-reporter',
+    reporterOptions : {
+      currency: 'CHF',
+      gasPrice: 21
+    }
+  }
 
 
 };
