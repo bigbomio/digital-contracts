@@ -20,26 +20,25 @@ contract BBVotingHelper is BBStandard{
     uint256 bboStake = bbs.getUint(BBLib.toB32(pollType, 'STAKED_DEPOSIT'));
     return (addOption, commit, reveal, bboStake);
   }
-  function getPollDetail(uint256 pollID) public view returns(uint256, uint256, uint256, address, address, bool) {
+  function getPollDetail(uint256 pollID) public view returns(uint256, uint256, uint256, address, address) {
     uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
     uint256 pollType = bbs.getUint(BBLib.toB32(pollID,'POLL_TYPE'));
     uint256 relatedTo = bbs.getUint(BBLib.toB32(pollID,'RELATED_TO'));
     address creator = bbs.getAddress(BBLib.toB32(pollID, 'POLL_STARTED'));
     address relatedAddr = bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
-    bool hasVote = bbs.getBool(BBLib.toB32(pollID, 'HAS_VOTE'));
-    return (pollStatus, pollType, relatedTo, creator, relatedAddr, hasVote);
+    return (pollStatus, pollType, relatedTo, creator, relatedAddr);
   }
-  function getPollResult(uint256 pollID) public view returns(address[], uint256[]){
-    uint256 numOption = bbs.getUint(BBLib.toB32(pollID, 'NUM_OPTION'));
-    address[] memory addrs = new address[](numOption);
+  function getPollResult(uint256 pollID) public view returns(uint256[], uint256[]){
+    uint256 numOption = bbs.getUint(BBLib.toB32(pollID, 'OPTION_COUNTER'));
+    uint256[] memory opts = new uint256[](numOption);
     uint256[] memory votes = new uint256[](numOption);
     for(uint i = 0; i < numOption ; i++){
-      addrs[i] = bbs.getAddress(BBLib.toB32(pollID, 'OPTION_CREATOR', i+1));
-      votes[i] = (bbs.getUint(BBLib.toB32(pollID,'VOTE_FOR',addrs[i])));
+      opts[i] = i.add(1);
+      votes[i] = (bbs.getUint(BBLib.toB32(pollID,'VOTE_FOR',opts[i])));
     }
-    addrs[numOption+1] = address(0x0);
-    votes[numOption+1] = (bbs.getUint(BBLib.toB32(pollID,'VOTE_FOR', address(0x0))));
-    return (addrs, votes);
+    opts[numOption+1] = 0;
+    votes[numOption+1] = (bbs.getUint(BBLib.toB32(pollID,'VOTE_FOR', 0)));
+    return (opts, votes);
   }
   function getPollID(uint256 pollType, uint256 relatedTo) public view returns(uint256 pollID){
     pollID = bbs.getUint(BBLib.toB32(relatedTo, pollType,'POLL'));
@@ -54,10 +53,10 @@ contract BBVotingHelper is BBStandard{
     /**
   * @dev check Hash for poll
   * @param pollID Job Hash
-  * @param choice address 
+  * @param choice uint256 
   * @param salt salt
   */
-  function checkHash(uint256 pollID, address choice, uint salt) public view returns(bool){
+  function checkHash(uint256 pollID, uint256 choice, uint salt) public view returns(bool){
     bytes32 choiceHash = BBLib.toB32(choice,salt);
     bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(pollID,'SECRET_HASH',msg.sender)));
     return (choiceHash==secretHash);
@@ -81,12 +80,12 @@ contract BBVotingHelper is BBStandard{
   */
   function claimReward(uint256 pollID) public {
     require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
-    require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender))!= true);
-    uint256 numReward = calcReward(pollID);
+    require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))!= true);
+    (uint256 numReward, bool win) = calcReward(pollID);
     require (numReward > 0);
     // set claimed to true
     bbs.setBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender), true);
-    // todo
+    // todo senBBO
     require(bbo.transfer(msg.sender, numReward));
   }
   /**
@@ -94,7 +93,7 @@ contract BBVotingHelper is BBStandard{
   * @param pollID Job Hash
   *
   */
-  function calcReward(uint256 pollID) constant public returns(uint256 numReward){
+  function calcReward(uint256 pollID) constant public returns(uint256 numReward, bool win){
     (bool isFinished, address winner, bool hasVote) = getPollWinner(pollID);
     if(isFinished==true && hasVote == true){
       address choice = bbs.getAddress(BBLib.toB32(pollID, 'CHOICE',msg.sender));
@@ -103,6 +102,7 @@ contract BBVotingHelper is BBStandard{
         uint256 totalVotes = bbs.getUint(BBLib.toB32(pollID, 'VOTE_FOR',choice));
         uint256 bboStake = bbs.getUint(BBLib.toB32(pollID, 'STAKED_DEPOSIT',choice));
         numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
+        win = true;
       }else{
         (,uint256 pollType,,,,) = getPollDetail(pollID);
         numReward = bbs.getUint(BBLib.toB32(pollType, 'BBO_REWARDS'));

@@ -1,5 +1,5 @@
   /**
- * Created on 2018-08-13 10:20
+ * Created on 2018-10-23 15:20
  * @summary: 
  * @author: Chris Nguyen
  */
@@ -9,9 +9,9 @@ import './BBStandard.sol';
 import './BBLib.sol';
 import './BBVotingHelper.sol';
 /**
- * @title BBVoting contract 
+ * @title BBVotingStandard contract 
  */
-contract BBVoting is BBStandard{
+contract BBVotingStandard is BBStandard{
   BBVotingHelper public helper = BBVotingHelper(0x0);
   function setHelper(address _helper) onlyOwner public {
     helper = BBVotingHelper(_helper);
@@ -19,7 +19,7 @@ contract BBVoting is BBStandard{
 
   event PollStarted(uint256 pollID, uint256 indexed pollType, address indexed creator, uint256 indexed relatedTo);
   event PollOptionAdded(uint256 indexed pollID, address indexed creator, bytes pollOption);
-  event PollUpdated(uint256 indexed pollID,bool indexed whiteFlag);
+  event PollUpdated(uint256 indexed pollID, bool indexed whiteFlag);
 
   event VotingRightsGranted(address indexed voter, uint256 numTokens);
   event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
