@@ -23,9 +23,6 @@ contract BBStorage is Ownable {
     mapping(bytes32 => bool)       private boolStorage;
     mapping(bytes32 => int256)     private intStorage;
 
-    mapping(bytes32 => address[]) private addressListStorage;
-    mapping(bytes32 => int256[]) private addressListStorage;
-
     mapping(bytes32 => bool)       private admins;
 
     event AdminAdded(address indexed admin, bool add);

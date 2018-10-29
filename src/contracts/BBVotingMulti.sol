@@ -5,117 +5,16 @@
  */
 pragma solidity ^0.4.24;
 
-import './BBStandard.sol';
+import './BBVoting.sol';
 import './BBLib.sol';
-import './BBVotingHelper.sol';
 /**
- * @title BBVotingStandard contract 
+ * @title BBVotingMulti contract 
  */
-contract BBVotingStandard is BBStandard{
-  BBVotingHelper public helper = BBVotingHelper(0x0);
-  function setHelper(address _helper) onlyOwner public {
-    helper = BBVotingHelper(_helper);
-  }
+contract BBVotingMulti is BBVoting{
 
   event PollStarted(uint256 pollID, uint256 indexed pollType, address indexed creator, uint256 indexed relatedTo);
   event PollOptionAdded(uint256 indexed pollID, address indexed creator, bytes pollOption);
   event PollUpdated(uint256 indexed pollID, bool indexed whiteFlag);
-
-  event VotingRightsGranted(address indexed voter, uint256 numTokens);
-  event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
-  event VoteCommitted(address indexed voter, uint256 indexed pollID);
-  event VoteRevealed(address indexed voter, uint256 indexed pollID);
-  
-  /**
-   * @dev request voting rights
-   * 
-   */
-  function requestVotingRights(uint256 numTokens) public {
-    require(bbo.balanceOf(msg.sender) >= numTokens);
-    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
-    require(bbo.transferFrom(msg.sender, address(this), numTokens));
-    bbs.setUint(BBLib.toB32(msg.sender,'STAKED_VOTE'), voteTokenBalance.add(numTokens));
-    emit VotingRightsGranted(msg.sender, numTokens);
-  }
-  
-  /**
-   * @dev withdraw voting rights
-   * 
-   */
-  function withdrawVotingRights(uint256 numTokens) public 
-  {
-    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
-    require (voteTokenBalance > 0);
-    require (numTokens > 0);
-    require (numTokens<= voteTokenBalance);
-    bbs.setUint(BBLib.toB32(msg.sender,'STAKED_VOTE'), voteTokenBalance.sub(numTokens));
-    require(bbo.transfer(msg.sender, numTokens));
-    emit VotingRightsWithdrawn(msg.sender, numTokens);
-  }
-
-
-  /**
-   * @dev commitVote for poll
-   * @param pollID Job Hash
-   * @param secretHash Hash of Choice address and salt uint
-   */
-  function commitVote(uint256 pollID, bytes32 secretHash, uint256 tokens) public 
-  {
-    //uint256 minVotes = bbs.getUint(keccak256('MIN_VOTES'));
-    //uint256 maxVotes = bbs.getUint(keccak256('MAX_VOTES'));
-    uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
-    require(pollStatus == 1);
-    //require(tokens >= minVotes);
-    //require(tokens <= maxVotes);
-    (uint256 addPollOptionEndDate,uint256 commitEndDate, ) = helper.getPollStage(pollID);
-    
-    require(addPollOptionEndDate<now);
-    require(commitEndDate>now);
-    require(secretHash != 0);
-    
-    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
-    if(voteTokenBalance<tokens){
-      requestVotingRights(tokens.sub(voteTokenBalance));
-    }
-    require(bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE')) >= tokens);
-    // add secretHash
-    bbs.setBytes(BBLib.toB32(pollID ,'SECRET_HASH',msg.sender), abi.encodePacked(secretHash));
-    bbs.setUint(BBLib.toB32(pollID ,'VOTES', msg.sender), tokens);
-    
-    emit VoteCommitted(msg.sender, pollID);
-  }
-
-
-  /**
-  * @dev revealVote for poll
-  * @param pollID Job Hash
-  * @param choice uint 
-  * @param salt salt
-  */
-  function revealVote(uint256 pollID, uint choice, uint salt) public 
-  {
-    (,uint256 commitEndDate, uint256 revealEndDate) = helper.getPollStage(pollID);
-    require(commitEndDate<now);
-    require(revealEndDate>now);
-    uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
-    require(pollStatus == 1);
-    uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
-    uint256 votes = bbs.getUint(BBLib.toB32(pollID,'VOTES',msg.sender));
-    // check staked vote
-    require(voteTokenBalance>= votes);
-
-    bytes32 choiceHash = BBLib.toB32(choice,salt);
-    bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(pollID,'SECRET_HASH',msg.sender)));
-    require(choiceHash == secretHash);
-    // make sure not reveal yet
-    require(bbs.getUint(BBLib.toB32(pollID,'CHOICE',msg.sender)) == 0x0);
-    uint256 numVote = bbs.getUint(BBLib.toB32(pollID,'VOTE_FOR',choice));
-    //save result poll
-    bbs.setUint(BBLib.toB32(pollID,'VOTE_FOR',choice), numVote.add(votes));
-    // save voter choice
-    bbs.setUint(BBLib.toB32(pollID,'CHOICE',msg.sender), choice);
-    emit VoteRevealed(msg.sender, pollID);
-  }
 
 
   function updatePoll(uint256 pollID, bool whiteFlag) public {
@@ -208,7 +107,7 @@ contract BBVotingStandard is BBStandard{
     // save option
     bbs.setBytes(BBLib.toB32(pollID, 'IPFS', optionID), optionHashIPFS);
     bbs.setAddress(BBLib.toB32(pollID, 'CREATOR', optionID), msg.sender);
-    emit PollOptionAdded(pollID, optionHashIPFS);
+    emit PollOptionAdded(pollID, msg.sender, optionHashIPFS);
   }
   
 }

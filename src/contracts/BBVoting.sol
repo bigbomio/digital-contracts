@@ -98,7 +98,7 @@ contract BBVoting is BBStandard{
     require(commitEndDate<now);
     require(revealEndDate>now);
     uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
-    require(pollStatus == 1);
+    require(pollStatus >= 1);
     uint256 voteTokenBalance = bbs.getUint(BBLib.toB32(msg.sender,'STAKED_VOTE'));
     uint256 votes = bbs.getUint(BBLib.toB32(pollID,'VOTES',msg.sender));
     // check staked vote
@@ -114,17 +114,20 @@ contract BBVoting is BBStandard{
     bbs.setUint(BBLib.toB32(pollID,'VOTE_FOR',choice), numVote.add(votes));
     // save voter choice
     bbs.setUint(BBLib.toB32(pollID,'CHOICE',msg.sender), choice);
+    // set has vote flag 
+    if(pollStatus == 1)
+      bbs.setUint(BBLib.toB32(pollID,'STATUS'), 2);
     emit VoteRevealed(msg.sender, pollID);
   }
 
 
   function updatePoll(uint256 pollID, bool whiteFlag) public {
-    (uint256 pollStatus, uint256 pollType, uint256 relatedTo,,address relatedAddr) = helper.getPollDetail(pollID);
-    (,uint256 commitEndDate,uint256 revealEndDate) = helper.getPollStage(pollID);
+    (uint256 pollStatus, uint256 pollType,,,) = helper.getPollDetail(pollID);
+    (,,uint256 revealEndDate) = helper.getPollStage(pollID);
     (, uint256 commitDuration,uint256 revealDuration,) = helper.getPollParams(pollType);
     require(pollStatus == 1);
-    
     require(revealEndDate < now);
+    // check has voting?
     if(whiteFlag){
       return _doWhiteFlag(pollID);
     }else{
@@ -133,7 +136,7 @@ contract BBVoting is BBStandard{
   }
 
   function _doWhiteFlag(uint256 pollID) private {
-    //assert(_doWithdrawStakeToken(pollID));
+    //TODO here
     bbs.deleteBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender));
     emit PollUpdated(pollID, true );
   }
@@ -143,7 +146,6 @@ contract BBVoting is BBStandard{
     emit PollUpdated(pollID, false);
   }
 
-  
   function startPoll(address sender, uint256 pollType, uint256 relatedTo, bytes extraData) public {
     address relatedAddr = bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
     // make sure the voting having the allowVoting method :v 
@@ -208,7 +210,7 @@ contract BBVoting is BBStandard{
     // save option
     bbs.setBytes(BBLib.toB32(pollID, 'IPFS', optionID), optionHashIPFS);
     bbs.setAddress(BBLib.toB32(pollID, 'CREATOR', optionID), msg.sender);
-    emit PollOptionAdded(pollID, optionHashIPFS);
+    emit PollOptionAdded(pollID, msg.sender, optionHashIPFS);
   }
   
 }

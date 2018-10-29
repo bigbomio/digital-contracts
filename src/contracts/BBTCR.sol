@@ -8,9 +8,8 @@ pragma solidity ^0.4.24;
 import './BBStandard.sol';
 import './BBLib.sol';
 import './BBVoting.sol';
-import './BBVotingInterface.sol';
 
-contract BBTCR is BBStandard, BBVotingInterface{
+contract BBTCR is BBStandard{
 	// events
 	event ItemApplied(uint256 indexed listID, bytes32 indexed itemHash, bytes data);
     //
