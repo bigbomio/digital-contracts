@@ -18,6 +18,7 @@ const BBOTest = artifacts.require("BBOTest");
 const BBVoting = artifacts.require("BBVoting");
 const BBVotingHelper = artifacts.require("BBVotingHelper");
 const BBParams = artifacts.require("BBParams");
+const BBDispute = artifacts.require("BBDispute");
 
 var contractAddr = '';
 var jobHash = 'QmSn1wGTpz6SeQr3QypbPEFn3YjBzGsvtPPVRaqG9Pjfjr';
@@ -51,6 +52,7 @@ contract('Voting Test', async (accounts) => {
     var votingHelperInstance = await BBVotingHelper.new({  from: accounts[0] });
     var paramsInstance = await BBParams.new({  from: accounts[0] });
     var proxyFact = await ProxyFactory.new({  from: accounts[0] });
+    var disputeInstance = await BBDispute.new({from: accounts[0]});
     
 
     const l1 = await proxyFact.createProxy(accounts[8], jobInstance.address, {from: accounts[0]});
@@ -270,7 +272,7 @@ it("extend time when no one commit vote", async () => {
     var userB = accounts[2];
     let l = await voting.updatePoll(pollID, false, 86400,86400, { from: userB });
     const rs = l.logs.find(l => l.event === 'PollUpdated').args.pollID
-    const whiteFlag = l.logs.find(l => l.event === 'PollUpdated').args.whiteFlag
+    const whiteFlag = l.logs.find(l => l.event === 'PollUpdated').args.isCancel
     assert.equal(pollID.toString(), rs.toString());
     assert.equal(false, whiteFlag);
 });
@@ -290,7 +292,7 @@ it("white-flag Poll when no one commit vote", async () => {
     
     let l = await voting.updatePoll(pollID, true,  86400,86400,{ from: userB });
     const rs = l.logs.find(l => l.event === 'PollUpdated').args.pollID
-    const whiteFlag = l.logs.find(l => l.event === 'PollUpdated').args.whiteFlag
+    const whiteFlag = l.logs.find(l => l.event === 'PollUpdated').args.isCancel
     assert.equal(pollID.toString(), rs.toString());
     assert.equal(true, whiteFlag);
 });
