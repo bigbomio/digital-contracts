@@ -3,9 +3,14 @@ pragma solidity ^0.4.24;
 import './BBStandard.sol';
 import './BBLib.sol';
 import './BBFreelancerPayment.sol';
+import './BBVoting.sol';
+import './BBVotingHelper.sol';
 
 contract BBDispute is BBStandard{
   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
+  BBVoting public voting = BBVoting(0x0);
+  BBVotingHelper public votingHelper = BBVotingHelper(0x0);
+  
   function setPayment(address p) onlyOwner public  {
     payment = BBFreelancerPayment(p);
   }

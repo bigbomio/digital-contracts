@@ -71,7 +71,9 @@ contract BBVotingHelper is BBStandard{
       r = (pollStatus >= 1 && revealEndDate < now);
     }
   }
-
+  function getPollOption(uint256 pollID, uint256 optID) public view returns(bytes opt){
+    opt = bbs.getBytes(BBLib.toB32(pollID, 'IPFS_HASH', optID));
+  }
   // /**
   // * @dev claimReward for poll
   // * @param pollID Job Hash

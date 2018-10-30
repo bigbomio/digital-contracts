@@ -18,9 +18,8 @@ contract BBVoting is BBStandard{
   }
 
   event PollStarted(uint256 pollID, uint256 indexed pollType, address indexed creator, uint256 indexed relatedTo);
-  event PollOptionAdded(uint256 indexed pollID, address indexed creator, bytes pollOption);
   event PollUpdated(uint256 indexed pollID,bool indexed whiteFlag);
-
+  event PollOptionAdded(uint256 indexed pollID, uint256 optionID);
   event VotingRightsGranted(address indexed voter, uint256 numTokens);
   event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
   event VoteCommitted(address indexed voter, uint256 indexed pollID);
@@ -121,13 +120,12 @@ contract BBVoting is BBStandard{
   }
 
 
-  function updatePoll(uint256 pollID, bool whiteFlag) public {
-    (uint256 pollStatus, uint256 pollType,,,) = helper.getPollDetail(pollID);
+  function updatePoll(uint256 pollID, bool whiteFlag, uint256 commitDuration,uint256 revealDuration) public {
+    (uint256 pollStatus,,,,) = helper.getPollDetail(pollID);
     (,,uint256 revealEndDate) = helper.getPollStage(pollID);
-    (, uint256 commitDuration,uint256 revealDuration,) = helper.getPollParams(pollType);
     require(pollStatus == 1);
     require(revealEndDate < now);
-    // check has voting?
+    require(bbs.getAddress(BBLib.toB32(pollID, 'OWNER')) == msg.sender);
     if(whiteFlag){
       return _doWhiteFlag(pollID);
     }else{
@@ -136,8 +134,9 @@ contract BBVoting is BBStandard{
   }
 
   function _doWhiteFlag(uint256 pollID) private {
-    //TODO here
-    bbs.deleteBytes(BBLib.toB32(pollID, 'POLL_OPTION', msg.sender));
+    // TODO here
+    // set status to 0
+    bbs.setUint(BBLib.toB32(pollID,'STATUS'), 0);
     emit PollUpdated(pollID, true );
   }
   function _doExtendPoll(uint256 pollID, uint256 commitDuration,uint256 revealDuration) private {
@@ -146,27 +145,14 @@ contract BBVoting is BBStandard{
     emit PollUpdated(pollID, false);
   }
 
-  function startPoll(address sender, uint256 pollType, uint256 relatedTo, bytes extraData) public {
-    address relatedAddr = bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
-    // make sure the voting having the allowVoting method :v 
-    if(sender== address(0x0))
-      sender = msg.sender;
-    
+  function startPoll(uint256 pollType, uint256 relatedTo, bytes extraData, uint256 addOptionDuration, uint256 commitDuration,uint256 revealDuration) public returns(uint256 pollID) {
     require(helper.hasVoting(pollType, relatedTo)!=true);
-    //TODO
-
-    return _doStartPoll(sender, pollType, relatedTo, extraData);
-  }
-  function _doStartPoll(address sender, uint256 pollType, uint256 relatedTo, bytes extraData) private {
-    //TODO
-    (uint256 addOptionDuration, uint256 commitDuration,uint256 revealDuration, uint256 bboStake) = helper.getPollParams(pollType);
-    // get current ID
+    
     uint256 latestID  = bbs.getUint(BBLib.toB32('POLL_COUNTER'));
-    uint256 pollID = latestID + 1;
+    pollID = latestID.add(1);
     bbs.setUint(BBLib.toB32('POLL_COUNTER'), pollID);
-    // assert(_doStakeToken( pollID, bboStake));
     // save startPoll address
-    bbs.setAddress(BBLib.toB32(pollID, 'POLL_STARTED'), sender);
+    bbs.setAddress(BBLib.toB32(pollID, 'POLL_STARTED'), msg.sender);
     bbs.setAddress(BBLib.toB32(pollID, 'OWNER'), msg.sender);
     
     // addPollOptionEndDate
@@ -188,16 +174,17 @@ contract BBVoting is BBStandard{
 
     _doAddPollOption(pollID, extraData);
 
-    emit PollStarted(pollID, pollType, sender, relatedTo);
-
+    emit PollStarted(pollID, pollType, msg.sender, relatedTo);
+    return pollID;
   }
   
   function addPollOption(uint256 pollID, bytes pollOption) public {
-    (uint256 pollStatus,, uint256 relatedTo,address creator,address relatedAddr) = helper.getPollDetail(pollID);
+    (uint256 pollStatus,,,,) = helper.getPollDetail(pollID);
     require(pollStatus == 1);
+    require(bbs.getAddress(BBLib.toB32(pollID, 'OWNER')) == msg.sender);
     //todo check msg.sender
     require(bbs.getUint(BBLib.toB32(pollID,'ADDOPTION_ENDDATE')) > now);
-    return _doAddPollOption(pollID, pollOption);
+    _doAddPollOption(pollID, pollOption);
   }
   
   function _doAddPollOption(uint256 pollID, bytes optionHashIPFS) private {
@@ -208,9 +195,9 @@ contract BBVoting is BBStandard{
     // save latestID
     bbs.setUint(BBLib.toB32(pollID, 'OPTION_COUNTER'), optionID);
     // save option
-    bbs.setBytes(BBLib.toB32(pollID, 'IPFS', optionID), optionHashIPFS);
+    bbs.setBytes(BBLib.toB32(pollID, 'IPFS_HASH', optionID), optionHashIPFS);
     bbs.setAddress(BBLib.toB32(pollID, 'CREATOR', optionID), msg.sender);
-    emit PollOptionAdded(pollID, msg.sender, optionHashIPFS);
+    emit PollOptionAdded(pollID, optionID);
   }
   
 }
