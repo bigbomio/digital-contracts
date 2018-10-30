@@ -24,6 +24,7 @@ BBFreelancerPayment is the contract control the payment for Freelancer app
 
 ## Events
 
+
 ### PaymentClaimed
 Event for loging payment claimed.
 
@@ -34,6 +35,7 @@ event PaymentClaimed(uint256 jobID, address indexed sender);
 | ------------- |:-------------:| ---------------------------:|
 | `jobID`       | uint256       |  ID of Job  |
 | `sender`       | address       |  user call claim payment  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 ### PaymentClaimed
 Event for loging payment accepted.
@@ -45,6 +47,7 @@ event PaymentAccepted(uint256 jobID, address indexed sender);
 | ------------- |:-------------:| ---------------------------:|
 | `jobID`       | uint256       |  ID of Job  |
 | `sender`       | address       |  user call accept payment  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 
 
@@ -52,13 +55,15 @@ event PaymentAccepted(uint256 jobID, address indexed sender);
 Event for loging payment rejected.
 
 ---
-event PaymentRejected(bytes jobHash, address indexed sender, uint reason);
+event PaymentRejected(bytes32 indexed indexJobHash, address indexed sender, uint reason, uint256 rejectedTimestamp, bytes jobHash);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobID`       | uint256       |  ID of Job  |
 | `sender`       | address       |  user call reject payment  |
 | `reason`       | uint       |  reason for rejection  |
+| `rejectedTimestamp`       | uint       |  rejected timetamp  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 
 ### DisputeFinalized
@@ -71,6 +76,7 @@ event DisputeFinalized(uint256 jobID, address indexed winner);
 | ------------- |:-------------:| ---------------------------:|
 | `jobID`       | uint256       |  ID of Job  |
 | `winner`       | address       | address has won the dispute  |
+| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
 
 ## Functions
 

@@ -1232,6 +1232,7 @@ var jobIDd = 0;
     
     const jobHashRs = jobHashRs1.jobID
     assert.equal(JSON.stringify(jobID), JSON.stringify(jobHashRs));
+
   });
 
   it("[Fail] reject payment with reasion = 0", async () => {
@@ -1290,6 +1291,7 @@ var jobIDd = 0;
     
     const jobHashRs = jobHashRs1.jobID
     assert.equal(JSON.stringify(jobID), JSON.stringify(jobHashRs));
+
   });
 
   it("[Fail] userB get userA's payment ", async () => {
@@ -1462,6 +1464,7 @@ var jobIDd = 0;
     
     const jobHashRs = jobHashRs1.jobID
     assert.equal(JSON.stringify(jobIDc), JSON.stringify(jobHashRs));
+
   });
 
 
@@ -1530,6 +1533,7 @@ var jobIDd = 0;
    // console.log(JSON.stringify(jobHashRs1));
     const jobHashRs = jobHashRs1.jobID;
      assert.equal(JSON.stringify(jobIDb), JSON.stringify(jobHashRs));
+
     assert.equal(userB, jobHashRs1.winner);
 
   });
