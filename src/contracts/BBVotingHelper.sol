@@ -30,8 +30,8 @@ contract BBVotingHelper is BBStandard{
   }
   function getPollResult(uint256 pollID) public view returns(uint256[], uint256[]){
     uint256 numOption = bbs.getUint(BBLib.toB32(pollID, 'OPTION_COUNTER'));
-    uint256[] memory opts = new uint256[](numOption);
-    uint256[] memory votes = new uint256[](numOption);
+    uint256[] memory opts = new uint256[](numOption.add(1));
+    uint256[] memory votes = new uint256[](numOption.add(1));
     for(uint256 i = 0; i <= numOption ; i++){
       opts[i] = i;
       votes[i] = (bbs.getUint(BBLib.toB32(pollID,'VOTE_FOR',opts[i])));

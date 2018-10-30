@@ -14,6 +14,13 @@ contract BBDispute is BBStandard{
   function setPayment(address p) onlyOwner public  {
     payment = BBFreelancerPayment(p);
   }
+  function setVoting(address p) onlyOwner public  {
+    voting = BBVoting(p);
+  }
+  function setVotingHelper(address p) onlyOwner public  {
+    votingHelper = BBVotingHelper(p);
+  }
+  
   event PollStarted(bytes32 indexed indexJobHash, bytes proofHash, address indexed creator, bytes jobHash);
   event PollAgainsted(bytes32 indexed indexJobHash, address indexed creator,  bytes proofHash, bytes jobHash);
   event PollFinalized(bytes32 indexed indexJobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bytes jobHash);
