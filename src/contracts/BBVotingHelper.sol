@@ -74,56 +74,35 @@ contract BBVotingHelper is BBStandard{
   function getPollOption(uint256 pollID, uint256 optID) public view returns(bytes opt){
     opt = bbs.getBytes(BBLib.toB32(pollID, 'IPFS_HASH', optID));
   }
-  // /**
-  // * @dev claimReward for poll
-  // * @param pollID Job Hash
-  // *
-  // */
-  // function claimReward(uint256 pollID) public {
-  //   require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
-  //   require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))!= true);
-  //   (uint256 numReward, bool win) = calcReward(pollID);
-  //   require (numReward > 0);
-  //   // set claimed to true
-  //   bbs.setBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender), true);
-  //   // todo senBBO
-  //   require(bbo.transfer(msg.sender, numReward));
-  // }
-  // /**
-  // * @dev calcReward calculate the reward
-  // * @param pollID Job Hash
-  // *
-  // */
-  // function calcReward(uint256 pollID) constant public returns(uint256 numReward, bool win){
-  //   (bool isFinished, uint256 winner, bool hasVote) = getPollWinner(pollID);
-  //   if(isFinished==true && hasVote == true){
-  //     address choice = bbs.getAddress(BBLib.toB32(pollID, 'CHOICE',msg.sender));
-  //     if(choice == winner){
-  //       uint256 votes = bbs.getUint(BBLib.toB32(pollID, 'VOTES',msg.sender));
-  //       uint256 totalVotes = bbs.getUint(BBLib.toB32(pollID, 'VOTE_FOR',choice));
-  //       uint256 bboStake = bbs.getUint(BBLib.toB32(pollID, 'STAKED_DEPOSIT',choice));
-  //       numReward = votes.mul(bboStake).div(totalVotes); // (vote/totalVotes) * staked
-  //       win = true;
-  //     }else{
-  //       (,uint256 pollType,,,) = getPollDetail(pollID);
-  //       numReward = bbs.getUint(BBLib.toB32(pollType, 'BBO_REWARDS'));
-  //     }
-  //   }
-  // }
-  function getPollWinner(uint256 pollID) constant public returns(bool isFinished, uint256 winner, bool hasVote) {
+  
+  function getPollWinner(uint256 pollID) constant public returns(bool isFinished, uint256 winner, uint256 winnerVotes , bool hasVote) {
     (,,uint256 revealEndDate) = getPollStage(pollID);
     (uint256 pollStatus,,,,) = getPollDetail(pollID);
     isFinished = (revealEndDate <= now);
     if(pollStatus==2){
       hasVote = true;
       (uint256[] memory addrs,uint256[] memory votes) = getPollResult(pollID);
-      uint256 max = 0;
       for(uint256 i=0;i<votes.length;i ++){
-        if(max<votes[i]){
-          max = votes[i];
+        if(winnerVotes<votes[i]){
+          winnerVotes = votes[i];
           winner = addrs[i];
         }
+        // to do if max == votes[i];
       }
     }
+  }
+  /**
+  @param voter           Address of voter who voted in the majority bloc
+  @param pollID          Integer identifier associated with target poll
+  @return correctVotes    Number of tokens voted for winning option
+  */
+  function getNumPassingTokens(address voter, uint256 pollID) public constant returns (uint256 correctVotes) {
+      (bool isFinished, uint256 winner,, bool hasVote) = getPollWinner(pollID);
+      if(isFinished==true && hasVote == true){
+        uint256 userChoice = bbs.getUint(BBLib.toB32(pollID,'CHOICE', voter));
+        if (winner == userChoice){
+          correctVotes = bbs.getUint(BBLib.toB32(pollID ,'VOTES', voter));
+        }
+      }
   }
 }
