@@ -156,10 +156,10 @@ it("start poll", async () => {
 });
 it("get Poll Option", async () => {
     let voting = await BBVotingHelper.at(proxyAddressVotingHelper);
-    // let proofHash = 'proofHash';
-    // let l = await voting.getPollOption(pollID, optionID);
+    let proofHash = 'proofHash';
+    let l = await voting.getPollOption(pollID, optionID);
    
-    // assert.equal(web3.utils.hexToUtf8(l), proofHash);
+    assert.equal(web3.utils.hexToUtf8(l), proofHash);
     console.log('pollID', pollID);
     let v = await voting.getPollResult(pollID);
     console.log(v[0]);
