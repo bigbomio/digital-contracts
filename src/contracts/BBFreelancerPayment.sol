@@ -11,12 +11,10 @@ import './BBLib.sol';
  * @title BBFreelancerPayment
  */
 contract BBFreelancerPayment is BBFreelancer{
-
   event PaymentClaimed(uint256 jobID, address indexed sender);
   event PaymentAccepted(uint256 jobID, address indexed sender);
   event PaymentRejected(uint256 jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
   event DisputeFinalized(uint256 jobID, address indexed winner);
-
 
   // hirer ok with finish Job
   /**
@@ -33,9 +31,7 @@ contract BBFreelancerPayment is BBFreelancer{
     uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
     //TODO release funs
     require(bbo.transfer(freelancer, bid));
-
     emit PaymentAccepted(jobID, msg.sender);
-
   }
   // hirer not ok with finish Job
   /**
@@ -51,7 +47,6 @@ contract BBFreelancerPayment is BBFreelancer{
     uint256 rejectedTimestamp = block.timestamp.add(bbs.getUint(keccak256('REJECTED_PAYMENT_LIMIT_TIMESTAMP')));
     bbs.setUint(BBLib.toB32(jobID,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'), rejectedTimestamp);
    emit PaymentRejected(jobID, msg.sender, reason, rejectedTimestamp);
-
   }
   // freelancer claimeJob with finish Job but hirer not accept payment 
   // need proof of work
@@ -77,9 +72,7 @@ contract BBFreelancerPayment is BBFreelancer{
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 5);
     uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
     require(bbo.transfer(msg.sender, bid));
-
     emit PaymentClaimed(jobID, msg.sender);
-
   }
 
   /** 
@@ -129,7 +122,6 @@ contract BBFreelancerPayment is BBFreelancer{
     bbs.setBool(BBLib.toB32(jobID, 'PAYMENT_FINALIZED'), true);
     require(bbo.transfer(winner, bid));
     emit DisputeFinalized(jobID, winner);
-
     return true;
   } 
 }

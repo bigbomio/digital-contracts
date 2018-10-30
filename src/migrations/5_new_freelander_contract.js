@@ -10,11 +10,11 @@ module.exports = async function(deployer) {
 
    
       // create bb contract
-     // deployer.deploy(BBFreelancerJob).then(function(){
-     //    return  deployer.deploy(BBFreelancerBid);
-     // }).then(function(){
+     deployer.deploy(BBFreelancerJob).then(function(){
+        return  deployer.deploy(BBFreelancerBid);
+     }).then(function(){
         return  deployer.deploy(BBFreelancerPayment);
-    // });
+     });
    
      
      console.log('done');
