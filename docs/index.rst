@@ -21,6 +21,7 @@ Welcome to Bigbom Digital Contracts's documentation!
 
    enviroments/mainnet
    enviroments/ropsten
+   enviroments/rinkeby
    enviroments/tomo
 
 .. _bb-guilds:
