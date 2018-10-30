@@ -55,16 +55,14 @@ contract BBDispute is BBStandard{
   function finalizePoll(uint256 jobID) public
   {
     uint256 pID = getPollID(jobID);
-    (bool isFinished, uint256 winner,, bool hasVote) = votingHelper.getPollWinner(pID);
+    (bool isFinished, uint256 winner,, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pID);
     require(isDisputingJob(jobID)==true);
     address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
-
     require(creator!=address(0x0));
-    (uint256 addPollOptionEndDate,,) = votingHelper.getPollStage(pID);
+    (,,uint256 addPollOptionEndDate,,) = votingHelper.getPollStage(pID);
     require(addPollOptionEndDate <= now);
     //TODO
     uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pID,creator));
-
     // check if not have against proof
     if(!isAgaintsPoll(jobID)){      
       // set winner to creator 
@@ -77,7 +75,7 @@ contract BBDispute is BBStandard{
       require(isFinished == true);
       address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
       address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
-      if(winner == 0){
+      if(winner == 0 || quorum == 50){
         // cancel poll
         assert(voting.updatePoll(pID, true, 0, 0));
         // refun money staked
@@ -87,6 +85,7 @@ contract BBDispute is BBStandard{
         bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 4);
         //TODO reset POLL
       }else{
+
         bbs.setAddress(BBLib.toB32(jobID, 'DISPUTE_WINNER'), (winner==1)?creator:(creator==jobOwner)?freelancer:jobOwner);
         //refun money staked for winner
         require(bbo.transfer(bbs.getAddress(BBLib.toB32(jobID,'DISPUTE_WINNER')), bboStake));
@@ -123,7 +122,7 @@ contract BBDispute is BBStandard{
     uint256 bboStake = bbs.getUint(BBLib.toB32('STAKED_DEPOSIT'));
     require(bbo.transferFrom(msg.sender, address(this), bboStake));
     // startPoll
-    uint256 pollID = voting.startPoll(1, jobID, proofHash, evidenceDuration, commitDuration, revealDuration);
+    uint256 pollID = voting.startPoll(proofHash, evidenceDuration, commitDuration, revealDuration);
     assert(pollID>0);
     // save poll
     bbs.setUint(BBLib.toB32(jobID, 'POLL_ID'), pollID);
@@ -166,7 +165,7 @@ contract BBDispute is BBStandard{
     require(canCreatePoll(jobID)==true);
     require(isDisputingJob(jobID)==true);
     uint256 pollID = getPollID(jobID);
-    (bool isFinished,,, bool hasVote) = votingHelper.getPollWinner(pollID);
+    (bool isFinished,,, bool hasVote,) = votingHelper.getPollWinner(pollID);
     require(hasVote!=true);
     require(isFinished==true);
     address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
@@ -214,19 +213,20 @@ contract BBDispute is BBStandard{
   *
   */
   function calcReward(uint256 jobID) constant public returns(uint256 numReward, bool win){
-    uint256 pollID = getPollID(jobID);
-    uint256 userVotes =  votingHelper.getNumPassingTokens(msg.sender, pollID);
-    address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
-    (bool isFinished,, uint256 winnerVotes, bool hasVote) = votingHelper.getPollWinner(pollID);
-    if(isFinished==true && hasVote == true){
-      if(userVotes>0){
-        uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pollID,creator));
-        numReward = userVotes.mul(bboStake).div(winnerVotes); // (vote/totalVotes) * staked
-        win = true;
-      }else{
-        numReward = bbs.getUint(BBLib.toB32('BBO_REWARDS'));
+    if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
+      uint256 pollID = getPollID(jobID);
+      uint256 userVotes =  votingHelper.getNumPassingTokens(msg.sender, pollID);
+      address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
+      (bool isFinished,, uint256 winnerVotes, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pollID);
+      if(isFinished==true && hasVote == true){
+        if(userVotes>0 && quorum > 50){
+          uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pollID,creator));
+          numReward = userVotes.mul(bboStake).div(winnerVotes); // (vote/totalVotes) * staked
+          win = true;
+        }else{
+          numReward = bbs.getUint(BBLib.toB32('BBO_REWARDS'));
+        }
       }
     }
   }
-
 }

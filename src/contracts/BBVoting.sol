@@ -17,7 +17,7 @@ contract BBVoting is BBStandard{
     helper = BBVotingHelper(_helper);
   }
 
-  event PollStarted(uint256 pollID, uint256 indexed pollType, address indexed creator, uint256 indexed relatedTo);
+  event PollStarted(uint256 indexed pollID, address indexed creator);
   event PollUpdated(uint256 indexed pollID,bool indexed isCancel);
   event PollOptionAdded(uint256 indexed pollID, uint256 optionID);
 
@@ -68,7 +68,7 @@ contract BBVoting is BBStandard{
     require(pollStatus == 1);
     //require(tokens >= minVotes);
     //require(tokens <= maxVotes);
-    (uint256 addPollOptionEndDate,uint256 commitEndDate, ) = helper.getPollStage(pollID);
+    (,,uint256 addPollOptionEndDate,uint256 commitEndDate,) = helper.getPollStage(pollID);
     
     require(addPollOptionEndDate<now);
     require(commitEndDate>now);
@@ -96,7 +96,7 @@ contract BBVoting is BBStandard{
   */
   function revealVote(uint256 pollID, uint choice, uint salt) public 
   {
-    (,uint256 commitEndDate, uint256 revealEndDate) = helper.getPollStage(pollID);
+    (,,,uint256 commitEndDate, uint256 revealEndDate) = helper.getPollStage(pollID);
     require(commitEndDate<now);
     require(revealEndDate>now);
     uint256 pollStatus = bbs.getUint(BBLib.toB32(pollID,'STATUS'));
@@ -125,11 +125,10 @@ contract BBVoting is BBStandard{
 
 
   function updatePoll(uint256 pollID, bool isCancel, uint256 commitDuration,uint256 revealDuration) public returns(bool success) {
-    (uint256 pollStatus,,,,) = helper.getPollDetail(pollID);
-    (,,uint256 revealEndDate) = helper.getPollStage(pollID);
+    (uint256 pollStatus, address creator,,,uint256 revealEndDate) = helper.getPollStage(pollID);
     require(pollStatus == 1);
     require(revealEndDate < now);
-    require(bbs.getAddress(BBLib.toB32(pollID, 'OWNER')) == msg.sender);
+    require(creator == msg.sender);
     if(isCancel){
       return _doCancel(pollID);
     }else{
@@ -153,16 +152,12 @@ contract BBVoting is BBStandard{
     emit PollUpdated(pollID, false);
   }
 
-  function startPoll(uint256 pollType, uint256 relatedTo, bytes extraData, uint256 addOptionDuration, uint256 commitDuration,uint256 revealDuration) public returns(uint256 pollID) {
-    require(helper.hasVoting(pollType, relatedTo)!=true);
-    
+  function startPoll(bytes extraData, uint256 addOptionDuration, uint256 commitDuration,uint256 revealDuration) public returns(uint256 pollID) {    
     uint256 latestID  = bbs.getUint(BBLib.toB32('POLL_COUNTER'));
     pollID = latestID.add(1);
     bbs.setUint(BBLib.toB32('POLL_COUNTER'), pollID);
     // save startPoll address
-    bbs.setAddress(BBLib.toB32(pollID, 'POLL_STARTED'), msg.sender);
     bbs.setAddress(BBLib.toB32(pollID, 'OWNER'), msg.sender);
-    
     // addPollOptionEndDate
     uint256 addPollOptionEndDate = block.timestamp.add(addOptionDuration);
     // commitEndDate
@@ -174,22 +169,17 @@ contract BBVoting is BBStandard{
     bbs.setUint(BBLib.toB32(pollID,'ADDOPTION_ENDDATE'), addPollOptionEndDate);
     bbs.setUint(BBLib.toB32(pollID,'COMMIT_ENDDATE'), commitEndDate);
     bbs.setUint(BBLib.toB32(pollID,'REVEAL_ENDDATE'), revealEndDate);
-    // save relatedTo
-    bbs.setUint(BBLib.toB32(pollID,'RELATED_TO'), relatedTo);
-    bbs.setUint(BBLib.toB32(pollID,'POLL_TYPE'), pollType);
-    // save pollID to relatedTo
-    bbs.setUint(BBLib.toB32(relatedTo, pollType,'POLL'), pollID);
 
     _doAddPollOption(pollID, extraData);
 
-    emit PollStarted(pollID, pollType, msg.sender, relatedTo);
+    emit PollStarted(pollID, msg.sender);
     return pollID;
   }
   
   function addPollOption(uint256 pollID, bytes pollOption) public returns(bool success){
-    (uint256 pollStatus,,,,) = helper.getPollDetail(pollID);
+    (uint256 pollStatus, address creator,,,) = helper.getPollStage(pollID);
     require(pollStatus == 1);
-    require(bbs.getAddress(BBLib.toB32(pollID, 'OWNER')) == msg.sender);
+    require(creator == msg.sender);
     //todo check msg.sender
     require(bbs.getUint(BBLib.toB32(pollID,'ADDOPTION_ENDDATE')) > now);
     return _doAddPollOption(pollID, pollOption);
