@@ -26,6 +26,7 @@ BBDispute is the contract implements Poll creation actions for creating dispute 
 
 
 ## Events
+  
 
 ### PollStarted
 Event for logging start new poll.
@@ -38,6 +39,8 @@ event PollStarted(uint256 jobID, address indexed creator);
 | `jobID`       | uint256       |  ID of job  |
 | `proofHash`     | proofHash   |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who start the Poll  |
+| `jobHash`       | bytes32       |  the jobHash store on IPFS  |
+
 
 ### PollAgainsted
 Event for logging against the exist poll.
@@ -50,6 +53,8 @@ event PollAgainsted(uint256 jobID, address indexed creator);
 | `jobID`       | uint256       |  ID of job  |
 | `proofHash`     | proofHash  |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who against the Poll  |
+| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+
 
 
 ### PollFinalized
@@ -63,6 +68,7 @@ event PollFinalized(uint256 jobID, uint256 jobOwnerVotes, uint256 freelancerVote
 | `jobID`       | uint256       |  ID of job  |
 | `jobOwnerVotes`       | uint256       |  number of votes for the hirer of this job  |
 | `freelancerVotes`       | uint256       |  number of votes for the freelancer of this job  |
+| `jobHash`       | bytes       |  Hash of the jobHash store on IPFS  |
 
 ### PollWhiteFlaged
 Event for logging White-Flaged.
@@ -75,6 +81,8 @@ event PollWhiteFlaged(uint256 indexed jobID, address indexed creator);
 | ------------- |:-------------:| ---------------------------:|
 | `jobID`       | uint256       |  ID of job  |
 | `creator`       | address       |  who fire white-flag a dispute  |
+| `jobHash`       | bytes      |  Hash of the jobHash store on IPFS  |
+
 
 
 ### PollExtended
