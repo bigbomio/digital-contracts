@@ -31,11 +31,11 @@ BBDispute is the contract implements Poll creation actions for creating dispute 
 Event for logging start new poll.
 
 ---
-event PollStarted(bytes jobHash, address indexed creator);
+event PollStarted(uint256 jobID, address indexed creator);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `proofHash`     | proofHash   |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who start the Poll  |
 
@@ -43,11 +43,11 @@ event PollStarted(bytes jobHash, address indexed creator);
 Event for logging against the exist poll.
 
 ---
-event PollAgainsted(bytes jobHash, address indexed creator);
+event PollAgainsted(uint256 jobID, address indexed creator);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `proofHash`     | proofHash  |  Hash of the job evident stored on IPFS |
 | `creator`       | address       |  address who against the Poll  |
 
@@ -56,11 +56,11 @@ event PollAgainsted(bytes jobHash, address indexed creator);
 Event for logging against the exist poll.
 
 ---
-event PollFinalized(bytes jobHash, uint256 jobOwnerVotes, uint256 freelancerVotes, bool isPass);
+event PollFinalized(uint256 jobID, uint256 jobOwnerVotes, uint256 freelancerVotes, bool isPass);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `jobOwnerVotes`       | uint256       |  number of votes for the hirer of this job  |
 | `freelancerVotes`       | uint256       |  number of votes for the freelancer of this job  |
 
@@ -68,12 +68,12 @@ event PollFinalized(bytes jobHash, uint256 jobOwnerVotes, uint256 freelancerVote
 Event for logging White-Flaged.
 
 ---
-event PollWhiteFlaged(bytes32 indexed jobHash, address indexed creator);
+event PollWhiteFlaged(uint256 indexed jobID, address indexed creator);
 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `creator`       | address       |  who fire white-flag a dispute  |
 
 
@@ -81,12 +81,12 @@ event PollWhiteFlaged(bytes32 indexed jobHash, address indexed creator);
 Event for logging Extend a Voting duration.
 
 ---
-event PollExtended(bytes32 indexed jobHash);
+event PollExtended(uinit56 indexed jobID);
 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes32       |  Hash of the jobHash store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 
 
@@ -109,11 +109,11 @@ modifier: [onlyOwner](../../src/contracts/zeppelin/ownership/Ownable.sol#L31-L35
 Check this Poll started for the job Hash has againts or not
 
 ---
-function isAgaintsPoll(bytes jobHash) public constant returns(bool)
+function isAgaintsPoll(uint256 jobID) public constant returns(bool)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 Return: (Bool)
 
@@ -121,33 +121,33 @@ Return: (Bool)
 Create a Poll to start Dispute by provide the evident proofHash
 
 ---
-function startPoll(bytes jobHash, bytes proofHash) public 
+function startPoll(uint256 jobID, bytes proofHash) public 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `proofHash`       | bytes       |  Hash of the job evident stored on IPFS  |
 
 ### againstPoll
 Against a Poll to start Dispute by provide the evident proofHash. 
 
 ---
-function againstPoll(bytes jobHash, bytes againstProofHash) public 
+function againstPoll(unit256 jobID, bytes againstProofHash) public 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `againstProofHash`       | bytes       |  Hash of the job evident stored on IPFS  |
 
 ### getPoll
 Get Poll detail
 
 ---
-function getPoll(bytes jobHash) public constant returns (uint256, uint256, bool)
+function getPoll(uint256 jobID) public constant returns (uint256, uint256, bool)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 Returns:
 
@@ -161,33 +161,33 @@ Returns:
 Finalize a Poll
 
 ---
-function finalizePoll(bytes jobHash) public
+function finalizePoll(uint256 jobID) public
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 
 ### whiteflagPoll
 White-flag a Poll
 
 ---
-function whiteflagPoll(bytes jobHash) public
+function whiteflagPoll(uint256 jobID) public
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 
 ### extendPoll
 Extend a Poll
 
 ---
-function extendPoll(bytes jobHash) public
+function extendPoll(uint256 jobID) public
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job stored on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 
 

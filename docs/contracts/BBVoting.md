@@ -61,24 +61,24 @@ event VotingRightsWithdrawn(address indexed voter, uint256 numTokens);
 Event for logging the voter commit vote for job hash
 
 ---
-event VoteCommitted(address indexed voter, bytes jobHash);
+event VoteCommitted(address indexed voter, uint256 jobID);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `voter`       | address       |  address of the voter |
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 
 ### VoteRevealed
 Event for logging the voter reveal the commit vote
 
 ---
-event VoteRevealed(address indexed voter, bytes jobHash, bytes32 secretHash);
+event VoteRevealed(address indexed voter, uint256 jobID, bytes32 secretHash);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `voter`       | address       |  address of the voter |
-| `numTokens`       | uint256   | the number of BBO withdrawn |
+| `jobID`       | uint256       |  ID of job  |
 | `secretHash`       | bytes32   | the hash of commit vote |
 
 
@@ -90,10 +90,10 @@ Check the job hash is the dispute job
 ---
 
 ```javascript
-modifier isDisputeJob(bytes jobHash){
-    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+modifier isDisputeJob(uint256 jobID){
+    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS'));
     require(jobStatus == 4);
-    require(bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'))==address(0x0));
+    require(bbs.getAddress(BBLib.toB32(jobID, 'DISPUTE_WINNER'))==address(0x0));
     _;
   }
 ```
@@ -103,11 +103,11 @@ modifier isDisputeJob(bytes jobHash){
 Check this Poll started for the job Hash has againts or not
 
 ---
-function isAgaintsPoll(bytes jobHash) public constant returns(bool)
+function isAgaintsPoll(uint256 jobID) public constant returns(bool)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 Return: (Bool)
 
@@ -158,12 +158,12 @@ Return:
 Voter commit vote for the dispute job
 
 ---
-function commitVote(bytes jobHash, bytes32 secretHash, uint256 tokens) public 
+function commitVote(uint256 jobID, bytes32 secretHash, uint256 tokens) public 
   isDisputeJob(jobHash)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `secretHash`    | bytes32     |  `keccak256`(choice, salt) |
 | `tokens`        | uint256     |  number of token vote for this job |
 
@@ -173,12 +173,12 @@ Modifiers: `isDisputeJob`
 Voter reveal vote for the dispute job
 
 ---
-function revealVote(bytes jobHash, address choice, uint salt) public 
+function revealVote(unit256 jobID, address choice, uint salt) public 
   isDisputeJob(jobHash)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `choice`    | address     |  address of hirer/freelancer choice from commit stage |
 | `salt`        | uint256     |  secret salt to encrypt `secretHash`  |
 
@@ -188,11 +188,11 @@ Modifiers: `isDisputeJob`
 Voter can check the `secretHash` 
 
 ---
-function checkHash(bytes jobHash, address choice, uint salt) public view returns(bool)
+function checkHash(uint256 jobID, address choice, uint salt) public view returns(bool)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 | `choice`    | address     |  address of hirer/freelancer choice from commit stage |
 | `salt`        | uint256     |  secret salt to encrypt `secretHash`  |
 
@@ -201,22 +201,22 @@ function checkHash(bytes jobHash, address choice, uint salt) public view returns
 Voter claim reward 
 
 ---
-function claimReward(bytes jobHash) public 
+function claimReward(uint256 jobID) public 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 ### calcReward
 Calculate the reward of the dispute job hash 
 
 ---
-function calcReward(bytes jobHash) constant public returns(uint256 numReward)
+function calcReward(uint256 jobID) constant public returns(uint256 numReward)
 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes       |  Hash of the job store on IPFS  |
+| `jobID`       | uint256       |  ID of job  |
 
 Return: Number of reward.
 

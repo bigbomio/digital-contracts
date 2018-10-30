@@ -11,93 +11,93 @@ import './BBLib.sol';
  * @title BBFreelancerPayment
  */
 contract BBFreelancerPayment is BBFreelancer{
-  event PaymentClaimed(bytes32 jobHash, address indexed sender);
-  event PaymentAccepted(bytes32 jobHash, address indexed sender);
-  event PaymentRejected(bytes32 jobHash, address indexed sender, uint reason, uint256 rejectedTimestamp);
-  event DisputeFinalized(bytes32 jobHash, address indexed winner);
+  event PaymentClaimed(uint256 jobID, address indexed sender);
+  event PaymentAccepted(uint256 jobID, address indexed sender);
+  event PaymentRejected(uint256 jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
+  event DisputeFinalized(uint256 jobID, address indexed winner);
 
   // hirer ok with finish Job
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function acceptPayment(bytes jobHash)  public 
-  isOwnerJob(jobHash) {
-    uint256 status = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+  function acceptPayment(uint256 jobID)  public 
+  isOwnerJob(jobID) {
+    uint256 status = bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS'));
     require(status >= 2);
     require(status <= 4);
-    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 9);
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
-    uint256 bid = bbs.getUint(BBLib.toB32(jobHash,freelancer));
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 9);
+    address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
     //TODO release funs
     require(bbo.transfer(freelancer, bid));
-    emit PaymentAccepted(keccak256(jobHash), msg.sender);
+    emit PaymentAccepted(jobID, msg.sender);
   }
   // hirer not ok with finish Job
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function rejectPayment(bytes jobHash, uint reason) public 
-  isOwnerJob(jobHash) {
-    require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 2);
+  function rejectPayment(uint256 jobID, uint reason) public 
+  isOwnerJob(jobID) {
+    require(bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS')) == 2);
     require(reason > 0);
-    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 4);
-    bbs.setUint(BBLib.toB32(jobHash,'REASON'), reason);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 4);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_REASON'), reason);
     uint256 rejectedTimestamp = block.timestamp.add(bbs.getUint(keccak256('REJECTED_PAYMENT_LIMIT_TIMESTAMP')));
-    bbs.setUint(BBLib.toB32(jobHash,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'), rejectedTimestamp);
-   emit PaymentRejected(keccak256(jobHash), msg.sender, reason, rejectedTimestamp);
+    bbs.setUint(BBLib.toB32(jobID,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'), rejectedTimestamp);
+   emit PaymentRejected(jobID, msg.sender, reason, rejectedTimestamp);
   }
   // freelancer claimeJob with finish Job but hirer not accept payment 
   // need proof of work
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function claimePayment(bytes jobHash) public
+  function claimePayment(uint256 jobID) public
   {
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
-    address jobOwner = bbs.getAddress(keccak256(jobHash));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
     require(msg.sender == freelancer || msg.sender == jobOwner);
     if(msg.sender == freelancer){
-      require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 2);
-      uint256 finishDate = bbs.getUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'));
+      require(bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS')) == 2);
+      uint256 finishDate = bbs.getUint(BBLib.toB32(jobID,'JOB_FINISHED_TIMESTAMP'));
       uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
       require((finishDate+paymentLimitTimestamp) <= now );
     }else{
-      require(bbs.getUint(BBLib.toB32(jobHash,'STATUS')) == 4);
-      uint256 rejectedEndTimestamp = bbs.getUint(BBLib.toB32(jobHash,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'));
+      require(bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS')) == 4);
+      uint256 rejectedEndTimestamp = bbs.getUint(BBLib.toB32(jobID,'REJECTED_PAYMENT_LIMIT_TIMESTAMP'));
       require(rejectedEndTimestamp <= now );
     }
-    bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 5);
-    uint256 bid = bbs.getUint(BBLib.toB32(jobHash,freelancer));
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 5);
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
     require(bbo.transfer(msg.sender, bid));
-    emit PaymentClaimed(keccak256(jobHash), msg.sender);
+    emit PaymentClaimed(jobID, msg.sender);
   }
 
   /** 
   * @dev check payment status 
   **/
-  function checkPayment(bytes jobHash) public view returns(uint256, uint256){
-    uint256 finishDate = bbs.getUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'));
+  function checkPayment(uint256 jobID) public view returns(uint256, uint256){
+    uint256 finishDate = bbs.getUint(BBLib.toB32(jobID,'JOB_FINISHED_TIMESTAMP'));
     uint256 paymentLimitTimestamp = bbs.getUint(keccak256('PAYMENT_LIMIT_TIMESTAMP'));
-    uint256 status = bbs.getUint(BBLib.toB32(jobHash,'STATUS'));
+    uint256 status = bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS'));
     return (status,finishDate.add(paymentLimitTimestamp));
   }
 
 
-  function refundBBO(bytes jobHash) public  returns(bool) {
-      address owner = bbs.getAddress(keccak256(jobHash));
-      uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash, owner, 'DEPOSIT'));
-      if(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) == true) {
-          bbs.setUint(BBLib.toB32(jobHash, owner,'DEPOSIT'), 0);
+  function refundBBO(uint256 jobID) public  returns(bool) {
+      address owner = bbs.getAddress(BBLib.toB32(jobID));
+      uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID, owner, 'DEPOSIT'));
+      if(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true) {
+          bbs.setUint(BBLib.toB32(jobID, owner,'DEPOSIT'), 0);
           if(lastDeposit > 0) {
             return bbo.transfer(owner, lastDeposit);
           }else
             return true;
       } else {
-        address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash, 'FREELANCER')));
-        uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
+        address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobID, 'FREELANCER')));
+        uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,freelancer)));
         require(bid > 0);
         require(lastDeposit > bid);
         return bbo.transfer(owner, lastDeposit - bid);
@@ -107,21 +107,21 @@ contract BBFreelancerPayment is BBFreelancer{
 
   /**
    * @dev finalize Dispute
-   * @param jobHash The job Hash 
+   * @param jobID The job ID 
    */
-  function finalizeDispute(bytes jobHash)  public returns(bool) {
-    require(bbs.getAddress(keccak256(jobHash)) != 0x0);
-    require(bbs.getBool(BBLib.toB32(jobHash, 'PAYMENT_FINALIZED'))!=true);
+  function finalizeDispute(uint256 jobID)  public returns(bool) {
+    require(bbs.getAddress(BBLib.toB32(jobID)) != 0x0);
+    require(bbs.getBool(BBLib.toB32(jobID, 'PAYMENT_FINALIZED'))!=true);
 
-    address winner = bbs.getAddress(BBLib.toB32(jobHash, 'DISPUTE_WINNER'));
+    address winner = bbs.getAddress(BBLib.toB32(jobID, 'DISPUTE_WINNER'));
     require(winner!=address(0x0));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER'));
-    address jobOwner = bbs.getAddress(keccak256(jobHash));
-    uint256 bid = bbs.getUint(BBLib.toB32(jobHash,freelancer));
+    address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
+    address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
     require(winner==freelancer||winner==jobOwner);
-    bbs.setBool(BBLib.toB32(jobHash, 'PAYMENT_FINALIZED'), true);
+    bbs.setBool(BBLib.toB32(jobID, 'PAYMENT_FINALIZED'), true);
     require(bbo.transfer(winner, bid));
-    emit DisputeFinalized(keccak256(jobHash), winner);
+    emit DisputeFinalized(jobID, winner);
     return true;
   } 
 }

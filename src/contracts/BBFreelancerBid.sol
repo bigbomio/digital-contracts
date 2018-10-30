@@ -23,75 +23,75 @@ contract BBFreelancerBid is BBFreelancer{
   }
 
 
-  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint256 bidTime);
-  event BidCanceled(bytes32 indexed jobHash, address indexed owner);
-  event BidAccepted(bytes32 indexed jobHash, uint256 bid,address indexed freelancer);
+  event BidCreated(uint256  indexed jobID , address indexed owner, uint256 bid, uint256 bidTime);
+  event BidCanceled(uint256 indexed jobID, address indexed owner);
+  event BidAccepted(uint256 indexed jobID, uint256 bid,address indexed freelancer);
 
 
    // freelancer bid job
   /** 
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    * @param bid value of bid amount
    * @param bidTime time to do this job
    */
-  function createBid(bytes jobHash, uint256 bid, uint bidTime) public 
-   isNotOwnerJob(jobHash)
-   isNotCanceled(jobHash)
-   jobNotStarted(jobHash) {
+  function createBid(uint256 jobID, uint256 bid, uint bidTime) public 
+   isNotOwnerJob(jobID)
+   isNotCanceled(jobID)
+   jobNotStarted(jobID) {
     // sender should not cancel previous bid yet
-    require( bbs.getBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL')) != true);
+    require( bbs.getBool(BBLib.toB32(jobID,msg.sender, 'JOB_CANCEL')) != true);
     // bid must in range budget
-    require(bid <= bbs.getUint(BBLib.toB32(jobHash, 'BUDGET' )));
+    require(bid <= bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET' )));
     //check job expired
-    require(now < bbs.getUint(BBLib.toB32(jobHash, 'EXPIRED')));
+    require(now < bbs.getUint(BBLib.toB32(jobID, 'JOB_EXPIRED')));
 
-    require(bbs.getAddress(BBLib.toB32(jobHash,'FREELANCER')) == 0x0);
+    require(bbs.getAddress(BBLib.toB32(jobID,'FREELANCER')) == 0x0);
 
     require(bidTime > 0);
 
     // set user bid value
-    bbs.setUint(BBLib.toB32(jobHash,msg.sender), bid);
+    bbs.setUint(BBLib.toB32(jobID,msg.sender), bid);
     //set user bidTime value
-    bbs.setUint(BBLib.toB32(jobHash,'BID_TIME',msg.sender), bidTime);
+    bbs.setUint(BBLib.toB32(jobID,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
+    emit BidCreated(jobID, msg.sender, bid, bidTime);
   }
 
-   function createSingleBid(bytes jobHash, uint256 bid, uint bidTime) public {
+   function createSingleBid(uint256 jobID, uint256 bid, uint bidTime) public {
      //Job owner call
-     if(isOwnerOfJob(msg.sender, jobHash)) {
+     if(isOwnerOfJob(msg.sender, jobID)) {
        return;
      }
      //Job has not started
-     if(isJobStart(jobHash)) {
+     if(isJobStart(jobID)) {
        return;
      }
     
     //sender should not cancel previous bid yet
-    if(isJobCancel(msg.sender, jobHash)) {
+    if(isJobCancel(jobID)) {
       return;
     }
     //bid must in range budget
-    if(bid > bbs.getUint(BBLib.toB32(jobHash, 'BUDGET' ))) {
+    if(bid > bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET' ))) {
        return;
     }
     //is job expired
-    if(isJobExpired(jobHash)) {
+    if(isJobExpired(jobID)) {
       return;
     }
-    if(isJobHasFreelancer(jobHash)) {
+    if(isJobHasFreelancer(jobID)) {
       return;
     }
     if(bidTime <= 0) {
       return;
     }
     // set user bid value
-    bbs.setUint(BBLib.toB32(jobHash,msg.sender), bid);
+    bbs.setUint(BBLib.toB32(jobID,msg.sender), bid);
     //set user bidTime value
-    bbs.setUint(BBLib.toB32(jobHash,'BID_TIME',msg.sender), bidTime);
+    bbs.setUint(BBLib.toB32(jobID,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
+    emit BidCreated(jobID, msg.sender, bid, bidTime);
 
   }
 
@@ -101,68 +101,67 @@ contract BBFreelancerBid is BBFreelancer{
       require(jobIDs.length <= 10);
 
       for(uint i = 0; i < jobIDs.length; i++) {
-        bytes memory _jobHash = bbs.getBytes(BBLib.toB32(jobIDs[i]));
-        createSingleBid(_jobHash, bids[i], bidTimes[i]);
+        createSingleBid(jobIDs[i], bids[i], bidTimes[i]);
       }      
   }
   
   // freelancer cancel bid
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    */
-  function cancelBid(bytes jobHash) public jobNotStarted(jobHash){
-     address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')));
+  function cancelBid(uint256 jobID) public jobNotStarted(jobID){
+     address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')));
      //Job ownwer call this function
-     if(bbs.getAddress(keccak256(jobHash)) == msg.sender && freelancer != 0x0 ) {
-        bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), 0x0);
+     if(bbs.getAddress(BBLib.toB32(jobID)) == msg.sender && freelancer != 0x0 ) {
+        bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), 0x0);
      } else {
-       uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,msg.sender)));
+       uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,msg.sender)));
        require(bid > 0);
-       bbs.setBool(BBLib.toB32(jobHash,msg.sender, 'CANCEL'), true);
+       bbs.setBool(BBLib.toB32(jobID,msg.sender, 'JOB_CANCEL'), true);
        if(msg.sender == freelancer) {
-         bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), 0x0);
+         bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), 0x0);
        }
      }
 
-    emit BidCanceled(keccak256(jobHash), msg.sender);
+    emit BidCanceled(jobID, msg.sender);
 
   }
 
   // hirer accept bid
   /**
    * @dev 
-   * @param jobHash Job Hash
+   * @param jobID Job ID
    * @param freelancer address of the freelancer
    */
-  function acceptBid(bytes jobHash, address freelancer) public 
-    isOwnerJob(jobHash) 
-    jobNotStarted(jobHash)
-    isNotCanceled(jobHash){
-    uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobHash,freelancer)));
+  function acceptBid(uint256 jobID, address freelancer) public 
+    isOwnerJob(jobID) 
+    jobNotStarted(jobID)
+    isNotCanceled(jobID){
+    uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,freelancer)));
     require(bid > 0);
-    require(bbs.getBool(BBLib.toB32(jobHash,'CANCEL')) !=true);
-    return doAcceptBid(jobHash, freelancer, bid);
+    require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) !=true);
+    return doAcceptBid(jobID, freelancer, bid);
     
   }
 
-  function doAcceptBid(bytes jobHash, address freelancer, uint256 bid) internal {
-    uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'));
+  function doAcceptBid(uint256 jobID, address freelancer, uint256 bid) internal {
+    uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'));
     //update new freelancer
-    bbs.setAddress(keccak256(abi.encodePacked(jobHash,'FREELANCER')), freelancer);
+    bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), freelancer);
     if(lastDeposit > bid) {
       //Refun BBO to job owner
-      require(payment.refundBBO(jobHash));
+      require(payment.refundBBO(jobID));
       //Storage amount of BBO that Job owner transferred to payment address
-      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'), bid);
+      bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
       
     } else if(bid - lastDeposit > 0) {
       //Storage amount of BBO that Job owner transferred to payment address
-      bbs.setUint(BBLib.toB32(jobHash,msg.sender,'DEPOSIT'), bid);
+      bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
       //Deposit more BBO
       require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
     } 
-    emit BidAccepted(keccak256(jobHash), bid ,freelancer);
+    emit BidAccepted(jobID, bid ,freelancer);
   }
   
 }
