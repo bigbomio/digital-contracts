@@ -141,7 +141,7 @@ it("set params", async () => {
     let params = await BBParams.at(proxyAddressParams);
     await params.addAdmin(accounts[0], true);
     await params.setPollType(1, proxyAddressJob);// set job
-    await params.setVotingParams(1, 100e18, 1000000e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
+    await params.setVotingParams( 100e18, 1000000e18, 100e18, 24 * 60 * 60, 24 * 60 * 60,
       24 * 60 * 60, 10e18, { from: accounts[0] });
     return true;
 });
@@ -150,11 +150,9 @@ it("start poll", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let l = await voting.startPoll(1, jobID, proofHash, 86400,86400,86400,{ from: userB });
-    const returnJobID = l.logs.find(l => l.event === 'PollStarted').args.relatedTo
+    let l = await voting.startPoll( proofHash, 86400,86400,86400,{ from: userB });
     optionID = l.logs.find(l => l.event === 'PollOptionAdded').args.optionID
     pollID = l.logs.find(l => l.event === 'PollStarted').args.pollID;
-    assert.equal(jobID.toString(), returnJobID.toString());
 });
 it("get Poll Option", async () => {
     let voting = await BBVotingHelper.at(proxyAddressVotingHelper);
@@ -243,10 +241,8 @@ it("start poll jobHash5", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let l = await voting.startPoll(1, jobID, proofHash, 86400,86400,86400, { from: userB });
-    const returnJobID = l.logs.find(l => l.event === 'PollStarted').args.relatedTo
+    let l = await voting.startPoll( proofHash, 86400,86400,86400, { from: userB });
     pollID = l.logs.find(l => l.event === 'PollStarted').args.pollID;
-    assert.equal(jobID.toString(), returnJobID.toString());
 });
 it("add Poll Option jobHash5", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);

@@ -62,22 +62,22 @@ contract BBVotingHelper is BBStandard{
     opt = bbs.getBytes(BBLib.toB32(pollID, 'IPFS_HASH', optID));
   }
   
-  function getPollWinner(uint256 pollID) constant public returns(bool isFinished, uint256 winner, uint256 winnerVotes , bool hasVote, uint256 quorum) {
-    (,,uint256 pollStatus,,uint256 revealEndDate) = getPollStage(pollID);
+  function getPollWinner(uint256 pollID)public constant returns(bool isFinished, uint256 winner, uint256 winnerVotes , bool hasVote, uint256 quorum) {
+    (uint256 pollStatus,,,,uint256 revealEndDate) = getPollStage(pollID);
     isFinished = (revealEndDate <= now);
     if(pollStatus==2){
       hasVote = true;
       uint256 totalVotes = 0;
       (uint256[] memory addrs,uint256[] memory votes) = getPollResult(pollID);
-      for(uint256 i=0;i<votes.length;i ++){
-        totalVotes.add(votes[i]);
+      for(uint256 i=0; i< addrs.length ;i++){
+        totalVotes = totalVotes.add(votes[i]);
         if(winnerVotes<votes[i]){
           winnerVotes = votes[i];
           winner = addrs[i];
         }
-        // to do if max == votes[i];
       }
-      quorum = winnerVotes.mul(100).div(totalVotes);
+      if(totalVotes > 0)
+        quorum = winnerVotes.mul(100).div(totalVotes);
     }
   }
   /**
