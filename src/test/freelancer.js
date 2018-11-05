@@ -810,7 +810,7 @@ contract('BBFreelancer Test', async (accounts) => {
       from: userD
     });
     
-    const jobHashRs = jobLog.logs.find(l => l.event === 'BidCreated').args.jobHash
+    const jobHashRs = jobLog.logs.find(l => l.event === 'BidCreated').args.indexJobHash
     
     
     assert.equal(web3.utils.sha3(jobHash), jobHashRs);
@@ -940,7 +940,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     
     
-    const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.jobHash
+    const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash), jobHashRs);
 
     let payment = await BBFreelancerPayment.at(proxyAddressPayment);
@@ -974,7 +974,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     
     
-    const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.jobHash
+    const jobHashRs = jobLog.logs.find(l => l.event === 'BidAccepted').args.indexJobHash
     assert.equal(web3.utils.sha3(jobHash), jobHashRs);
 
 
@@ -1225,7 +1225,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentRejected').args
     
-    const jobHashRs = jobHashRs1.jobHash
+    const jobHashRs = jobHashRs1.indexJobHash
     assert.equal(web3.utils.sha3(jobHash), jobHashRs);
   });
 
@@ -1278,7 +1278,7 @@ contract('BBFreelancer Test', async (accounts) => {
     });
     const jobHashRs1 = jobLog.logs.find(l => l.event === 'PaymentAccepted').args
     
-    const jobHashRs = jobHashRs1.jobHash
+    const jobHashRs = jobHashRs1.indexJobHash
      assert.equal(web3.utils.sha3(jobHash), jobHashRs);
   });
 
