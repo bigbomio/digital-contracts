@@ -128,6 +128,7 @@ contract BBVoting is BBStandard{
     bytes32 choiceHash = BBLib.toB32(choice,salt);
     bytes32 secretHash = BBLib.bytesToBytes32(bbs.getBytes(BBLib.toB32(jobHash, pollId,'SECRET_HASH',msg.sender)));
     require(choiceHash == secretHash);
+    require(bbs.getAddress(BBLib.toB32(jobHash, pollId,'CHOICE',msg.sender))!= choice);
     uint256 numVote = bbs.getUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',choice));
     //save result poll
     bbs.setUint(BBLib.toB32(jobHash, pollId,'VOTE_FOR',choice), numVote.add(votes));
