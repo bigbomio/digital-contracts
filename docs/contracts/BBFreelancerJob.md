@@ -2,7 +2,7 @@
 
 Contract **BBFreelancerJob** is *BBFreelancer* 
 
-imports: [BBFreelancerPayment.sol](../../src/contracts/BBFreelancerPayment.sol), [BBLib.sol](../../src/contracts/BBLib.sol), [BBFreelancer.sol](../../src/contracts/BBFreelancer.sol)
+imports: [BBFreelancerPayment.sol](../../src/contracts/BBFreelancerPayment.sol), [BBLib.sol](../../src/contracts/BBLib.sol), [BBFreelancer.sol](../../src/contracts/BBFreelancer.sol),[BBRatingInterface.sol](../../src/contracts/BBRatingInterface.sol)
 
 Source: [BBFreelancerJob.sol](../../src/contracts/BBFreelancerJob.sol)
 
@@ -20,6 +20,10 @@ BBFreelancerJob is the contract implements Job Posting actions for Freelancer ap
      * [cancelJob](#canceljob)
      * [startJob](#startjob)
      * [finishJob](#finishjob)
+     * [getJobID](#getJobID)
+     * [allowRating](#allowRating)
+
+
 
 ## Events
 
@@ -27,11 +31,12 @@ BBFreelancerJob is the contract implements Job Posting actions for Freelancer ap
 Event for logging new Job creations.
 
 ---
-event JobCreated(bytes jobHash, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
+event JobCreated(bytes jobHash, uint256 indexed jobID, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes          | Hash of the job store on IPFS|
+| `jobID`       | uint256          | ID the job |
 | `owner`         | address          |  address of the creator|
 | `expired`           | uint256          |  total time allow the freelancer can bid this job(stored as second)|
 | `category`       | bytes32          |  Hash `keccak256` of the category, allow client can filter job by category|
@@ -47,7 +52,7 @@ event JobCanceled(bytes jobHash);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes          | Hash of the job store on IPFS|
+| `jobID`       | uint256          | ID of the job|
 
 ### JobStarted
 Event for logging started job.
@@ -58,26 +63,42 @@ event JobStarted(bytes jobHash);
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes          | Hash of the job store on IPFS|
+| `jobID`       | uint256          | ID of the job |
 
 ### JobFinished
 Event for logging finished job.
 
 ---
-event JobFinished(bytes jobHash);
+event JobFinished(uint256 jobID);
 
+
+| Parameter     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `jobID`       | uint256          | ID of the job |
+
+## Functions
+
+### getJobID
+Get jobID by jobHash
+
+---
+function getJobID(bytes jobHash) public view returns(uint256)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
 | `jobHash`       | bytes          | Hash of the job store on IPFS|
 
-## Functions
+Returns:
+
+| Return     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `jobID`       | address          | ID of the job|
 
 ### getJob
 Get job detail by job hash.
 
 ---
-function getJob(bytes jobHash) public view returns(address, uint256, uint256, bool, uint256, address)
+function getJob(uint256 jobID) public view returns(address, uint256, uint256, bool, uint256, address)
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
@@ -124,7 +145,7 @@ function cancelJob(bytes jobHash) public
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes          | Hash of the job store on IPFS|
+| `jobID`       | uint256          | ID of the job|
 
 Modifiers: `isOwnerJob`
 
@@ -133,15 +154,15 @@ Modifiers: `isOwnerJob`
 Start working on a job by jobHash
 
 ---
-function startJob(bytes jobHash) public 
-  isNotCanceled(jobHash)
-  jobNotStarted(jobHash)
-  isFreelancerOfJob(jobHash)
+function startJob(uint256 jobID) public 
+  isNotCanceled(jobID)
+  jobNotStarted(jobID)
+  isFreelancerOfJob(jobID)
 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes          | Hash of the job store on IPFS|
+| `jobID`       | uint256          | ID of the job |
 
 Modifiers: `isNotCanceled`, `jobNotStarted`, `isFreelancerOfJob`
 
@@ -150,17 +171,30 @@ Modifiers: `isNotCanceled`, `jobNotStarted`, `isFreelancerOfJob`
 Finish working on a job by jobHash
 
 ---
-function finishJob(bytes jobHash) public 
-  isNotOwnerJob(jobHash) 
-  isFreelancerOfJob(jobHash) 
+function finishJob(uint256 jobID) public 
+  isNotOwnerJob(jobID) 
+  isFreelancerOfJob(jobID) 
 
 
 | Parameter     | Type          | Description                 |
 | ------------- |:-------------:| ---------------------------:|
-| `jobHash`       | bytes          | Hash of the job store on IPFS|
+| `jobID`       | uint256          | ID of the job |
 
 Modifiers: `isNotOwnerJob`, `isFreelancerOfJob`
 
+### allowRating
+Check rule Rating of user 
+
+---
+function allowRating(address sender ,address  rateTo, uint256 jobID) public view returns(bool)
+
+| Parameter     | Type          | Description                 |
+| ------------- |:-------------:| ---------------------------:|
+| `sender`       | address          | user is rating |
+| `rateTo`       | address          | user is being rating |
+| `jobID`       | uint256          | ID of job  |
+
+Implement: `allowRating`
 
 ### status
 Job status mapping
