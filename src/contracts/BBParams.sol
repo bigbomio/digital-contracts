@@ -40,7 +40,7 @@ contract BBParams is BBFreelancer{
     return bbs.getAddress(BBLib.toB32('POLL_RELATED', pollType));
   }
   
-  function setVotingParams(uint256 pollType, uint256 minVotes, uint256 maxVotes, 
+  function setVotingParams(uint256 minVotes, uint256 maxVotes, 
    uint256 stakeDeposit, uint256 addOptionDuration, uint256 commitDuration, 
    uint256 revealDuration, uint256 bboRewards) onlyAdmin public {
 
@@ -52,20 +52,20 @@ contract BBParams is BBFreelancer{
   	require(revealDuration>0);
   	require(bboRewards>0);
 
-    bbs.setUint(BBLib.toB32(pollType, 'MIN_VOTES'), minVotes);
-    bbs.setUint(BBLib.toB32(pollType, 'MAX_VOTES'), maxVotes);
-    bbs.setUint(BBLib.toB32(pollType, 'STAKED_DEPOSIT'), stakeDeposit);
-    bbs.setUint(BBLib.toB32(pollType, 'ADDOPTION_DURATION'), addOptionDuration);
-    bbs.setUint(BBLib.toB32(pollType, 'COMMIT_DURATION'), commitDuration);
-    bbs.setUint(BBLib.toB32(pollType, 'REVEAL_DURATION'), revealDuration);
-    bbs.setUint(BBLib.toB32(pollType, 'BBO_REWARDS'), bboRewards);
+    bbs.setUint(BBLib.toB32('MIN_VOTES'), minVotes);
+    bbs.setUint(BBLib.toB32('MAX_VOTES'), maxVotes);
+    bbs.setUint(BBLib.toB32('STAKED_DEPOSIT'), stakeDeposit);
+    bbs.setUint(BBLib.toB32('EVIDENCE_DURATION'), addOptionDuration);
+    bbs.setUint(BBLib.toB32('COMMIT_DURATION'), commitDuration);
+    bbs.setUint(BBLib.toB32('REVEAL_DURATION'), revealDuration);
+    bbs.setUint(BBLib.toB32('BBO_REWARDS'), bboRewards);
   
   }
-  // function getVotingParams(uint256 pollType) public view returns(uint256, uint256,uint256,uint256, uint256,uint256,uint256){
-  // 	return (bbs.getUint(BBLib.toB32(pollType, 'MIN_VOTES')), bbs.getUint(BBLib.toB32(pollType, 'MAX_VOTES')),  
-  // 	bbs.getUint(BBLib.toB32(pollType, 'STAKED_DEPOSIT')), bbs.getUint(BBLib.toB32(pollType, 'ADDOPTION_DURATION')), bbs.getUint(BBLib.toB32(pollType, 'COMMIT_DURATION')), 
-  // 	bbs.getUint(BBLib.toB32(pollType, 'REVEAL_DURATION')), bbs.getUint(BBLib.toB32(pollType, 'BBO_REWARDS')));
-  // }
+  function getVotingParams() public view returns(uint256, uint256,uint256,uint256, uint256,uint256,uint256){
+  	return (bbs.getUint(BBLib.toB32( 'MIN_VOTES')), bbs.getUint(BBLib.toB32( 'MAX_VOTES')),  
+  	bbs.getUint(BBLib.toB32( 'STAKED_DEPOSIT')), bbs.getUint(BBLib.toB32( 'EVIDENCE_DURATION')), bbs.getUint(BBLib.toB32( 'COMMIT_DURATION')), 
+  	bbs.getUint(BBLib.toB32( 'REVEAL_DURATION')), bbs.getUint(BBLib.toB32( 'BBO_REWARDS')));
+  }
 
    function addRelatedAddress(uint key, address relatedAddress) public onlyAdmin {
         require(relatedAddress!=address(0x0));
