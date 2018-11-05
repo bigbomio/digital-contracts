@@ -23,12 +23,12 @@ contract BBFreelancerBid is BBFreelancer{
   }
 
 
-  event BidCreated(uint256  indexed jobID , address indexed owner, uint256 bid, uint256 bidTime);
+  event BidCreated(uint256  indexed jobID, address indexed owner, uint256 bid, uint256 bidTime);
   event BidCanceled(uint256 indexed jobID, address indexed owner);
-  event BidAccepted(uint256 indexed jobID, uint256 bid,address indexed freelancer);
+  event BidAccepted(uint256 indexed jobID, uint256 bid, address indexed freelancer);
 
 
-   // freelancer bid job
+  // freelancer bid job
   /** 
    * @dev 
    * @param jobID Job ID

@@ -11,7 +11,7 @@ import './BBVoting.sol';
 import './BBVotingHelper.sol';
 
 
-contract BBTCR is BBStandard{
+contract BBUnOrderedTCR is BBStandard{
 	// events
 	event ItemApplied(uint256 indexed listID, bytes32 indexed itemHash, bytes data);
     event Challenge(uint256 indexed listID, bytes32 indexed itemHash, uint256 pollID, address sender);
@@ -54,19 +54,25 @@ contract BBTCR is BBStandard{
         // emit event
         emit ItemApplied(listID, itemHash, data);
     }
-    
+    // todo 
+    function getStakedBalance() {
+        //
+    }
     function withdraw(uint256 listID, bytes32 itemHash, uint _amount) external {
     	//TODO allow withdraw unlocked token
     }
     function initExit(uint256 listID, bytes32 itemHash) external {	
     	//TODO Initialize an exit timer for a listing to leave the whitelist
+        // exit timer 
     }
     function finalizeExit(uint256 listID, bytes32 itemHash) external {
         // TODO Allow a listing to leave the whitelist
+        // after x timer will 
     }
     function calcRewardPool(uint256 listID, uint256 stakedToken) internal constant returns(uint256){
         uint oneHundred = 100; 
-        return (oneHundred.sub(bbs.getUint(BBLib.toB32('TCR', listID, 'LOSE_PERCENT'))).mul(stakedToken)).div(100);
+        return (oneHundred.sub(bbs.getUint(BBLib.toB32('TCR', listID, 'LOSE_PERCENT')))
+            .mul(stakedToken)).div(100);
     }
     function challenge(uint256 listID, bytes32 itemHash, bytes _data) external returns (uint pollID) {
         // not in challenge stage
@@ -89,6 +95,7 @@ contract BBTCR is BBStandard{
         bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 2);
         emit Challenge(listID, itemHash, pollID, msg.sender);
     }
+
     function updateStatus(uint256 listID, bytes32 itemHash) public {
         if (canBeWhitelisted(listID, itemHash)) {
             whitelistApplication(listID, itemHash);
@@ -98,6 +105,7 @@ contract BBTCR is BBStandard{
             revert();
         }
     }
+
     function claimReward(uint pollID) public {
         require(bbs.getBool(BBLib.toB32('TCR_VOTER_CLAIMED', pollID, msg.sender)) == false);
         uint256 numReward = voterReward(msg.sender, pollID);
@@ -142,9 +150,11 @@ contract BBTCR is BBStandard{
     function determineReward(uint pollID) public view returns (uint) {
         uint256 minStake = bbs.getUint(BBLib.toB32('TCR', pollID, 'CHALLENGER_STAKED'));
         // Edge case, nobody voted, give all tokens to the challenger.
+        // quorum 70 --> lose
+        // if nobody voted, ?? TODO
         (,,, bool hasVote, ) = votingHelper.getPollWinner(pollID);
-        if (hasVote==true) {
-            return 2 * minStake;
+        if (hasVote!=true) {
+            return 2 * minStake;//TODO ... should reward to voter
         }
 
         return (2 * minStake) - bbs.getUint(BBLib.toB32('TCR_POLL_ID', pollID ));
