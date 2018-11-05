@@ -23,9 +23,9 @@ contract BBFreelancerBid is BBFreelancer{
   }
 
 
-  event BidCreated(bytes32 indexed jobHash , address indexed owner, uint256 bid, uint256 bidTime);
-  event BidCanceled(bytes32 indexed jobHash, address indexed owner);
-  event BidAccepted(bytes32 indexed jobHash, uint256 bid,address indexed freelancer);
+  event BidCreated(bytes jobHash , address indexed owner, uint256 bid, uint256 bidTime, bytes32 indexed indexJobHash);
+  event BidCanceled(bytes jobHash, address indexed owner, bytes32 indexed indexJobHash);
+  event BidAccepted(bytes jobHash, uint256 bid,address indexed freelancer, bytes32 indexed indexJobHash);
 
 
    // freelancer bid job
@@ -55,7 +55,7 @@ contract BBFreelancerBid is BBFreelancer{
     //set user bidTime value
     bbs.setUint(BBLib.toB32(jobHash,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
+    emit BidCreated(jobHash, msg.sender, bid, bidTime, keccak256(jobHash));
   }
 
    function createSingleBid(bytes jobHash, uint256 bid, uint bidTime) public {
@@ -91,7 +91,7 @@ contract BBFreelancerBid is BBFreelancer{
     //set user bidTime value
     bbs.setUint(BBLib.toB32(jobHash,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(keccak256(jobHash), msg.sender, bid, bidTime);
+    emit BidCreated(jobHash, msg.sender, bid, bidTime, keccak256(jobHash));
 
   }
 
@@ -125,7 +125,7 @@ contract BBFreelancerBid is BBFreelancer{
        }
      }
 
-    emit BidCanceled(keccak256(jobHash), msg.sender);
+    emit BidCanceled(jobHash, msg.sender, keccak256(jobHash));
 
   }
 
@@ -162,7 +162,7 @@ contract BBFreelancerBid is BBFreelancer{
       //Deposit more BBO
       require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
     } 
-    emit BidAccepted(keccak256(jobHash), bid ,freelancer);
+    emit BidAccepted(jobHash, bid ,freelancer, keccak256(jobHash));
   }
   
 }

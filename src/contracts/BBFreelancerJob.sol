@@ -25,9 +25,9 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
   }
 
   event JobCreated(bytes jobHash, uint256 jobID, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
-  event JobCanceled(bytes jobHash);
-  event JobStarted(bytes jobHash);
-  event JobFinished(bytes jobHash);
+  event JobCanceled(bytes jobHash, bytes32 indexed indexJobHash);
+  event JobStarted(bytes jobHash, bytes32 indexed indexJobHash);
+  event JobFinished(bytes jobHash, bytes32 indexed indexJobHash);
 
   /**
    * @dev 
@@ -100,7 +100,7 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     }
     bbs.setBool(BBLib.toB32(jobHash,'CANCEL'), true);
     require(payment.refundBBO(jobHash));
-    emit JobCanceled(jobHash);
+    emit JobCanceled(jobHash, keccak256(jobHash));
   }
   // freelancer start Job
   /**
@@ -116,7 +116,7 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
     //Begin set time start job
     bbs.setUint(BBLib.toB32(jobHash,'JOB_STARTED_TIMESTAMP'), now);
     
-    emit JobStarted(jobHash);
+    emit JobStarted(jobHash, keccak256(jobHash));
   }
   // freelancer finish Job
   /**
@@ -131,7 +131,7 @@ contract BBFreelancerJob is BBFreelancer, BBRatingInterface {
 
     bbs.setUint(BBLib.toB32(jobHash,'STATUS'), 2);
     bbs.setUint(BBLib.toB32(jobHash,'JOB_FINISHED_TIMESTAMP'), now);
-    emit JobFinished(jobHash);
+    emit JobFinished(jobHash, keccak256(jobHash));
   }
 
   function allowRating(address sender ,address  rateTo, uint256 jobID) public view returns(bool) {
