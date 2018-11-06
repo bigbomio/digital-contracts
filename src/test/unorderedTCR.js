@@ -148,9 +148,52 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     await unOrderedTCR.setVotingHelper(proxyAddressVotingHelper, {
       from: accounts[0]
     });
+    await unOrderedTCR.setBBO(bboAddress, {
+      from: accounts[0]
+    });
 
 
   });
+  var userA = accounts[0];
+  var userB = accounts[1];
+  var userC = accounts[2];
+  var userD = accounts[3];
+
+  var listID_0 = 0;
+
+  it("set & get params", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+     await unOrderedTCR.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60, 24 * 60 * 60, 10e18,  {
+      from: userA
+    });
+
+     await unOrderedTCR.getListParams(listID_0,{
+      from: userA
+    });
+
+    return true;    
+  });
+
+  it("apply", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userB
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userB
+    });
+
+    let l = await unOrderedTCR.apply(listID_0, 10e18, 'a', 'b',  {
+      from: userB
+    });
+
+    let itemHash = l.logs.find(l => l.event === 'ItemApplied').args.itemHash;
+    
+    assert.equal('a', web3.utils.hexToUtf8(itemHash));
+  });
+
 
 
 });

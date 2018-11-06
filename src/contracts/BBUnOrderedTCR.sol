@@ -26,12 +26,20 @@ contract BBUnOrderedTCR is BBStandard{
       votingHelper = BBVotingHelper(p);
     }
 
+    function setParams(uint256 listID, uint256 applicationDuration, uint256 commitDuration, uint256 revealDuration, uint256 minStake) onlyOwner public  {
+        bbs.setUint(BBLib.toB32('TCR', listID, 'APPLICATION_DURATION'), applicationDuration);
+        bbs.setUint(BBLib.toB32('TCR', listID, 'COMMIT_DURATION'), commitDuration);
+        bbs.setUint(BBLib.toB32('TCR', listID, 'REVEAL_DURATION'), revealDuration);
+        bbs.setUint(BBLib.toB32('TCR', listID, 'MIN_STAKE'), minStake);
+    }
+
     function getListParams(uint256 listID) public view returns(uint256 applicationDuration, uint256 commitDuration, uint256 revealDuration, uint256 minStake){
-    	applicationDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'APPLICATION_DURATION'));
+        applicationDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'APPLICATION_DURATION'));
         commitDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'COMMIT_DURATION'));
         revealDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'REVEAL_DURATION'));
-    	minStake = bbs.getUint(BBLib.toB32('TCR', listID, 'MIN_STAKE'));
+        minStake = bbs.getUint(BBLib.toB32('TCR', listID, 'MIN_STAKE'));
     }
+    //Lam sao user bi remove, kiem tra so deposit
     function depositToken(uint256 listID, bytes32 itemHash, uint amount) public returns(bool) {
         (,,, uint256 minStake) = getListParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
@@ -54,10 +62,11 @@ contract BBUnOrderedTCR is BBStandard{
         // emit event
         emit ItemApplied(listID, itemHash, data);
     }
-    // todo 
+    // todo //tinh so token thang nao dang bo trong TCR => return so token
     function getStakedBalance() {
         //
     }
+    //
     function withdraw(uint256 listID, bytes32 itemHash, uint _amount) external {
     	//TODO allow withdraw unlocked token
     }
@@ -170,7 +179,7 @@ contract BBUnOrderedTCR is BBStandard{
             uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
             bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'), staked.add(reward));
         }else{
-            // did not pass yet
+            // did not pass // thang do khong pass, trang thai true -false,
             bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 0);
             bbs.setAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'), address(0x0));
             assert(bbo.transfer(bbs.getAddress(BBLib.toB32('TCR', listID, itemHash, 'CHALLENGER')), reward));
