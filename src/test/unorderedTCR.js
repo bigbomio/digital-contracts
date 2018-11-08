@@ -6,6 +6,8 @@ var ipfs = ipfsAPI('ipfs.infura.io', '5001', {
   protocol: 'https'
 });
 
+const abiDecoder = require('abi-decoder'); 
+
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const BBStorage = artifacts.require("BBStorage");
@@ -158,12 +160,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   var userB = accounts[1];
   var userC = accounts[2];
   var userD = accounts[3];
+  var userE = accounts[4];
 
   var listID_0 = 0;
 
   it("set & get params", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-     await unOrderedTCR.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60, 24 * 60 * 60, 10e18,  {
+     await unOrderedTCR.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 10e18,  {
       from: userA
     });
 
@@ -178,11 +181,35 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
     let bbo = await BBOTest.at(bboAddress);
+
     await bbo.approve(unOrderedTCR.address, 0, {
       from: userB
     });
     await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
       from: userB
+    });
+
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userC
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userC
+    });
+
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userD
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userD
+    });
+
+
+    await unOrderedTCR.apply(listID_0, 10e18, 'ac', 'bc',  {
+      from: userC
+    });
+
+    await unOrderedTCR.apply(listID_0, 10e18, 'aa', 'bb',  {
+      from: userD
     });
 
     let l = await unOrderedTCR.apply(listID_0, 10e18, 'a', 'b',  {
@@ -194,6 +221,217 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     assert.equal('a', web3.utils.hexToUtf8(itemHash));
   });
 
+  
+
+  var pool_0;
+  var pool_1;
+  var optionID;
+
+  it("challenge", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    let bbo = await BBOTest.at(bboAddress);
+
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userE
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userE
+    });
+
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userD
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userD
+    });
+
+    let l = await unOrderedTCR.challenge(listID_0,'a', 'b',  {
+      from: userE
+    });
+
+    
+    let result = l.logs.find(l => l.event === 'Challenge').args;
+    pool_0 = result.pollID;
+    assert.equal(result.sender, userE);
+
+    // l = await unOrderedTCR.challenge(listID_0,'ac', 'bc',  {
+    //   from: userE
+    // });
+    // result = l.logs.find(l => l.event === 'Challenge').args;
+    // pool_1 = result.pollID;
+
+
+   // console.log('data : ',JSON.stringify(l));
+   // console.log('data : ',l.receipt);
+
+   //let re = await web3.eth.abi.decodeLog(unOrderedTCR.abi,l.receipt.logs[0].data , l.receipt.logs[0].topics);
+   // console.log('re : ',l.receipt.logs[0].topics);
+
+    // const decodedLogs = abiDecoder.decodeLogs(l.receipt.logs);
+    // console.log('decodedLogs',decodedLogs);
+   
+    // await web3.eth.getTransactionReceipt(l.receipt.logs[0].transactionHash, function(e, receipt) {
+    //   console.log('receipt.logs',receipt.logs);
+    //   const decodedLogs = abiDecoder.decodeLogs(receipt.logs);
+    //   console.log('decodedLogs',decodedLogs);
+    // });
+
+    //var receipt = await web3.eth.getTransactionReceipt(l.receipt.logs[0].transactionHash);
+    //console.log(receipt);
+
+    //let x = l.receipt.logs.find(l => l.event === 'PollOptionAdded');
+    //console.log('x',x);
+
+    //optionID = l.logs.find(l => l.event === 'PollOptionAdded')
+
+    //console.log('optionID',JSON.stringify(l));
+
+  });
+
+  
+ 
+ 
+  it("reqest voting rights", async () => {
+    let voting = await BBVoting.at(proxyAddressVoting);
+    let bbo = await BBOTest.at(bboAddress);
+    await bbo.approve(voting.address, 0, {
+      from: userC
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userC
+    });
+    let l = await voting.requestVotingRights(200e18, {
+      from: userC
+  });
+    const rs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
+    assert.equal(userC, rs);
+});
+
+it("fast forward to  1 day + 1 sec", function () {
+  var fastForwardTime = 24 * 3600 * 1 +  1;
+  return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+    return Helpers.sendPromise('evm_mine', []).then(function () {
+
+    });
+  });
+});
+
+
+
+it("commit vote ", async () => {
+
+  let c3 = await BBVotingHelper.at(proxyAddressVotingHelper).getPollStage(pool_0);
+  console.log(JSON.stringify(c3));  
+  console.log(parseInt(Date.now() / 1000));
+
+  let voting = await BBVoting.at(proxyAddressVoting);
+  var secretHash = web3.utils.soliditySha3(1, 123);
+  let l = await voting.commitVote(pool_0, secretHash, 200e18, { from: userC });
+  const rs = l.logs.find(l => l.event === 'VoteCommitted').args
+  
+  console.log(JSON.stringify(rs));  
+
+  assert.equal(pool_0.toString(), rs.pollID.toString());
+});
+
+
+it("fast forward to  1 day + 1 sec", function () {
+  var fastForwardTime = 24 * 3600 * 1 +  10;
+  return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+    return Helpers.sendPromise('evm_mine', []).then(function () {
+
+    });
+  });
+});
+
+it("updateStatus whitelistApplication", async () => {
+  let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+  await unOrderedTCR.updateStatus(listID_0, 'ac', {
+    from: userC
+  });
+
+
+});
+
+it("reveal vote ", async () => {
+  let voting = await BBVoting.at(proxyAddressVoting);
+  let l = await voting.revealVote(pool_0, 1 , 123, { from: userC });
+  const a = l.logs.find(l => l.event === 'VoteRevealed').args.pollID
+  assert.equal(pool_0.toString(), a.toString());
+});
+
+it("fast forward to  1 day + 1 sec", function () {
+  var fastForwardTime = 24 * 3600 * 1 +  10;
+  return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+    return Helpers.sendPromise('evm_mine', []).then(function () {
+
+    });
+  });
+});
+
+it("getPollWinner", async () => {
+  let c3 = await BBVotingHelper.at(proxyAddressVotingHelper).getPollWinner(pool_0);
+  console.log(JSON.stringify(c3));
+});
+
+
+  it("fast forward to  1 day + 1 sec", function () {
+    var fastForwardTime = 24 * 3600 * 2 +  10;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+
+      });
+    });
+  });
+
+  it("updateStatus resolveChallenge", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+    await unOrderedTCR.updateStatus(listID_0, 'a', {
+      from: userE
+    });
+
+    let c3 = await BBVotingHelper.at(proxyAddressVotingHelper).getPollWinner(pool_0);
+    console.log(JSON.stringify(c3));
+  
+
+  });
+
+  it("determineReward", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+     let c3 = await unOrderedTCR.determineReward(listID_0,{
+      from: userE
+    });
+
+    console.log(JSON.stringify(c3));
+
+  
+  });
+
+
+  it("voterReward", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+     let c3 = await unOrderedTCR.voterReward(userC, pool_0,{
+      from: userE
+    });
+
+    console.log(JSON.stringify(c3));
+  
+  });
+
+  it("claimReward", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+     let c3 = await unOrderedTCR.claimReward( pool_0,{
+      from: userC
+    });
+
+    //console.log(JSON.stringify(c3));
+  
+  });
 
 
 });
