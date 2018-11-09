@@ -166,7 +166,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
 
   it("set & get params", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-     await unOrderedTCR.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 10e18,  {
+     await unOrderedTCR.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
       from: userA
     });
 
@@ -204,15 +204,15 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     });
 
 
-    await unOrderedTCR.apply(listID_0, 10e18, 'ac', 'bc',  {
+    await unOrderedTCR.apply(listID_0, 2000e18, 'ac', 'bc',  {
       from: userC
     });
 
-    await unOrderedTCR.apply(listID_0, 10e18, 'aa', 'bb',  {
+    await unOrderedTCR.apply(listID_0, 3000e18, 'aa', 'bb',  {
       from: userD
     });
 
-    let l = await unOrderedTCR.apply(listID_0, 10e18, 'a', 'b',  {
+    let l = await unOrderedTCR.apply(listID_0, 2500e18, 'a', 'b',  {
       from: userB
     });
 
@@ -288,7 +288,23 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
 
   });
 
+  it("isWhitelisted before update status", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+     let c3 = await unOrderedTCR.isWhitelisted(listID_0, 'a',{
+      from: userE
+    });
+
+    console.log('Item a',JSON.stringify(c3));
+
+    c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+      from: userE
+    });
+
+    console.log('Item ac',JSON.stringify(c3));
   
+  });
+
  
  
   it("reqest voting rights", async () => {
@@ -424,14 +440,102 @@ it("getPollWinner", async () => {
 
   it("claimReward", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    let bbo = await BBOTest.at(bboAddress);
+    let xxxyc = await bbo.balanceOf(userC, {
+      from: userC
+    });
+
+    console.log('before', xxxyc);
 
      let c3 = await unOrderedTCR.claimReward( pool_0,{
       from: userC
     });
 
+    xxxyc = await bbo.balanceOf(userC, {
+      from: userC
+    });
+
+    console.log('after', xxxyc);
+
+
     //console.log(JSON.stringify(c3));
   
   });
+
+  it("isWhitelisted", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+     let c3 = await unOrderedTCR.isWhitelisted(listID_0, 'a',{
+      from: userE
+    });
+
+    console.log('Item a',JSON.stringify(c3));
+
+    c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+      from: userE
+    });
+
+    console.log('Item ac',JSON.stringify(c3));
+  
+  });
+
+
+  it("getStakedBalance", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+     let c3 = await unOrderedTCR.getStakedBalance(listID_0, 'aa',{
+      from: userD
+    });
+
+      console.log(JSON.stringify (c3));
+  
+  });
+
+
+  it("withdraw", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    let bbo = await BBOTest.at(bboAddress);
+    let xxxyc = await bbo.balanceOf(unOrderedTCR.address, {
+      from: userC
+    });
+    console.log('before unOrderedTCR', xxxyc);
+     let c3 = await unOrderedTCR.withdraw(listID_0, 'aa', 1e18,{
+      from: userD
+    });
+
+    xxxyc = await bbo.balanceOf(unOrderedTCR.address, {
+      from: userC
+    });
+    console.log('after unOrderedTCR', xxxyc);
+  
+  });
+
+  it("initExit", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    
+    await unOrderedTCR.initExit(listID_0, 'ac', {
+      from: userC
+    });
+  });
+
+  it("fast forward to  1 day + 1 sec", function () {
+    var fastForwardTime = 24 * 3600 * 1 +  10;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+  
+      });
+    });
+  });
+  
+
+  it("finalizeExit", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    
+    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+      from: userC
+    });
+  });
+
 
 
 });
