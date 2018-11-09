@@ -105,7 +105,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     await bbo.transfer(accounts[4], 100000e18, {
       from: accounts[0]
     });
-    await bbo.transfer(accounts[5], 900e18, {
+    await bbo.transfer(accounts[5], 100000e18, {
       from: accounts[0]
     });
 
@@ -161,6 +161,8 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   var userC = accounts[2];
   var userD = accounts[3];
   var userE = accounts[4];
+  var userF = accounts[5];
+
 
   var listID_0 = 0;
 
@@ -278,15 +280,26 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: userD
     });
 
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userF
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userF
+    });
+
     let l = await unOrderedTCR.challenge(listID_0,'a', 'b',  {
       from: userE
     });
 
-    
     let result = l.logs.find(l => l.event === 'Challenge').args;
     pool_0 = result.pollID;
     assert.equal(result.sender, userE);
 
+    l = await unOrderedTCR.challenge(listID_0,'aa', 'b',  {
+      from: userF
+    });
+    result = l.logs.find(l => l.event === 'Challenge').args;
+    pool_1 = result.pollID;
 
   });
 
@@ -318,9 +331,18 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     await bbo.approve(voting.address, Math.pow(2, 255), {
       from: userC
     });
+    await bbo.approve(voting.address, 0, {
+      from: userA
+    });
+    await bbo.approve(voting.address, Math.pow(2, 255), {
+      from: userA
+    });
     let l = await voting.requestVotingRights(200e18, {
       from: userC
   });
+  await voting.requestVotingRights(200e18, {
+    from: userA
+});
     const rs = l.logs.find(l => l.event === 'VotingRightsGranted').args.voter
     assert.equal(userC, rs);
 });
@@ -342,6 +364,10 @@ it("commit vote ", async () => {
   var secretHash = web3.utils.soliditySha3(1, 123);
   let l = await voting.commitVote(pool_0, secretHash, 200e18, { from: userC });
   const rs = l.logs.find(l => l.event === 'VoteCommitted').args
+
+  await voting.commitVote(pool_1, web3.utils.soliditySha3(0, 123), 200e18, { from: userC });
+  await voting.commitVote(pool_1, web3.utils.soliditySha3(1, 123), 200e18, { from: userA });
+
 
   assert.equal(pool_0.toString(), rs.pollID.toString());
 });
@@ -381,6 +407,9 @@ it("reveal vote ", async () => {
   let voting = await BBVoting.at(proxyAddressVoting);
   let l = await voting.revealVote(pool_0, 1 , 123, { from: userC });
   const a = l.logs.find(l => l.event === 'VoteRevealed').args.pollID
+  await voting.revealVote(pool_1, 0 , 123, { from: userC });
+  await voting.revealVote(pool_1, 1 , 123, { from: userA });
+
   assert.equal(pool_0.toString(), a.toString());
 });
 
@@ -422,6 +451,27 @@ it("getPollWinner", async () => {
     });
 
     assert(c3 == false);
+  });
+
+  it("updateStatus resolveChallenge in draw voting", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+
+    let bbo = await BBOTest.at(bboAddress);
+    let xxxy = await bbo.balanceOf(userF, {
+      from: userF
+    });
+
+
+    await unOrderedTCR.updateStatus(listID_0, 'aa', {
+      from: userE
+    });
+
+    let xxxycc = await bbo.balanceOf(userF, {
+      from: userF
+    });
+
+    assert(xxxy != xxxycc);
+    
   });
 
   it("determineReward", async () => {
