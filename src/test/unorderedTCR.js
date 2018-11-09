@@ -203,6 +203,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: userD
     });
 
+    await bbo.approve(unOrderedTCR.address, 0, {
+      from: userE
+    });
+    await bbo.approve(unOrderedTCR.address, Math.pow(2, 255), {
+      from: userE
+    });
+
 
     await unOrderedTCR.apply(listID_0, 2000e18, 'ac', 'bc',  {
       from: userC
@@ -221,7 +228,33 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     assert.equal('a', web3.utils.hexToUtf8(itemHash));
   });
 
-  
+  it("[Fail] apply again", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    try {
+      await unOrderedTCR.apply(listID_0, 2000e18, 'ac', 'bc', {
+        from: userC
+      });
+      return false;
+    } catch (e) {
+      return true;
+    }
+
+  });
+
+  it("[Fail] apply with amount token < min stake", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    try {
+      await unOrderedTCR.apply(listID_0, 10e18, 'ace', 'bc', {
+        from: userE
+      });
+      console.log('[Fail] apply with amount token < min stake OK');
+      return false;
+    } catch (e) {
+      return true;
+    }
+    
+  });
+
 
   var pool_0;
   var pool_1;
@@ -254,37 +287,6 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     pool_0 = result.pollID;
     assert.equal(result.sender, userE);
 
-    // l = await unOrderedTCR.challenge(listID_0,'ac', 'bc',  {
-    //   from: userE
-    // });
-    // result = l.logs.find(l => l.event === 'Challenge').args;
-    // pool_1 = result.pollID;
-
-
-   // console.log('data : ',JSON.stringify(l));
-   // console.log('data : ',l.receipt);
-
-   //let re = await web3.eth.abi.decodeLog(unOrderedTCR.abi,l.receipt.logs[0].data , l.receipt.logs[0].topics);
-   // console.log('re : ',l.receipt.logs[0].topics);
-
-    // const decodedLogs = abiDecoder.decodeLogs(l.receipt.logs);
-    // console.log('decodedLogs',decodedLogs);
-   
-    // await web3.eth.getTransactionReceipt(l.receipt.logs[0].transactionHash, function(e, receipt) {
-    //   console.log('receipt.logs',receipt.logs);
-    //   const decodedLogs = abiDecoder.decodeLogs(receipt.logs);
-    //   console.log('decodedLogs',decodedLogs);
-    // });
-
-    //var receipt = await web3.eth.getTransactionReceipt(l.receipt.logs[0].transactionHash);
-    //console.log(receipt);
-
-    //let x = l.receipt.logs.find(l => l.event === 'PollOptionAdded');
-    //console.log('x',x);
-
-    //optionID = l.logs.find(l => l.event === 'PollOptionAdded')
-
-    //console.log('optionID',JSON.stringify(l));
 
   });
 
@@ -295,13 +297,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: userE
     });
 
-    console.log('Item a',JSON.stringify(c3));
+    assert.equal('false' ,JSON.stringify(c3));
 
     c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
       from: userE
     });
 
-    console.log('Item ac',JSON.stringify(c3));
+    assert.equal('false' ,JSON.stringify(c3));
   
   });
 
@@ -334,18 +336,12 @@ it("fast forward to  1 day + 1 sec", function () {
 
 
 
-it("commit vote ", async () => {
-
-  let c3 = await BBVotingHelper.at(proxyAddressVotingHelper).getPollStage(pool_0);
-  console.log(JSON.stringify(c3));  
-  console.log(parseInt(Date.now() / 1000));
+it("commit vote ", async () => {  
 
   let voting = await BBVoting.at(proxyAddressVoting);
   var secretHash = web3.utils.soliditySha3(1, 123);
   let l = await voting.commitVote(pool_0, secretHash, 200e18, { from: userC });
   const rs = l.logs.find(l => l.event === 'VoteCommitted').args
-  
-  console.log(JSON.stringify(rs));  
 
   assert.equal(pool_0.toString(), rs.pollID.toString());
 });
@@ -363,10 +359,21 @@ it("fast forward to  1 day + 1 sec", function () {
 it("updateStatus whitelistApplication", async () => {
   let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
+  c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+    from: userE
+  });
+
+  assert(c3 == false);
+
   await unOrderedTCR.updateStatus(listID_0, 'ac', {
     from: userC
   });
 
+  c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+    from: userE
+  });
+
+  assert(c3 == true);
 
 });
 
@@ -388,7 +395,8 @@ it("fast forward to  1 day + 1 sec", function () {
 
 it("getPollWinner", async () => {
   let c3 = await BBVotingHelper.at(proxyAddressVotingHelper).getPollWinner(pool_0);
-  console.log(JSON.stringify(c3));
+  //console.log(JSON.stringify(c3));
+  return true;
 });
 
 
@@ -408,10 +416,12 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    let c3 = await BBVotingHelper.at(proxyAddressVotingHelper).getPollWinner(pool_0);
-    console.log(JSON.stringify(c3));
-  
+   
+    let c3 = await unOrderedTCR.isWhitelisted(listID_0, 'a',{
+      from: userE
+    });
 
+    assert(c3 == false);
   });
 
   it("determineReward", async () => {
@@ -421,8 +431,7 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    console.log(JSON.stringify(c3));
-
+    return true;
   
   });
 
@@ -434,30 +443,30 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    console.log(JSON.stringify(c3));
+    return true;
   
   });
 
   it("claimReward", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
     let bbo = await BBOTest.at(bboAddress);
-    let xxxyc = await bbo.balanceOf(userC, {
+    let xxxycc = await bbo.balanceOf(userC, {
       from: userC
     });
 
-    console.log('before', xxxyc);
+    //console.log('before', xxxycc);
 
      let c3 = await unOrderedTCR.claimReward( pool_0,{
       from: userC
     });
 
-    xxxyc = await bbo.balanceOf(userC, {
+    let xxxyc = await bbo.balanceOf(userC, {
       from: userC
     });
 
-    console.log('after', xxxyc);
+    //console.log('after', xxxyc);
 
-
+    assert(JSON.stringify(xxxyc) != JSON.stringify(xxxycc));
     //console.log(JSON.stringify(c3));
   
   });
@@ -469,13 +478,12 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    console.log('Item a',JSON.stringify(c3));
-
+    assert(c3 == false);
     c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
       from: userE
     });
 
-    console.log('Item ac',JSON.stringify(c3));
+    assert(c3 == true);
   
   });
 
@@ -487,7 +495,7 @@ it("getPollWinner", async () => {
       from: userD
     });
 
-      console.log(JSON.stringify (c3));
+    assert(JSON.stringify (c3) != "0");
   
   });
 
@@ -495,19 +503,36 @@ it("getPollWinner", async () => {
   it("withdraw", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
     let bbo = await BBOTest.at(bboAddress);
-    let xxxyc = await bbo.balanceOf(unOrderedTCR.address, {
+    let xxxycc = await bbo.balanceOf(unOrderedTCR.address, {
       from: userC
     });
-    console.log('before unOrderedTCR', xxxyc);
-     let c3 = await unOrderedTCR.withdraw(listID_0, 'aa', 1e18,{
+    
+    await unOrderedTCR.withdraw(listID_0, 'aa', 1e18,{
       from: userD
     });
 
     xxxyc = await bbo.balanceOf(unOrderedTCR.address, {
       from: userC
     });
-    console.log('after unOrderedTCR', xxxyc);
+    
+    assert(xxxycc != xxxyc);
   
+  });
+
+  it("[Fail] not owner initExit", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    
+    try  {
+    await unOrderedTCR.initExit(listID_0, 'ac', {
+      from: userE
+    });
+    return false;
+
+  } catch(e) {
+    return true;
+  }
+
+    //return true;
   });
 
   it("initExit", async () => {
@@ -516,6 +541,21 @@ it("getPollWinner", async () => {
     await unOrderedTCR.initExit(listID_0, 'ac', {
       from: userC
     });
+
+    return true;
+  });
+
+  it("[Fail] finalizeExit before endTime", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    
+    try {
+    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+      from: userC
+    });
+    return false;
+  } catch(e) {
+    return true;
+  }
   });
 
   it("fast forward to  1 day + 1 sec", function () {
@@ -526,6 +566,21 @@ it("getPollWinner", async () => {
       });
     });
   });
+
+  it("[Fail] not owner finalizeExit", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    try {
+    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+      from: userB
+    });
+
+    console.log('[Fail] not owner finalizeExit OK');
+    return false;
+  } catch(e) {
+    return true;
+  }
+  });
+
   
 
   it("finalizeExit", async () => {
@@ -535,6 +590,20 @@ it("getPollWinner", async () => {
       from: userC
     });
   });
+
+  it("[Fail] finalizeExit again", async () => {
+    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    try {
+    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+      from: userC
+    });
+    console.log('[Fail] finalizeExit again OK');
+    return false;
+  } catch(e) {
+    return true;
+  }
+  });
+
 
 
 
