@@ -106,7 +106,7 @@ contract BBUnOrderedTCR is BBStandard{
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) == 3);
         uint256 applicationExitTime= bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_EXITTIME'));
         require(now > applicationExitTime);
-        bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 4);
+        bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 0);
 
     }
     function calcRewardPool(uint256 listID, uint256 stakedToken) internal constant returns(uint256){
