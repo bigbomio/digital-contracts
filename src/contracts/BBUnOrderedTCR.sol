@@ -26,6 +26,17 @@ contract BBUnOrderedTCR is BBStandard{
       votingHelper = BBVotingHelper(p);
     }
 
+
+    function isOwnerItem(uint256 listID, bytes32 itemHash) private constant returns (bool r){
+        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
+         r = (owner == msg.sender && owner != address(0x0));
+    }
+
+     function canApply(uint256 listID, bytes32 itemHash) private constant returns (bool r){
+        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
+         r = (owner == msg.sender || owner == address(0x0));
+    }
+
     function setParams(uint256 listID, uint256 applicationDuration, uint256 commitDuration, uint256 revealDuration, uint256 minStake, uint256 initQuorum, uint256 exitDuration) onlyOwner public  {
         bbs.setUint(BBLib.toB32('TCR', listID, 'APPLICATION_DURATION'), applicationDuration);
         bbs.setUint(BBLib.toB32('TCR', listID, 'COMMIT_DURATION'), commitDuration);
@@ -54,9 +65,7 @@ contract BBUnOrderedTCR is BBStandard{
     }
     function apply(uint256 listID, uint256 amount, bytes32 itemHash, bytes data) public {
     	//TODO add index of item in the list
-        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
-        require (owner == 0x0 || owner == msg.sender);
-        require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) == 0);
+        require(canApply(listID,itemHash));
         //
     	(uint256 applicationDuration,,,) = getListParams(listID);
         require(depositToken(listID, itemHash,amount));
@@ -75,8 +84,7 @@ contract BBUnOrderedTCR is BBStandard{
     // lay balance - min stake >= _amount // set lai stake
     function withdraw(uint256 listID, bytes32 itemHash, uint _amount) external {
     	//TODO allow withdraw unlocked token
-        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
-        require (owner == msg.sender);
+        require (isOwnerItem(listID, itemHash));
         (,,, uint256 minStake) = getListParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked - minStake >= _amount);
@@ -89,8 +97,7 @@ contract BBUnOrderedTCR is BBStandard{
     function initExit(uint256 listID, bytes32 itemHash) external {	
     	//TODO Initialize an exit timer for a listing to leave the whitelist
         // exit timer 
-        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
-        require (owner == msg.sender);
+        require (isOwnerItem(listID, itemHash));
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) == 3);
         uint256 applicationExitDuration = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_EXITDURATION'));
         // save application exittime
@@ -101,8 +108,7 @@ contract BBUnOrderedTCR is BBStandard{
     function finalizeExit(uint256 listID, bytes32 itemHash) external {
         // TODO Allow a listing to leave the whitelist
         // after x timer will 
-        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
-        require (owner == msg.sender);
+        require (isOwnerItem(listID, itemHash));
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) == 3);
         uint256 applicationExitTime= bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_EXITTIME'));
         require(now > applicationExitTime);
