@@ -17,6 +17,7 @@ const BBOTest = artifacts.require("BBOTest");
 const BBVoting = artifacts.require("BBVoting");
 const BBVotingHelper = artifacts.require("BBVotingHelper");
 const BBParams = artifacts.require("BBParams");
+const BBTCRHelper = artifacts.require("BBTCRHelper");
 const BBUnOrderedTCR = artifacts.require("BBUnOrderedTCR");
 
 var contractAddr = '';
@@ -30,6 +31,7 @@ var proxyAddressParams = '';
 var bboAddress = '';
 var storageAddress = '';
 var proxyAddressTCR = '';
+var proxyAddressTCRHelper = '';
 
 contract('BBUnOrderedTCR Test', async (accounts) => {
   it("initialize  contract", async () => {
@@ -57,6 +59,10 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: accounts[0]
     });
     
+    var TCRHelperInstance = await BBTCRHelper.new({
+      from: accounts[0]
+    });
+
     var unOrderedTCRInstance = await BBUnOrderedTCR.new({
       from: accounts[0]
     });
@@ -75,6 +81,11 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     });
     proxyAddressTCR = l7.logs.find(l => l.event === 'ProxyCreated').args.proxy
 
+    const l8 = await proxyFact.createProxy(accounts[8], TCRHelperInstance.address, {
+      from: accounts[0]
+    });
+    proxyAddressTCRHelper = l8.logs.find(l => l.event === 'ProxyCreated').args.proxy
+
 
 
     // set admin to storage
@@ -86,6 +97,9 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: accounts[0]
     });
     await storage.addAdmin(proxyAddressTCR, true, {
+      from: accounts[0]
+    });
+    await storage.addAdmin(proxyAddressTCRHelper, true, {
       from: accounts[0]
     });
     await storage.addAdmin(accounts[7], true, {
@@ -136,6 +150,15 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: accounts[0]
     });
 
+    //TCR Hepler 
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+    await TCRHelper.transferOwnership(accounts[0], {
+      from: accounts[0]
+    });
+    await TCRHelper.setStorage(storage.address, {
+      from: accounts[0]
+    });
+
     //BBUnOrderedTCR
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
     await unOrderedTCR.transferOwnership(accounts[0], {
@@ -153,6 +176,9 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     await unOrderedTCR.setBBO(bboAddress, {
       from: accounts[0]
     });
+    await unOrderedTCR.setTCRHelper(proxyAddressTCRHelper, {
+      from: accounts[0]
+    });
 
 
   });
@@ -167,17 +193,19 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   var listID_0 = 0;
 
   it("set & get params", async () => {
-    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-     await unOrderedTCR.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+
+     await TCRHelper.setParamsUnOrdered(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
       from: userA
     });
 
-     await unOrderedTCR.getListParams(listID_0,{
+     await TCRHelper.getListParamsUnOrdered(listID_0,{
       from: userA
     });
 
     return true;    
   });
+
 
   it("apply", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
@@ -539,9 +567,9 @@ it("getPollWinner", async () => {
 
 
   it("getStakedBalance", async () => {
-    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-     let c3 = await unOrderedTCR.getStakedBalance(listID_0, 'aa',{
+     let c3 = await TCRHelper.getStakedBalanceUnOrdered(listID_0, 'aa',{
       from: userD
     });
 

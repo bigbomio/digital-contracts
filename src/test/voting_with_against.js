@@ -68,8 +68,6 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
   it("initialize contract", async () => {
 
     // var filesrs = await ipfs.files.add(files);
-
-
     // jobHash = filesrs[0].hash;
     erc20 = await BBOTest.new({
       from: accounts[0]
