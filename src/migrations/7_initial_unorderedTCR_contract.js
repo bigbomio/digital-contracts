@@ -18,7 +18,7 @@ module.exports = async function (deployer) {
 
   // });
   console.log('deployer.network_id ', deployer.network_id);
-  if (deployer.network_id == 3) {
+  if (deployer.network_id == 33) {
 
     var admin = '0x83e5353fc26643c29b041a3b692c6335c97a9aed';
     var adminProxy = '0xa867a6a820928c64ffe3e30166481ec526d38bc5';
@@ -90,7 +90,7 @@ module.exports = async function (deployer) {
       return storage.addAdmin(proxyAddressTCRHelper, true)
     }).then(function(rs){
       console.log('TCRHelper set param')
-      return TCRHelper.setParamsUnOrdered(10, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60);
+      return TCRHelper.setParamsUnOrdered(10, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 100e18,  100, 24 * 60 * 60);
     });
   }
 };

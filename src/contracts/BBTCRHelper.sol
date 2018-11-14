@@ -29,4 +29,8 @@ contract BBTCRHelper is BBStandard {
         return  bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
     }
 
+    function getItemStage(uint256 listID, bytes32 itemHash) public constant returns (uint256) {
+        return  bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'));
+    }
+
 }

@@ -577,6 +577,18 @@ it("getPollWinner", async () => {
   
   });
 
+  it("getItemStage", async () => {
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+
+     let c3 = await TCRHelper.getItemStage(listID_0, 'aa',{
+      from: userD
+    });
+    console.log(c3);
+    //assert(JSON.stringify (c3) != "0");
+  
+  });
+
+
 
   it("withdraw", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
