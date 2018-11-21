@@ -4,13 +4,15 @@ const BBFreelancerPayment =  artifacts.require("BBFreelancerPayment");
 const BBStorage =  artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
+const BBOTest = artifacts.require("BBOTest");
 
 
 module.exports = async function(deployer) {
 
    if(deployer.network_id != 777){
 
-     
+     let bbo = await BBOTest.at('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
+     console.log('bbo', bbo.address);
      let storage = await BBStorage.new();
 
       // create bb contract
@@ -33,26 +35,26 @@ module.exports = async function(deployer) {
      console.log('proxyAddressPayment', proxyAddressPayment)
 
        // set admin to storage
-     await storage.addAdmin(proxyAddressJob);
-     await storage.addAdmin(proxyAddressBid);
-     await storage.addAdmin(proxyAddressPayment);
+     await storage.addAdmin(proxyAddressJob, true);
+     await storage.addAdmin(proxyAddressBid, true);
+     await storage.addAdmin(proxyAddressPayment, true);
 
      let job = await BBFreelancerJob.at(proxyAddressJob);
      console.log('transferOwnership ....')
      await job.transferOwnership('0xb10ca39dfa4903ae057e8c26e39377cfb4989551');
      await job.setStorage(storage.address);
      console.log('setBBO ....')
-     await job.setBBO('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
+     await job.setBBO(bbo.address);
 
      let bid = await BBFreelancerBid.at(proxyAddressBid);
      await bid.transferOwnership('0xb10ca39dfa4903ae057e8c26e39377cfb4989551');
      await bid.setStorage(storage.address);
-     await bid.setBBO('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
+     await bid.setBBO(bbo.address);
 
      let payment = await BBFreelancerPayment.at(proxyAddressPayment);
      await payment.transferOwnership('0xb10ca39dfa4903ae057e8c26e39377cfb4989551');
      await payment.setStorage(storage.address);
-     await payment.setBBO('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
+     await payment.setBBO(bbo.address);
      console.log('setPaymentContract ....');
      await bid.setPaymentContract(proxyAddressPayment);
      console.log('done');

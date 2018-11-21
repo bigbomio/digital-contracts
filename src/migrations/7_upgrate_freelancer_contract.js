@@ -12,13 +12,13 @@ module.exports = async function(deployer) {
      proxyAddressBid = '0x39abc4386a817b5d8a4b008e022b446637e2a1eb';
      proxyAddressPayment = '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f';
       // create bb contract
-     // let jobInstance = await BBFreelancerJob.deployed();
-     // let bidInstance = await BBFreelancerBid.deployed();
-   //  let paymentInstance = await BBFreelancerPayment.deployed();
+      let jobInstance = await BBFreelancerJob.deployed();
+      let bidInstance = await BBFreelancerBid.deployed();
+      let paymentInstance = await BBFreelancerPayment.deployed();
 
-  //   await AdminUpgradeabilityProxy.at(proxyAddressJob).upgradeTo(jobInstance.address);
-   //  await AdminUpgradeabilityProxy.at(proxyAddressBid).upgradeTo(bidInstance.address);
-     await AdminUpgradeabilityProxy.at(proxyAddressPayment).upgradeTo('0x0ccfa6eab964847099ce809b7d497c84960c94a4');
+     await AdminUpgradeabilityProxy.at(proxyAddressJob).upgradeTo(jobInstance.address);
+     await AdminUpgradeabilityProxy.at(proxyAddressBid).upgradeTo(bidInstance.address);
+     await AdminUpgradeabilityProxy.at(proxyAddressPayment).upgradeTo(paymentInstance.address);
 
      
      console.log('done');

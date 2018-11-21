@@ -12,10 +12,10 @@ import './BBLib.sol';
  */
 contract BBFreelancerPayment is BBFreelancer{
 
-  event PaymentClaimed(uint256 jobID, address indexed sender);
-  event PaymentAccepted(uint256 jobID, address indexed sender);
-  event PaymentRejected(uint256 jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
-  event DisputeFinalized(uint256 jobID, address indexed winner);
+  event PaymentClaimed(uint256 indexed jobID, address indexed sender);
+  event PaymentAccepted(uint256 indexed jobID, address indexed sender);
+  event PaymentRejected(uint256 indexed jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
+  event DisputeFinalized(uint256 indexed jobID, address indexed winner);
 
 
   // hirer ok with finish Job
