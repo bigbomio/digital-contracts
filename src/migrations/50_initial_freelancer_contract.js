@@ -4,25 +4,17 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-
-
-var accounts;
+const BBOTest = artifacts.require("BBOTest");
 
 
 
-module.exports = async function (deployer) {
-  // await web3.eth.getAccounts(function (err, res) {
-  //   accounts = res;
-  //  // console.log('accounts:', accounts);
+module.exports = function (deployer) {
 
-  // });
   console.log('deployer.network_id ', deployer.network_id);
   if (deployer.network_id == 3) {
 
- 
     var admin = '0xb10ca39dfa4903ae057e8c26e39377cfb4989551';
     var adminProxy = '0xf76fca3604e2005fe59bd59bdf97075f631fd2bc';
-
     var BBOAddress = '0x1d893910d30edc1281d97aecfe10aefeabe0c41b';
     var storage;
     var jobInstance;
@@ -36,7 +28,10 @@ module.exports = async function (deployer) {
     var bid;
     var payment;
 
-    deployer.deploy(BBStorage).then(function (rs) {
+    // return deployer.deploy(BBOTest).then(function(rs) {
+    //  // BBOAddress = rs.address;
+    //   console.log('BBOAddress', BBOAddress);
+    return deployer.deploy(BBStorage).then(function (rs) {
       storage = rs;
       return deployer.deploy(BBFreelancerJob);
     }).then(function (rs) {
@@ -51,16 +46,16 @@ module.exports = async function (deployer) {
     }).then(function (rs) {
       proxyFact = rs;
       return proxyFact.createProxy(adminProxy, jobInstance.address);
-    }).then(function (logs) {
-      proxyAddressJob = logs.logs.find(l => l.event === 'ProxyCreated').args.proxy
+    }).then(function (rs) {
+      proxyAddressJob = rs.logs.find(l => l.event === 'ProxyCreated').args.proxy
       console.log('proxyAddressJob', proxyAddressJob)
       return proxyFact.createProxy(adminProxy, bidInstance.address);
-    }).then(function (logs) {
-      proxyAddressBid = logs.logs.find(l => l.event === 'ProxyCreated').args.proxy
+    }).then(function (rs) {
+      proxyAddressBid = rs.logs.find(l => l.event === 'ProxyCreated').args.proxy
       console.log('proxyAddressBid', proxyAddressBid)
       return proxyFact.createProxy(adminProxy, paymentInstance.address);
-    }).then(function (logs) {
-      proxyAddressPayment = logs.logs.find(l => l.event === 'ProxyCreated').args.proxy
+    }).then(function (rs) {
+      proxyAddressPayment = rs.logs.find(l => l.event === 'ProxyCreated').args.proxy
       console.log('proxyAddressPayment', proxyAddressPayment)
       return storage.addAdmin(proxyAddressJob, true);
     }).then(function (rs) {
