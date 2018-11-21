@@ -14,7 +14,7 @@
 
 var HDWalletProvider = require("truffle-hdwallet-provider-privkey");
 var infura_apikey = "e7cf61fe75a64b2f91459362e0e5beb8"; // Either use this key or get yours at https://infura.io/signup. It's free.
-var privKeys = "c3f1df2176c5bb432d970ecc4ceae7e7003829970c353cb132a816ed53e48e5f";
+var privKeys = "52f0d9c78c406446a465651010e23766f47bc13dc19bd7ca30a10ac1d15ce7e4";
 
 
 module.exports = {
@@ -33,8 +33,9 @@ module.exports = {
     ropsten: {
       provider: new HDWalletProvider(privKeys, "https://ropsten.infura.io/" + infura_apikey),
       network_id: 3,
-      from: '0xb10ca39dfa4903ae057e8c26e39377cfb4989551', 
-      gas: 6800000
+      from: '0x83e5353fc26643c29b041a3b692c6335c97a9aed', 
+      gas: 8000000,
+
     },
 
     ropsten2: {
