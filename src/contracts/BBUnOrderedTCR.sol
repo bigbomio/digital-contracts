@@ -34,7 +34,7 @@ contract BBUnOrderedTCR is BBStandard{
     }
 
 
-    function isOwnerItem(uint256 listID, bytes32 itemHash) private constant returns (bool r){
+    function isOwnerItem(uint256 listID, bytes32 itemHash) public constant returns (bool r){
         address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
          r = (owner == msg.sender && owner != address(0x0));
     }
@@ -89,7 +89,6 @@ contract BBUnOrderedTCR is BBStandard{
         uint256 applicationExitDuration = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'EXITDURATION'));
         // save application exittime
         bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'EXITTIME'), block.timestamp.add(applicationExitDuration));
-
     }
     // set state = 0, tra tien so huu
     function finalizeExit(uint256 listID, bytes32 itemHash) external {
