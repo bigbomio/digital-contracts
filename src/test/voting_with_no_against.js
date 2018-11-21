@@ -478,7 +478,7 @@ contract('Voting Test 2', async (accounts) => {
 
       let bl = await getBalance(bbo, userB);
 
-      let isAgian = await votingRight.isAgaintsPoll(jobIDA, {
+      let isAgian = await votingRight.isAgaintsDispute(jobIDA, {
         from: userB
       });
 
