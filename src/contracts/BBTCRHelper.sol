@@ -27,6 +27,10 @@ contract BBTCRHelper is BBStandard {
         return bbs.getAddress(BBLib.toB32('TCR', listID, 'TOKEN'));
     } 
 
+    function getListID(uint256 pollID) public constant returns(uint256){
+        return bbs.getUint(BBLib.toB32('TCR_MAPPING_POLL_LIST', pollID));
+    }
+
 
     function setParams(uint256 listID, uint256 applicationDuration, uint256 commitDuration, uint256 revealDuration, uint256 minStake, uint256 initQuorum, uint256 exitDuration) onlyOwner public  {
         bbs.setUint(BBLib.toB32('TCR', listID, 'APPLICATION_DURATION'), applicationDuration);
@@ -51,6 +55,32 @@ contract BBTCRHelper is BBStandard {
 
     function getItemStage(uint256 listID, bytes32 itemHash) public constant returns (uint256) {
         return  bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'));
+    }
+
+    function isOwnerItem(uint256 listID, bytes32 itemHash, address sender) public constant returns (bool r){
+        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
+         r = (owner == sender && owner != address(0x0));
+    }
+
+    function canApply(uint256 listID, bytes32 itemHash, address sender) public constant returns (bool r){
+        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
+         r = (owner == sender || owner == address(0x0));
+    }
+    function calcRewardPool(uint256 listID, uint256 stakedToken) public constant returns(uint256){
+        uint oneHundred = 100; 
+        return (oneHundred.sub(bbs.getUint(BBLib.toB32('TCR', listID, 'LOSE_PERCENT')))
+            .mul(stakedToken)).div(100);
+    }
+    function canBeWhitelisted(uint256 listID, bytes32 itemHash) view public returns (bool) {
+        uint256 applicationEndtime = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_ENDTIME'));
+        uint256 stage = bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'));
+        if(applicationEndtime > 0 && applicationEndtime < now && stage == 1 && !isWhitelisted(listID, itemHash)){
+            return true;
+        }
+        return false;
+    }
+    function isWhitelisted(uint256 listID, bytes32 itemHash) view public returns (bool whitelisted) {
+        return bbs.getBool(BBLib.toB32('TCR',listID, itemHash,'WHITE_LISTED'));
     }
 
 }

@@ -11,20 +11,18 @@ module.exports = async function(deployer) {
 
    if(deployer.network_id == 3){
 
-     proxyAddressParams = '0x8a8283e505d74e9bd2837e0cd02eefb805342546';
-     proxyAddressDispute = '0xaf0a5a41103ab33c8ece6c81360339b0650bdf6c';
-     proxyAddressVoting = '0x0f8821e2aa2ed8d97f03091caac249a371759906';
-     proxyAddressVotingHelper = '0xf013557b366e6a96dbcdef7fc4e2743beafcbb9e';
+     var disputeProxy = '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e'
+     var votingProxy = '0xc7252214d78b15f37b94ae73027419a9f275c36f'
+     var votingHelperProxy = '0x771911025b4eafb6395042b7dca728b275e5d8c0'
+
       // create bb contract
-     let params = await BBParams.deployed();
      let dispute = await BBDispute.deployed();
      let voting = await BBVoting.deployed();
      let votingHelper = await BBVotingHelper.deployed();
 
-     await AdminUpgradeabilityProxy.at(proxyAddressParams).upgradeTo(params.address);
-     await AdminUpgradeabilityProxy.at(proxyAddressDispute).upgradeTo(dispute.address);
-     await AdminUpgradeabilityProxy.at(proxyAddressVoting).upgradeTo(voting.address);
-     await AdminUpgradeabilityProxy.at(proxyAddressVotingHelper).upgradeTo(votingHelper.address);
+     await AdminUpgradeabilityProxy.at(disputeProxy).upgradeTo(dispute.address);
+     await AdminUpgradeabilityProxy.at(votingProxy).upgradeTo(voting.address);
+     await AdminUpgradeabilityProxy.at(votingHelperProxy).upgradeTo(votingHelper.address);
      return true;
      console.log('done');
    }  

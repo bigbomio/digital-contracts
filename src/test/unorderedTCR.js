@@ -191,7 +191,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
 
 
   var listID_0 = 0;
-  var listID_1 = 0;
+  var listID_0 = 0;
   it("createListID", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
     let bbo = await BBOTest.at(bboAddress);
@@ -199,7 +199,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     let l = await TCRHelper.createListID('assad',bbo.address,{ from: userA});
 
     let tokenAddress = l.logs.find(l => l.event === 'CreateListID').args.tokenAddress;
-    listID_1 = l.logs.find(l => l.event === 'CreateListID').args.listID;
+    listID_0 = l.logs.find(l => l.event === 'CreateListID').args.listID;
     assert.equal(bbo.address,tokenAddress);
   });
 
@@ -222,7 +222,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: accounts[0]
     });
     try {
-     await TCRHelper.updateToken(listID_1 ,erc20.address,{ from: userB});
+     await TCRHelper.updateToken(listID_0 ,erc20.address,{ from: userB});
      return false;
     } catch(e) {
       return true;
@@ -237,11 +237,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     var erc20 = await BBOTest.new({
       from: accounts[0]
     });
-     await TCRHelper.updateToken(listID_1 ,erc20.address,{ from: userA});
+     await TCRHelper.updateToken(listID_0 ,erc20.address,{ from: userA});
      
-     let newToken = await TCRHelper.getToken(listID_1, { from: userA});
+     let newToken = await TCRHelper.getToken(listID_0, { from: userA});
 
      assert.equal(erc20.address,newToken);
+     await TCRHelper.updateToken(listID_0 ,bboAddress,{ from: userA});
+     
   });
 
   it("set & get params", async () => {
@@ -388,13 +390,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("isWhitelisted before update status", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
-     let c3 = await unOrderedTCR.isWhitelisted(listID_0, 'a',{
+     let c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'a',{
       from: userE
     });
 
     assert.equal('false' ,JSON.stringify(c3));
 
-    c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+    c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'ac',{
       from: userE
     });
 
@@ -467,7 +469,7 @@ it("fast forward to  1 day + 1 sec", function () {
 it("updateStatus whitelistApplication", async () => {
   let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
-  c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+  c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'ac',{
     from: userE
   });
 
@@ -477,7 +479,7 @@ it("updateStatus whitelistApplication", async () => {
     from: userC
   });
 
-  c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+  c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'ac',{
     from: userE
   });
 
@@ -528,7 +530,7 @@ it("getPollWinner", async () => {
     });
 
    
-    let c3 = await unOrderedTCR.isWhitelisted(listID_0, 'a',{
+    let c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'a',{
       from: userE
     });
 
@@ -606,12 +608,12 @@ it("getPollWinner", async () => {
   it("isWhitelisted", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
-     let c3 = await unOrderedTCR.isWhitelisted(listID_0, 'a',{
+     let c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'a',{
       from: userE
     });
 
     assert(c3 == false);
-    c3 = await unOrderedTCR.isWhitelisted(listID_0, 'ac',{
+    c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'ac',{
       from: userE
     });
 

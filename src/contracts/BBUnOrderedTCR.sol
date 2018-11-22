@@ -10,6 +10,7 @@ import './BBLib.sol';
 import './BBVoting.sol';
 import './BBVotingHelper.sol';
 import './BBTCRHelper.sol';
+import './zeppelin/token/ERC20/ERC20.sol';
 
 
 
@@ -33,15 +34,8 @@ contract BBUnOrderedTCR is BBStandard{
       tcrHelper = BBTCRHelper(p);
     }
 
-
-    function isOwnerItem(uint256 listID, bytes32 itemHash) public constant returns (bool r){
-        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
-         r = (owner == msg.sender && owner != address(0x0));
-    }
-
-     function canApply(uint256 listID, bytes32 itemHash) private constant returns (bool r){
-        address owner = bbs.getAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'));
-         r = (owner == msg.sender || owner == address(0x0));
+    function getERC20(uint256 listID) public view returns(ERC20){
+        return ERC20(tcrHelper.getToken(listID));
     }
 
     //Lam sao user bi remove, kiem tra so deposit
@@ -49,13 +43,13 @@ contract BBUnOrderedTCR is BBStandard{
         (,,, uint256 minStake) = tcrHelper.getListParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked.add(amount) >= minStake);
-        require (bbo.transferFrom(msg.sender, address(this), amount));
+        require ( getERC20(listID).transferFrom(msg.sender, address(this), amount));
         bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'), staked.add(amount));
         return true;
     }
     function apply(uint256 listID, uint256 amount, bytes32 itemHash, bytes data) public {
     	//TODO add index of item in the list
-        require(canApply(listID,itemHash));
+        require(tcrHelper.canApply(listID,itemHash, msg.sender));
         //
     	(uint256 applicationDuration,,,) = tcrHelper.getListParams(listID);
         require(depositToken(listID, itemHash,amount));
@@ -71,21 +65,21 @@ contract BBUnOrderedTCR is BBStandard{
     // lay balance - min stake >= _amount // set lai stake
     function withdraw(uint256 listID, bytes32 itemHash, uint _amount) external {
     	//TODO allow withdraw unlocked token
-        require (isOwnerItem(listID, itemHash));
+        require (tcrHelper.isOwnerItem(listID, itemHash, msg.sender));
 
         (,,, uint256 minStake) = tcrHelper.getListParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked - minStake >= _amount);
 
         bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'), staked.sub(_amount));
-        assert(bbo.transfer(msg.sender, _amount));
+        assert( getERC20(listID).transfer(msg.sender, _amount));
     
     }
     
     function initExit(uint256 listID, bytes32 itemHash) external {	
     	//TODO Initialize an exit timer for a listing to leave the whitelist
         // exit timer 
-        require (isOwnerItem(listID, itemHash));
+        require (tcrHelper.isOwnerItem(listID, itemHash, msg.sender));
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) == 3);
         uint256 applicationExitDuration = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'EXITDURATION'));
         // save application exittime
@@ -95,25 +89,21 @@ contract BBUnOrderedTCR is BBStandard{
     function finalizeExit(uint256 listID, bytes32 itemHash) external {
         // TODO Allow a listing to leave the whitelist
         // after x timer will 
-        require (isOwnerItem(listID, itemHash));
+        require (tcrHelper.isOwnerItem(listID, itemHash, msg.sender));
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) == 3);
         uint256 applicationExitTime= bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'EXITTIME'));
         require(now > applicationExitTime);
         bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 0);
 
     }
-    function calcRewardPool(uint256 listID, uint256 stakedToken) internal constant returns(uint256){
-        uint oneHundred = 100; 
-        return (oneHundred.sub(bbs.getUint(BBLib.toB32('TCR', listID, 'LOSE_PERCENT')))
-            .mul(stakedToken)).div(100);
-    }
+    
     function challenge(uint256 listID, bytes32 itemHash, bytes _data) external returns (uint pollID) {
         // not in challenge stage
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) != 2);
         // require deposit token        
 
         (, uint256 commitDuration, uint256 revealDuration, uint256 minStake) = tcrHelper.getListParams(listID);
-        require (bbo.transferFrom(msg.sender, address(this), minStake));
+        require ( getERC20(listID).transferFrom(msg.sender, address(this), minStake));
         
         pollID = voting.startPoll(_data, 0 , commitDuration, revealDuration);
         require(pollID > 0);
@@ -121,8 +111,9 @@ contract BBUnOrderedTCR is BBStandard{
         bbs.setUint(BBLib.toB32('TCR', pollID, 'CHALLENGER_STAKED'), minStake);
 
         bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'POLL_ID'), pollID);
+        bbs.setUint(BBLib.toB32('TCR_MAPPING_POLL_LIST', pollID), listID);
         
-        bbs.setUint(BBLib.toB32('TCR_POLL_ID', pollID ), calcRewardPool(listID, minStake));
+        bbs.setUint(BBLib.toB32('TCR_POLL_ID', pollID ), tcrHelper.calcRewardPool(listID, minStake));
         // save challenger
         bbs.setAddress(BBLib.toB32('TCR', listID, itemHash, 'CHALLENGER'), msg.sender);
         // in challenge stage
@@ -131,7 +122,7 @@ contract BBUnOrderedTCR is BBStandard{
     }
 
     function updateStatus(uint256 listID, bytes32 itemHash) public {
-        if (canBeWhitelisted(listID, itemHash)) {
+        if (tcrHelper.canBeWhitelisted(listID, itemHash)) {
             whitelistApplication(listID, itemHash);
         } else if (challengeCanBeResolved(listID, itemHash)) {
             resolveChallenge(listID, itemHash);
@@ -144,7 +135,8 @@ contract BBUnOrderedTCR is BBStandard{
         require(bbs.getBool(BBLib.toB32('TCR_VOTER_CLAIMED', pollID, msg.sender)) == false);
         uint256 numReward = voterReward(msg.sender, pollID);
         require(numReward > 0);
-        assert(bbo.transfer(msg.sender, numReward));
+        uint256 listID = tcrHelper.getListID(pollID);
+        assert(getERC20(listID).transfer(msg.sender, numReward));
         bbs.setBool(BBLib.toB32('TCR_VOTER_CLAIMED', pollID, msg.sender), true);
     }
     function voterReward(address voter, uint pollID) public view returns (uint numReward) {
@@ -162,18 +154,7 @@ contract BBUnOrderedTCR is BBStandard{
         bbs.setBool(BBLib.toB32('TCR',listID, itemHash,'WHITE_LISTED'), true);
         bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 3);
     }
-    function canBeWhitelisted(uint256 listID, bytes32 itemHash) view public returns (bool) {
-        uint256 applicationEndtime = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_ENDTIME'));
-	    uint256 stage = bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'));
-        if(applicationEndtime > 0 && applicationEndtime < now && stage == 1 && !isWhitelisted(listID, itemHash)){
-            return true;
-        }
-        return false;
-    }
-	function isWhitelisted(uint256 listID, bytes32 itemHash) view public returns (bool whitelisted) {
-        return bbs.getBool(BBLib.toB32('TCR',listID, itemHash,'WHITE_LISTED'));
-	}
-
+    
     function challengeCanBeResolved(uint256 listID, bytes32 itemHash) view public returns (bool) {
         uint pollID = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'POLL_ID'));
         uint256 stage = bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'));
@@ -207,7 +188,7 @@ contract BBUnOrderedTCR is BBStandard{
             // did not pass // thang do khong pass, trang thai true -false,
             //remove ra khoi list
             bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 0);
-            assert(bbo.transfer(bbs.getAddress(BBLib.toB32('TCR', listID, itemHash, 'CHALLENGER')), reward));
+            assert( getERC20(listID).transfer(bbs.getAddress(BBLib.toB32('TCR', listID, itemHash, 'CHALLENGER')), reward));
         }
     }
 }
