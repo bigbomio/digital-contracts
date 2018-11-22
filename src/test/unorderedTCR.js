@@ -199,7 +199,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: userA
     });
 
-     await TCRHelper.getListParamsUnOrdered(listID_0,{
+     await TCRHelper.getParams(listID_0,{
       from: userA
     });
 
@@ -672,7 +672,14 @@ it("getPollWinner", async () => {
   }
   });
 
+  it("fast forward to  1 day + 1 sec", function () {
+    var fastForwardTime = 24 * 3600 * 2 +  10;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
   
+      });
+    });
+  });
 
   it("finalizeExit", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);

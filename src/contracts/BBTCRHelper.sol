@@ -12,13 +12,12 @@ contract BBTCRHelper is BBStandard {
         bbs.setUint(BBLib.toB32('TCR', listID, 'COMMIT_DURATION'), commitDuration);
         bbs.setUint(BBLib.toB32('TCR', listID, 'REVEAL_DURATION'), revealDuration);
         bbs.setUint(BBLib.toB32('TCR', listID, 'MIN_STAKE'), minStake);
-        bbs.setUint(BBLib.toB32('TCR', listID, 'MIN_STAKE'), minStake);
         bbs.setUint(BBLib.toB32('TCR', listID, 'QUORUM'), initQuorum);
         bbs.setUint(BBLib.toB32('TCR', listID, 'EXITDURATION'), exitDuration);
 
     }
 
-    function getListParamsUnOrdered(uint256 listID) public view returns(uint256 applicationDuration, uint256 commitDuration, uint256 revealDuration, uint256 minStake){
+    function getParams(uint256 listID) public view returns(uint256 applicationDuration, uint256 commitDuration, uint256 revealDuration, uint256 minStake){
         applicationDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'APPLICATION_DURATION'));
         commitDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'COMMIT_DURATION'));
         revealDuration = bbs.getUint(BBLib.toB32('TCR', listID, 'REVEAL_DURATION'));

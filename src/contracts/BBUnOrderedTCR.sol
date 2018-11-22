@@ -46,7 +46,7 @@ contract BBUnOrderedTCR is BBStandard{
 
     //Lam sao user bi remove, kiem tra so deposit
     function depositToken(uint256 listID, bytes32 itemHash, uint amount) public returns(bool) {
-        (,,, uint256 minStake) = tcrHelper.getListParamsUnOrdered(listID);
+        (,,, uint256 minStake) = tcrHelper.getParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked.add(amount) >= minStake);
         require (bbo.transferFrom(msg.sender, address(this), amount));
@@ -57,7 +57,7 @@ contract BBUnOrderedTCR is BBStandard{
     	//TODO add index of item in the list
         require(canApply(listID,itemHash));
         //
-    	(uint256 applicationDuration,,,) = tcrHelper.getListParamsUnOrdered(listID);
+    	(uint256 applicationDuration,,,) = tcrHelper.getParams(listID);
         require(depositToken(listID, itemHash,amount));
         // save creator
         bbs.setAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'), msg.sender);
@@ -72,7 +72,7 @@ contract BBUnOrderedTCR is BBStandard{
     function withdraw(uint256 listID, bytes32 itemHash, uint _amount) external {
     	//TODO allow withdraw unlocked token
         require (isOwnerItem(listID, itemHash));
-        (,,, uint256 minStake) = tcrHelper.getListParamsUnOrdered(listID);
+        (,,, uint256 minStake) = tcrHelper.getParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked - minStake >= _amount);
 
@@ -111,7 +111,7 @@ contract BBUnOrderedTCR is BBStandard{
         // not in challenge stage
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) != 2);
         // require deposit token        
-        (, uint256 commitDuration, uint256 revealDuration, uint256 minStake) = tcrHelper.getListParamsUnOrdered(listID);
+        (, uint256 commitDuration, uint256 revealDuration, uint256 minStake) = tcrHelper.getParams(listID);
         require (bbo.transferFrom(msg.sender, address(this), minStake));
         
         pollID = voting.startPoll(_data, 0 , commitDuration, revealDuration);
