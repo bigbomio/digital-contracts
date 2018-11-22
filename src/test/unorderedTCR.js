@@ -191,20 +191,74 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
 
 
   var listID_0 = 0;
+  var listID_1 = 0;
+  it("createListID", async () => {
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+    let bbo = await BBOTest.at(bboAddress);
+
+    let l = await TCRHelper.createListID('assad',bbo.address,{ from: userA});
+
+    let tokenAddress = l.logs.find(l => l.event === 'CreateListID').args.tokenAddress;
+    listID_1 = l.logs.find(l => l.event === 'CreateListID').args.listID;
+    assert.equal(bbo.address,tokenAddress);
+  });
+
+  it("[Fail] Not owner createListID", async () => {
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+    let bbo = await BBOTest.at(bboAddress);
+    try {
+     await TCRHelper.createListID('assad',bbo.address,{ from: userB});
+     return false;
+    } catch(e) {
+      return true;
+    }
+  
+  });
+
+  it("[Fail] not owner update Token ", async () => {
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+
+    var erc20 = await BBOTest.new({
+      from: accounts[0]
+    });
+    try {
+     await TCRHelper.updateToken(listID_1 ,erc20.address,{ from: userB});
+     return false;
+    } catch(e) {
+      return true;
+    }
+   
+  });
+
+
+  it("update Token ", async () => {
+    let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
+
+    var erc20 = await BBOTest.new({
+      from: accounts[0]
+    });
+     await TCRHelper.updateToken(listID_1 ,erc20.address,{ from: userA});
+     
+     let newToken = await TCRHelper.getToken(listID_1, { from: userA});
+
+     assert.equal(erc20.address,newToken);
+  });
 
   it("set & get params", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-     await TCRHelper.setParamsUnOrdered(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
+     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
       from: userA
     });
 
-     await TCRHelper.getParams(listID_0,{
+     await TCRHelper.getListParams(listID_0,{
       from: userA
     });
 
     return true;    
   });
+
+  
 
 
   it("apply", async () => {
@@ -569,7 +623,7 @@ it("getPollWinner", async () => {
   it("getStakedBalance", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-     let c3 = await TCRHelper.getStakedBalanceUnOrdered(listID_0, 'aa',{
+     let c3 = await TCRHelper.getStakedBalance(listID_0, 'aa',{
       from: userD
     });
 
@@ -650,7 +704,7 @@ it("getPollWinner", async () => {
   });
 
   it("fast forward to  1 day + 1 sec", function () {
-    var fastForwardTime = 24 * 3600 * 2 +  10;
+    var fastForwardTime = 24 * 3600 * 4 +  10;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
   
