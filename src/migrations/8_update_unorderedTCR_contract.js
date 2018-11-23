@@ -30,21 +30,27 @@ module.exports = async function (deployer) {
     console.log('8_update_unorderedTCR_contract');
 
 
-    deployer.deploy(BBUnOrderedTCR).then(function (rs) {
-      unorderTCR = rs;
-      return  AdminUpgradeabilityProxy.at(proxyAddressTCR).upgradeTo(unorderTCR.address);
-   });
+//     deployer.deploy(BBUnOrderedTCR).then(function (rs) {
+//       unorderTCR = rs;
+//       return  AdminUpgradeabilityProxy.at(proxyAddressTCR).upgradeTo(unorderTCR.address);
+//    }).then(function(rs) {
+//     return deployer.deploy(BBTCRHelper);
+//    }).then(function (rs) {
+//      TCRHelper = rs;
+//      return  AdminUpgradeabilityProxy.at(proxyAddressTCRHelper).upgradeTo(TCRHelper.address);
+//  });
 
-   return;
+//    return;
 
     deployer.deploy(BBTCRHelper).then(function (rs) {
         return BBTCRHelper.at(proxyAddressTCRHelper);
     }).then(function (rs) {
        TCRHelper = rs;
+       return TCRHelper.setParams(10, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 100e18,  100, 24 * 60 * 60);
        //return unorderTCR.setVoting(votingProxy);
-       return TCRHelper.setStorage('0xfb3c7e2bf3f2470b72bc037dcf79425dc3b68d39');
+       //return TCRHelper.setStorage('0xfb3c7e2bf3f2470b72bc037dcf79425dc3b68d39');
     }).then(function(rs){
-      return TCRHelper.setParamsUnOrdered(10, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 100e18,  100, 24 * 60 * 60);
+        //return TCRHelper.setParamsUnOrdered(10, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 100e18,  100, 24 * 60 * 60);
     });
 
     // if (BBUnOrderedTCR.deployed()) {

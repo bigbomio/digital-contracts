@@ -6,7 +6,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 
 module.exports = async function(deployer) {
 
-   if(deployer.network_id == 3){
+   if(deployer.network_id == 33){
 
      proxyAddressJob = '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec';
      proxyAddressBid = '0x39abc4386a817b5d8a4b008e022b446637e2a1eb';

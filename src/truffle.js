@@ -39,10 +39,10 @@ module.exports = {
     },
 
     ropsten2: {
-      provider: new HDWalletProvider("4ff1eb0ba9a021ec26166a9c56d76d5514d4df15f9045082f2d6550116e6db44", "https://ropsten.infura.io/" + infura_apikey),
+      provider: new HDWalletProvider("7cfdbd32bc43117184eee7a404e328b7c681cdfb0166f93e14ac25463a4b2745", "https://ropsten.infura.io/" + infura_apikey),
       network_id: 3,
-      from: '0xf76fca3604e2005fe59bd59bdf97075f631fd2bc', 
-      gas: 6800000
+      from: '0xa867a6a820928c64ffe3e30166481ec526d38bc5', 
+      gas: 8000000
     },
     tomo: {
       provider: new HDWalletProvider(privKeys, 'https://testnet.tomochain.com'),
