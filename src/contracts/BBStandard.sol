@@ -26,6 +26,7 @@ contract BBStandard is Ownable {
   function setBBO(address BBOAddress) onlyOwner public {
     bbo = ERC20(BBOAddress);
   }
+  
   /**
   * @dev withdrawTokens: call by admin to withdraw any token
   * @param anyToken token address

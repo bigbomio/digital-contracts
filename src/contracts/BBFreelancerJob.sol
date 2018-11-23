@@ -24,9 +24,9 @@ contract BBFreelancerJob is BBFreelancer {
   }
 
   event JobCreated(bytes jobHash, uint256 indexed jobID, address indexed owner, uint expired, bytes32 indexed category, uint256  budget, uint256 estimateTime);
-  event JobCanceled(uint256 jobID);
-  event JobStarted(uint256 jobID);
-  event JobFinished(uint256 jobID);
+  event JobCanceled(uint256 indexed jobID);
+  event JobStarted(uint256 indexed jobID);
+  event JobFinished(uint256 indexed jobID);
 
   /**
    * @dev 
