@@ -5,6 +5,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 const BBTCRHelper =  artifacts.require("BBTCRHelper");
 const BBVotingHelper =  artifacts.require("BBVotingHelper");
 const BBUnOrderedTCR = artifacts.require("BBUnOrderedTCR");
+const BBOToken = artifacts.require("BBOToken");
 
 
 var accounts;
@@ -27,20 +28,23 @@ module.exports = async function (deployer) {
     var TCRHelper;
     var TCRInstanceHelper;
 
-    console.log('8_update_unorderedTCR_contract');
+    console.log('14_update_unorderedTCR_contract');
 
 
-//     deployer.deploy(BBUnOrderedTCR).then(function (rs) {
-//       unorderTCR = rs;
-//       return  AdminUpgradeabilityProxy.at(proxyAddressTCR).upgradeTo(unorderTCR.address);
-//    }).then(function(rs) {
-//     return deployer.deploy(BBTCRHelper);
-//    }).then(function (rs) {
-//      TCRHelper = rs;
-//      return  AdminUpgradeabilityProxy.at(proxyAddressTCRHelper).upgradeTo(TCRHelper.address);
-//  });
+    deployer.deploy(BBUnOrderedTCR).then(function (rs) {
+      unorderTCR = rs;
+      return  AdminUpgradeabilityProxy.at(proxyAddressTCR).upgradeTo(unorderTCR.address);
+   }).then(function(rs) {
+    return deployer.deploy(BBTCRHelper);
+   }).then(function (rs) {
+     TCRHelper = rs;
+     return  AdminUpgradeabilityProxy.at(proxyAddressTCRHelper).upgradeTo(TCRHelper.address);
+  }).then(function (rs) {
+    
+    return deployer.deploy(BBOToken);
+  });
 
-//    return;
+   return;
 
     deployer.deploy(BBTCRHelper).then(function (rs) {
         return BBTCRHelper.at(proxyAddressTCRHelper);

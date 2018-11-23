@@ -9,7 +9,7 @@ const BBOTest = artifacts.require("BBOTest");
 
 module.exports = async function(deployer) {
 
-   if(deployer.network_id == 777){
+   if(deployer.network_id == 333){
 
      let bbo = await BBOTest.at('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
      console.log('bbo', bbo.address);

@@ -6,7 +6,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 
 module.exports = function(deployer) {
 
-   if(deployer.network_id == 777){
+   if(deployer.network_id == 333){
       if(!DigitalContract.deployed()){
          var storageinstance ;
          var dinstance;
