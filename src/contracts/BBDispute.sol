@@ -79,7 +79,7 @@ contract BBDispute is BBStandard{
       address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
       if(winner == 0 || quorum == 50){
         // cancel poll
-        assert(voting.updatePoll(pID, true, 0, 0));
+        //assert(voting.updatePoll(pID, true, 0, 0));
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
@@ -202,7 +202,7 @@ contract BBDispute is BBStandard{
   function claimReward(uint256 jobID) public {
     uint256 pollID = getPollID(jobID);
     require(pollID > 0);
-    require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
+    //require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
     require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))!= true);
     (uint256 numReward,) = calcReward(pollID);
     require (numReward > 0);
