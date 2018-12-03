@@ -46,7 +46,7 @@ contract BBDispute is BBStandard{
     (uint256[] memory opts,) = votingHelper.getPollResult(getPollID(jobID));
     r = opts.length>2;
   }
-  function getPollID(uint256 jobID) internal constant returns(uint256 r){
+  function getPollID(uint256 jobID) public constant returns(uint256 r){
     r = bbs.getUint(BBLib.toB32(jobID,'POLL_ID'));
   }
   /**
@@ -204,7 +204,7 @@ contract BBDispute is BBStandard{
     require(pollID > 0);
     //require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
     require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))!= true);
-    (uint256 numReward,) = calcReward(pollID);
+    (uint256 numReward,) = calcReward(jobID);
     require (numReward > 0);
     // set claimed to true
     bbs.setBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender), true);
