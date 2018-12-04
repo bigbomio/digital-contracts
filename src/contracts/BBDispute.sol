@@ -217,8 +217,8 @@ contract BBDispute is BBStandard{
   *
   */
   function calcReward(uint256 jobID) constant public returns(uint256 numReward, bool win){
-    //if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
-      uint256 pollID = getPollID(jobID);
+    uint256 pollID = getPollID(jobID);
+    if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
       uint256 userVotes =  votingHelper.getNumPassingTokens(msg.sender, pollID);
       address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
       (bool isFinished,, uint256 winnerVotes, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pollID);
@@ -232,6 +232,6 @@ contract BBDispute is BBStandard{
         }
       }else
         win = hasVote;
-    //}
+    }
   }
 }
