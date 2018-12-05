@@ -42,12 +42,11 @@ contract BBDispute is BBStandard{
     address winner = bbs.getAddress(BBLib.toB32(jobID,'DISPUTE_WINNER'));
     r = (jobStatus == 6 && winner==address(0x0));
   }
-  function isAgaintsPoll(uint256 jobID) public constant returns(bool r){
-    uint256 pID = getPollID(jobID);
-    bytes32 proofHash = BBLib.toB32(jobID,'AGAINST_PROOF',pID);
-    r = (BBLib.toB32(bbs.getBytes(proofHash)) != BBLib.toB32(""));
+  function isAgaintsDispute(uint256 jobID) public constant returns(bool r){
+    (uint256[] memory opts,) = votingHelper.getPollResult(getPollID(jobID));
+    r = opts.length>2;
   }
-  function getPollID(uint256 jobID) internal constant returns(uint256 r){
+  function getPollID(uint256 jobID) public constant returns(uint256 r){
     r = bbs.getUint(BBLib.toB32(jobID,'POLL_ID'));
   }
   /**
@@ -58,7 +57,7 @@ contract BBDispute is BBStandard{
   function finalizeDispute(uint256 jobID) public
   {
     uint256 pID = getPollID(jobID);
-    (bool isFinished, uint256 winner,, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pID);
+    (bool isFinished, uint256 winner,,, uint256 quorum) = votingHelper.getPollWinner(pID);
     require(isDisputingJob(jobID)==true);
     address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
     require(creator!=address(0x0));
@@ -67,7 +66,7 @@ contract BBDispute is BBStandard{
     //TODO
     uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pID,creator));
     // check if not have against proof
-    if(!isAgaintsPoll(jobID)){      
+    if(!isAgaintsDispute(jobID)){      
       // set winner to creator 
       bbs.setAddress(BBLib.toB32(jobID, 'DISPUTE_WINNER'),creator);
       // refun staked for 
@@ -80,7 +79,7 @@ contract BBDispute is BBStandard{
       address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
       if(winner == 0 || quorum == 50){
         // cancel poll
-        assert(voting.updatePoll(pID, true, 0, 0));
+        //assert(voting.updatePoll(pID, true, 0, 0));
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
@@ -203,9 +202,9 @@ contract BBDispute is BBStandard{
   function claimReward(uint256 jobID) public {
     uint256 pollID = getPollID(jobID);
     require(pollID > 0);
-    require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
+    //require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
     require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))!= true);
-    (uint256 numReward, bool win) = calcReward(pollID);
+    (uint256 numReward,) = calcReward(jobID);
     require (numReward > 0);
     // set claimed to true
     bbs.setBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender), true);
@@ -218,8 +217,8 @@ contract BBDispute is BBStandard{
   *
   */
   function calcReward(uint256 jobID) constant public returns(uint256 numReward, bool win){
-    //if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
-      uint256 pollID = getPollID(jobID);
+    uint256 pollID = getPollID(jobID);
+    if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
       uint256 userVotes =  votingHelper.getNumPassingTokens(msg.sender, pollID);
       address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
       (bool isFinished,, uint256 winnerVotes, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pollID);
@@ -233,6 +232,6 @@ contract BBDispute is BBStandard{
         }
       }else
         win = hasVote;
-    //}
+    }
   }
 }

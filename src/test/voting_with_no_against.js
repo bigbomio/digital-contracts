@@ -63,11 +63,10 @@ var storageAddress = '';
 
 
 contract('Voting Test 2', async (accounts) => {
+
   it("initialize contract", async () => {
 
     // var filesrs = await ipfs.files.add(files);
-
-
     // jobHash = filesrs[0].hash;
     erc20 = await BBOTest.new({
       from: accounts[0]
@@ -478,7 +477,7 @@ contract('Voting Test 2', async (accounts) => {
 
       let bl = await getBalance(bbo, userB);
 
-      let isAgian = await votingRight.isAgaintsPoll(jobIDA, {
+      let isAgian = await votingRight.isAgaintsDispute(jobIDA, {
         from: userB
       });
 
