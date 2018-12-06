@@ -46,7 +46,7 @@ contract BBDispute is BBStandard{
     (uint256[] memory opts,) = votingHelper.getPollResult(getPollID(jobID));
     r = opts.length>2;
   }
-  function getPollID(uint256 jobID) internal constant returns(uint256 r){
+  function getPollID(uint256 jobID) public constant returns(uint256 r){
     r = bbs.getUint(BBLib.toB32(jobID,'POLL_ID'));
   }
   /**
@@ -79,7 +79,7 @@ contract BBDispute is BBStandard{
       address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
       if(winner == 0 || quorum == 50){
         // cancel poll
-        assert(voting.updatePoll(pID, true, 0, 0));
+        //assert(voting.updatePoll(pID, true, 0, 0));
         // refun money staked
         require(bbo.transfer(jobOwner,bboStake));
         require(bbo.transfer(freelancer,bboStake));
@@ -202,9 +202,9 @@ contract BBDispute is BBStandard{
   function claimReward(uint256 jobID) public {
     uint256 pollID = getPollID(jobID);
     require(pollID > 0);
-    require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
+    //require(bbs.getUint(BBLib.toB32(pollID ,'REVEAL_ENDDATE'))<=now);
     require(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))!= true);
-    (uint256 numReward,) = calcReward(pollID);
+    (uint256 numReward,) = calcReward(jobID);
     require (numReward > 0);
     // set claimed to true
     bbs.setBool(BBLib.toB32(pollID ,'REWARD_CLAIMED',msg.sender), true);
@@ -217,8 +217,8 @@ contract BBDispute is BBStandard{
   *
   */
   function calcReward(uint256 jobID) constant public returns(uint256 numReward, bool win){
-    //if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
-      uint256 pollID = getPollID(jobID);
+    uint256 pollID = getPollID(jobID);
+    if(bbs.getBool(BBLib.toB32(pollID ,'REWARD_CLAIMED', msg.sender))== false){
       uint256 userVotes =  votingHelper.getNumPassingTokens(msg.sender, pollID);
       address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
       (bool isFinished,, uint256 winnerVotes, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pollID);
@@ -232,6 +232,6 @@ contract BBDispute is BBStandard{
         }
       }else
         win = hasVote;
-    //}
+    }
   }
 }

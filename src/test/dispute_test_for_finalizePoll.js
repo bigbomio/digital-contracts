@@ -37,21 +37,6 @@ const files = [{
 var abi = require('ethereumjs-abi')
 var BN = require('bignumber.js')
 
-function formatValue(value) {
-  if (typeof (value) === 'number' || BN.isBigNumber(value)) {
-    return value.toString();
-  } else {
-    return value;
-  }
-}
-
-function encodeCall(name, args = [], rawValues = []) {
-  const values = rawValues.map(formatValue)
-  const methodId = abi.methodID(name, args).toString('hex');
-  const params = abi.rawEncode(args, values).toString('hex');
-  return '0x' + methodId + params;
-}
-
 var proxyAddressJob = '';
 var proxyAddressBid = '';
 var proxyAddressPayment = '';
@@ -63,7 +48,6 @@ var bboAddress = '';
 var storageAddress = '';
 
 contract('Dispute Test for finalizePoll', async (accounts) => {
-  return;
 
   it("initialize contract", async () => {
 
@@ -618,20 +602,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     });
   });
 
-  it("finalizePoll  ", async () => {
-    var userB = accounts[3];
 
-    let votingRight = await BBDispute.at(proxyAddressDispute);
- 
-    let l = await votingRight.finalizeDispute(jobIDA, {
-      from: userB
-    });
-    const jobIDz = l.logs.find(l => l.event === 'DisputeFinalized').args.jobID
-    //console.log(JSON.stringify(jobIDA));
-
-    assert.equal(JSON.stringify(jobIDA),JSON.stringify(jobIDz));
-
-  });
   
 
   it("claimReward  2", async () => {
@@ -677,7 +648,20 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
 
   });
 
+  it("finalizePoll  ", async () => {
+    var userB = accounts[3];
 
+    let votingRight = await BBDispute.at(proxyAddressDispute);
+ 
+    let l = await votingRight.finalizeDispute(jobIDA, {
+      from: userB
+    });
+    const jobIDz = l.logs.find(l => l.event === 'DisputeFinalized').args.jobID
+    //console.log(JSON.stringify(jobIDA));
+
+    assert.equal(JSON.stringify(jobIDA),JSON.stringify(jobIDz));
+
+  });
 
   it("[Fail] claimReward  Again ", async () => {
     try {

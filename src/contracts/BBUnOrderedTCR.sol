@@ -16,7 +16,7 @@ import './zeppelin/token/ERC20/ERC20.sol';
 
 contract BBUnOrderedTCR is BBStandard{
 	// events
-	event ItemApplied(uint256 indexed listID, bytes32 indexed itemHash, bytes data);
+	event ItemApplied(uint256 indexed listID, bytes32 indexed itemHash, bytes data, uint256 applicationEndDate);
     event Challenge(uint256 indexed listID, bytes32 indexed itemHash, uint256 pollID, address sender);
     //
     BBVoting public voting = BBVoting(0x0);
@@ -56,10 +56,11 @@ contract BBUnOrderedTCR is BBStandard{
         // save creator
         bbs.setAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'), msg.sender);
         // save application endtime
-        bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_ENDTIME'), block.timestamp.add(applicationDuration));
+        uint256 applicationEndDate = block.timestamp.add(applicationDuration);
+        bbs.setUint(BBLib.toB32('TCR', listID, itemHash, 'APPLICATION_ENDTIME'), applicationEndDate);
         bbs.setUint(BBLib.toB32('TCR',listID, itemHash,'STAGE'), 1);
         // emit event
-        emit ItemApplied(listID, itemHash, data);
+        emit ItemApplied(listID, itemHash, data, applicationEndDate);
     }
     
     // lay balance - min stake >= _amount // set lai stake
