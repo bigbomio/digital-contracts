@@ -6,7 +6,7 @@ const BBTCRHelper =  artifacts.require("BBTCRHelper");
 const BBVotingHelper =  artifacts.require("BBVotingHelper");
 const BBUnOrderedTCR = artifacts.require("BBUnOrderedTCR");
 const BBOToken = artifacts.require("BBOToken");
-
+const BBRating = artifacts.require("BBRating"); 
 
 var accounts;
 
@@ -15,7 +15,7 @@ var accounts;
 module.exports = async function (deployer) {
   
   console.log('deployer.network_id ', deployer.network_id);
-  if (deployer.network_id == 3) {
+  if (deployer.network_id == 33) {
 
     var admin = '0x83e5353fc26643c29b041a3b692c6335c97a9aed';
     var adminProxy = '0xa867a6a820928c64ffe3e30166481ec526d38bc5';
@@ -26,10 +26,19 @@ module.exports = async function (deployer) {
     var votingHelperProxy = '0xf013557b366e6a96dbcdef7fc4e2743beafcbb9e'
     var unorderTCR;
     var TCRHelper;
+    var rating;
     var TCRInstanceHelper;
+
+    var proxyBBRating = "0xb7786dd5e27926c9753e00dc582d1e707b147ceb";
 
     console.log('14_update_unorderedTCR_contract');
 
+    deployer.deploy(BBRating).then(function (rs) {
+      rating = rs;
+      return  AdminUpgradeabilityProxy.at(proxyBBRating).upgradeTo(rating.address);
+   });
+
+   return;
 
     deployer.deploy(BBUnOrderedTCR).then(function (rs) {
       unorderTCR = rs;

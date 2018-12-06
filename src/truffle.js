@@ -59,8 +59,8 @@ module.exports = {
     },
     rinkeby: {
       provider: new HDWalletProvider(privKeys, "https://rinkeby.infura.io/" + infura_apikey),
-      network_id: 3,
-      from: '0xb10ca39dfa4903ae057e8c26e39377cfb4989551', 
+      network_id: 4,
+      from: '0x83e5353fc26643c29b041a3b692c6335c97a9aed', 
       gas: 6800000
     },
 
