@@ -6,6 +6,8 @@
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBLib.sol';
+import './zeppelin/token/ERC20/ERC20.sol';
+
 
 /**
  * @title BBFreelancerPayment
@@ -16,6 +18,7 @@ contract BBFreelancerPayment is BBFreelancer{
   event PaymentAccepted(uint256 indexed jobID, address indexed sender);
   event PaymentRejected(uint256 indexed jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
   event DisputeFinalized(uint256 indexed jobID, address indexed winner);
+  event DepositMoney(address indexed sender, bytes32 indexed jobHash, address token, uint256 amount);
 
 
   // hirer ok with finish Job
@@ -132,4 +135,22 @@ contract BBFreelancerPayment is BBFreelancer{
 
     return true;
   } 
+
+  function depositMoney(bytes jobHash,  address token, uint256 amount) payable public {
+    address wallet = this;
+    require(amount > 0);
+    
+    if(token != address(0x0)) {
+      require(ERC20(token).transferFrom(msg.sender, address(this), amount));
+      uint256 lastDeposit = bbs.getUint(keccak256(abi.encodePacked(jobHash, msg.sender, 'TOKEN')));
+      lastDeposit = lastDeposit.add(amount);
+      bbs.setUint(keccak256(abi.encodePacked(jobHash, msg.sender, 'TOKEN')),lastDeposit);
+
+    }
+  
+    //msg.sender.transfer(amount);
+    
+    emit DepositMoney(msg.sender, keccak256(abi.encodePacked(jobHash)), token ,amount);
+
+  }
 }
