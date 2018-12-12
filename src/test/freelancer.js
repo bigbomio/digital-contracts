@@ -52,7 +52,7 @@ var proxyAddressPayment = '';
 var bboAddress = '';
 var storageAddress = '';
 contract('BBFreelancer Test', async (accounts) => {
-
+  
   it("initialize contract", async () => {
 
     // var filesrs = await ipfs.files.add(files);
@@ -189,6 +189,68 @@ contract('BBFreelancer Test', async (accounts) => {
   var jobIDM = 0;
   var jobIR = 0;
   var jobHashX = 'sadvsadjhkakaka';
+
+  async function getBalance(token, address) {
+    return await token.balanceOf(address, {
+      from: accounts[0]
+    });
+  }
+
+  it("test deposit money", async () => {
+    var userA = accounts[3];
+    let bbo = await BBOTest.at(bboAddress);  
+    let payment = await BBFreelancerPayment.at(proxyAddressPayment);
+
+    await bbo.approve(payment.address, 0, {
+      from: userA
+    });
+    await bbo.approve(payment.address, Math.pow(2, 255), {
+      from: userA
+    });
+
+    console.log('payment.address', payment.address);  
+
+    let eth =  await web3.eth.getBalance(userA);
+    console.log('balance UserA ETH before', web3.utils.fromWei(eth));
+
+    eth =  await web3.eth.getBalance(payment.address);
+    console.log('balance payment ETH before', web3.utils.fromWei(eth));
+
+    let blBBO = await getBalance(bbo, userA);
+    console.log('balace BBO before', blBBO);
+
+    let jobLog = await payment.depositMoney('jobhash', bbo.address, web3.utils.toWei('20'),{from : userA});
+
+    let jobIDx = jobLog.logs.find(l => l.event === 'DepositMoney').args;
+
+    console.log(JSON.stringify (jobIDx));
+
+    eth =  await web3.eth.getBalance(userA);
+    console.log('balance UserA ETH after', web3.utils.fromWei(eth));
+
+    eth =  await web3.eth.getBalance(payment.address);
+    console.log('balance payment ETH after', web3.utils.fromWei(eth));
+
+    blBBO = await getBalance(bbo, userA);
+    console.log('balace BBO after', blBBO);
+
+    jobLog = await payment.depositMoney('jobhash', '0x0', web3.utils.toWei('30'),{value : web3.utils.toWei('20'), from : userA});
+
+    jobIDx = jobLog.logs.find(l => l.event === 'DepositMoney').args;
+
+    console.log(JSON.stringify (jobIDx));
+
+    blBBO = await getBalance(bbo, userA);
+    console.log('balace BBO after', blBBO);
+
+    eth =  await web3.eth.getBalance(userA);
+    console.log('balance UserA ETH after 2', web3.utils.fromWei(eth));
+
+    eth =  await web3.eth.getBalance(payment.address);
+    console.log('balance payment ETH after 2', web3.utils.fromWei(eth));
+
+  });
+
   it("create new job", async () => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[0];
@@ -958,11 +1020,7 @@ var jobIDd = 0;
      assert(balanceex.toNumber() < balancee.toNumber());
   });
 
-  async function getBalance(token, address) {
-    return await token.balanceOf(address, {
-      from: accounts[0]
-    });
-  }
+  
 
 
   it("[Fail] UserD cancel job", async () => {
