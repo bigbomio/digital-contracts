@@ -13,7 +13,7 @@ import './zeppelin/token/ERC20/ERC20.sol';
  * @title BBFreelancerBid
  */
 contract BBFreelancerBid is BBFreelancer{
-
+  address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
@@ -137,7 +137,7 @@ contract BBFreelancerBid is BBFreelancer{
    * @param jobID Job ID
    * @param freelancer address of the freelancer
    */
-  function acceptBid(uint256 jobID, address freelancer) public 
+  function acceptBid(uint256 jobID, address freelancer) public payable
     isOwnerJob(jobID) 
     jobNotStarted(jobID)
     isNotCanceled(jobID){
@@ -163,8 +163,13 @@ contract BBFreelancerBid is BBFreelancer{
     } else if(bid - lastDeposit > 0) {
       //Storage amount of BBO that Job owner transferred to payment address
       bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
-      //Deposit more BBO
-      require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      // eth default address
+      if(tokenAddress==ETH_TOKEN_ADDRESS){
+        require (msg.value == (bid - lastDeposit));
+      }else{
+         //Deposit more token
+        require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      }
     } 
     emit BidAccepted(jobID, bid ,freelancer);
   }

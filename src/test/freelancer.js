@@ -183,6 +183,8 @@ contract('BBFreelancer Test', async (accounts) => {
       from: accounts[0]
     });
 
+    await payment.addToken(bboAddress, true,{ from: accounts[0]});
+
   });
 
   var jobID = 0;

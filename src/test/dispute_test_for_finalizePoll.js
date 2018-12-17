@@ -276,7 +276,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     await job.setPaymentContract(proxyAddressPayment, {
       from: accounts[0]
     });
-
+    await payment.addToken(bboAddress, true,{ from: accounts[0]});
   });
 
 
