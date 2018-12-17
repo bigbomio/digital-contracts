@@ -740,7 +740,7 @@ it("getPollWinner", async () => {
   it("finalizeExit", async () => {
     var fastForwardTime = 24 * 3600 * 20 +  10;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
-      return Helpers.sendPromise('evm_mine', []).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(async function () {
             
         let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
         
