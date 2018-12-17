@@ -277,6 +277,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
       from: accounts[0]
     });
     await payment.addToken(bboAddress, true,{ from: accounts[0]});
+    await payment.addToken('0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0', true,{ from: accounts[0]});
   });
 
 
