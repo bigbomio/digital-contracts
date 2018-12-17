@@ -133,6 +133,7 @@ contract('Voting Test', async (accounts) => {
     
 
     await bid.setPaymentContract(proxyAddressPayment, {from: accounts[0] });
+    await job.setPaymentContract(proxyAddressPayment, {from: accounts[0] });
 
 });
 

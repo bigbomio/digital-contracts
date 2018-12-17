@@ -273,6 +273,10 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
       from: accounts[0]
     });
 
+    await job.setPaymentContract(proxyAddressPayment, {
+      from: accounts[0]
+    });
+
   });
 
 
@@ -306,7 +310,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
   var pollID;
 
   it("create job with dispute 3", async () => {
-
+    console.log('bboAddress',bboAddress)
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[1];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
@@ -323,7 +327,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
 
     jobIDB = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
-
+// 
     l = await job.createJob(jobHash6 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
