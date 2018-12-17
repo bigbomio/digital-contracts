@@ -311,20 +311,20 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     var userA = accounts[1];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
-    let l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    let l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
     jobIDA = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
     expiredTime = parseInt(Date.now() / 1000) + 90 * 24 * 3600;
-    l = await job.createJob(jobHash5 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    l = await job.createJob(jobHash5 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 
     jobIDB = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
 
-    l = await job.createJob(jobHash6 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    l = await job.createJob(jobHash6 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 

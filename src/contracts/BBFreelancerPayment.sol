@@ -6,6 +6,8 @@
 pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBLib.sol';
+import './BBTCRHelper.sol';
+import './zeppelin/token/ERC20/ERC20.sol';
 
 /**
  * @title BBFreelancerPayment
@@ -17,7 +19,21 @@ contract BBFreelancerPayment is BBFreelancer{
   event PaymentRejected(uint256 indexed jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
   event DisputeFinalized(uint256 indexed jobID, address indexed winner);
 
+  BBTCRHelper public tcr = BBTCRHelper(0x0);
 
+  function setTCR(address tcraddress) public onlyOwner {
+    tcr = BBTCRHelper(tcraddress);
+  }
+
+  uint256 public tokenListID = 0;
+  function setTokenListID(uint256 id) public onlyOwner{
+    tokenListID = id;
+  }
+
+  function isWhiteList(address tokenAddress) public view returns(bool){
+    return true;
+  //return tcr.isWhitelisted(tokenListID, keccak256(abi.encodePacked(tokenAddress)));
+  }
   // hirer ok with finish Job
   /**
    * @dev 
@@ -31,8 +47,10 @@ contract BBFreelancerPayment is BBFreelancer{
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 9);
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
     uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
-    //TODO release funs
-    require(bbo.transfer(freelancer, bid));
+    //release funs
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+  
+    require(ERC20(tokenAddress).transfer(freelancer, bid));
 
     emit PaymentAccepted(jobID, msg.sender);
 
@@ -76,8 +94,9 @@ contract BBFreelancerPayment is BBFreelancer{
     }
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 5);
     uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
-    require(bbo.transfer(msg.sender, bid));
-
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+  
+    require(ERC20(tokenAddress).transfer(msg.sender, bid));
     emit PaymentClaimed(jobID, msg.sender);
 
   }
@@ -96,10 +115,12 @@ contract BBFreelancerPayment is BBFreelancer{
   function refundBBO(uint256 jobID) public  returns(bool) {
       address owner = bbs.getAddress(BBLib.toB32(jobID));
       uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID, owner, 'DEPOSIT'));
+      address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+    
       if(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true) {
           bbs.setUint(BBLib.toB32(jobID, owner,'DEPOSIT'), 0);
           if(lastDeposit > 0) {
-            return bbo.transfer(owner, lastDeposit);
+            return ERC20(tokenAddress).transfer(owner, lastDeposit);
           }else
             return true;
       } else {
@@ -107,7 +128,7 @@ contract BBFreelancerPayment is BBFreelancer{
         uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,freelancer)));
         require(bid > 0);
         require(lastDeposit > bid);
-        return bbo.transfer(owner, lastDeposit - bid);
+        return ERC20(tokenAddress).transfer(owner, lastDeposit - bid);
       }
 
   }
@@ -119,7 +140,8 @@ contract BBFreelancerPayment is BBFreelancer{
   function finalizeDispute(uint256 jobID)  public returns(bool) {
     require(bbs.getAddress(BBLib.toB32(jobID)) != 0x0);
     require(bbs.getBool(BBLib.toB32(jobID, 'PAYMENT_FINALIZED'))!=true);
-
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+    
     address winner = bbs.getAddress(BBLib.toB32(jobID, 'DISPUTE_WINNER'));
     require(winner!=address(0x0));
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
@@ -127,7 +149,7 @@ contract BBFreelancerPayment is BBFreelancer{
     uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
     require(winner==freelancer||winner==jobOwner);
     bbs.setBool(BBLib.toB32(jobID, 'PAYMENT_FINALIZED'), true);
-    require(bbo.transfer(winner, bid));
+    require(ERC20(tokenAddress).transfer(winner, bid));
     emit DisputeFinalized(jobID, winner);
 
     return true;

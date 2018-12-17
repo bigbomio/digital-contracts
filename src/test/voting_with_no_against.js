@@ -339,7 +339,7 @@ contract('Voting Test 2', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let  l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    let  l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 

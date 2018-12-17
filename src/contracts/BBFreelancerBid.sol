@@ -7,6 +7,8 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
+import './zeppelin/token/ERC20/ERC20.sol';
+
 /**
  * @title BBFreelancerBid
  */
@@ -21,6 +23,7 @@ contract BBFreelancerBid is BBFreelancer{
   function setPaymentContract(address paymentAddress) onlyOwner public {
     payment = BBFreelancerPayment(paymentAddress);
   }
+
 
 
   event BidCreated(uint256  indexed jobID, address indexed owner, uint256 bid, uint256 bidTime);
@@ -149,6 +152,8 @@ contract BBFreelancerBid is BBFreelancer{
     uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'));
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), freelancer);
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+    require(payment.isWhiteList(tokenAddress)==true);
     if(lastDeposit > bid) {
       //Refun BBO to job owner
       require(payment.refundBBO(jobID));
@@ -159,7 +164,7 @@ contract BBFreelancerBid is BBFreelancer{
       //Storage amount of BBO that Job owner transferred to payment address
       bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
       //Deposit more BBO
-      require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
     } 
     emit BidAccepted(jobID, bid ,freelancer);
   }
