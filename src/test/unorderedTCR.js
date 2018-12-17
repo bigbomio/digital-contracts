@@ -738,11 +738,18 @@ it("getPollWinner", async () => {
   });
 
   it("finalizeExit", async () => {
-    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-    
-    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
-      from: userC
+    var fastForwardTime = 24 * 3600 * 20 +  10;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(function () {
+            
+        let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+        
+        await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+          from: userC
+        });
+      });
     });
+
   });
 
   it("[Fail] finalizeExit again", async () => {
