@@ -19,7 +19,7 @@ contract BBFreelancerPayment is BBFreelancer{
   event PaymentRejected(uint256 indexed jobID, address indexed sender, uint reason, uint256 rejectedTimestamp);
   event DisputeFinalized(uint256 indexed jobID, address indexed winner);
   event PaymentTokenAdded(address indexed tokenAddress, bool isAdded);
-
+  event TokenDeposit(address indexed sender, address indexed tokenAddress, uint256 amount, uint256 indexed jobID);
   address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
   
   mapping(address => bool) private tokens;
@@ -29,6 +29,17 @@ contract BBFreelancerPayment is BBFreelancer{
     tokens[tokenAddress] = isAdded;
     emit PaymentTokenAdded(tokenAddress, isAdded);
   
+  }
+  function deposit(uint256 jobID, address tokenAddress, uint256 amount) public payable {
+    require(isWhiteList(tokenAddress)==true);
+    if(tokenAddress==ETH_TOKEN_ADDRESS){
+      require (amount==msg.value);
+    }else{
+      require(ERC20(tokenAddress).transferFrom(msg.sender, address(this), amount));
+    }
+    bbs.setUint(BBLib.toB32(jobID, msg.sender,'DEPOSIT'), amount);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 8);
+    emit TokenDeposit(msg.sender, tokenAddress, amount, jobID);
   }
 
   function isWhiteList(address tokenAddress) public view returns(bool){

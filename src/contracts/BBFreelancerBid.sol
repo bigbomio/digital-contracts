@@ -144,34 +144,9 @@ contract BBFreelancerBid is BBFreelancer{
     uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,freelancer)));
     require(bid > 0);
     require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) !=true);
-    return doAcceptBid(jobID, freelancer, bid);
-    
-  }
-
-  function doAcceptBid(uint256 jobID, address freelancer, uint256 bid) internal {
-    uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'));
     //update new freelancer
-    bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), freelancer);
-    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
-    require(payment.isWhiteList(tokenAddress)==true);
-    if(lastDeposit > bid) {
-      //Refun BBO to job owner
-      require(payment.refundBBO(jobID));
-      //Storage amount of BBO that Job owner transferred to payment address
-      bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
-      
-    } else if(bid - lastDeposit > 0) {
-      //Storage amount of BBO that Job owner transferred to payment address
-      bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
-      // eth default address
-      if(tokenAddress==ETH_TOKEN_ADDRESS){
-        require (msg.value == (bid - lastDeposit));
-      }else{
-         //Deposit more token
-        require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
-      }
-    } 
+    bbs.setAddress(BBLib.toB32(jobID,'FREELANCER'), freelancer);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 7);    
     emit BidAccepted(jobID, bid ,freelancer);
   }
-  
 }
