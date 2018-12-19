@@ -20,6 +20,7 @@ contract BBFreelancerPayment is BBFreelancer{
   event DisputeFinalized(uint256 indexed jobID, address indexed winner);
   event PaymentTokenAdded(address indexed tokenAddress, bool isAdded);
   event TokenDeposit(address indexed sender, address indexed tokenAddress, uint256 amount, uint256 indexed jobID);
+
   address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
   
   mapping(address => bool) private tokens;
@@ -30,14 +31,29 @@ contract BBFreelancerPayment is BBFreelancer{
     emit PaymentTokenAdded(tokenAddress, isAdded);
   
   }
+  function jobSync(uint256 jobID, address freelancer, address owner, uint256 status, 
+   address tokenAddress, bool isCancel, uint256 bid) public onlyOwner {
+    bbs.setAddress(BBLib.toB32(jobID), owner);
+    bbs.setAddress(BBLib.toB32(jobID, 'FREELANCER'), freelancer);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_BID'), bid);
+    bbs.setAddress(BBLib.toB32(jobID, 'TOKEN_ADDRESS'), tokenAddress);
+    bbs.setBool(BBLib.toB32(jobID,'JOB_CANCEL'), isCancel);
+  }
   function deposit(uint256 jobID, address tokenAddress, uint256 amount) public payable {
     require(isWhiteList(tokenAddress)==true);
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
+    uint256 status = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
+    require (status==7);
+    require (bid>0);
+    require (amount == bid);
     if(tokenAddress==ETH_TOKEN_ADDRESS){
       require (amount==msg.value);
     }else{
       require(ERC20(tokenAddress).transferFrom(msg.sender, address(this), amount));
     }
-    bbs.setUint(BBLib.toB32(jobID, msg.sender,'DEPOSIT'), amount);
+    // check amount > bid
+    // bbs.setUint(BBLib.toB32(jobID, 'DEPOSIT'), amount);
     bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 8);
     emit TokenDeposit(msg.sender, tokenAddress, amount, jobID);
   }
@@ -52,14 +68,14 @@ contract BBFreelancerPayment is BBFreelancer{
    */
   function acceptPayment(uint256 jobID)  public 
   isOwnerJob(jobID) {
+    //TODO freelancer address ??? && owner job
     uint256 status = bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS'));
     require(status >= 2);
     require(status <= 4);
     require(status != 9);
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 9);
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
-    uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
-    //release funs
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,'JOB_BID'));
     address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
     if(tokenAddress==ETH_TOKEN_ADDRESS){
        freelancer.transfer(bid);
@@ -76,6 +92,7 @@ contract BBFreelancerPayment is BBFreelancer{
    */
   function rejectPayment(uint256 jobID, uint reason) public 
   isOwnerJob(jobID) {
+    //TODO freelancer address ??? && owner job
     require(bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS')) == 2);
     require(reason > 0);
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 4);
@@ -93,6 +110,7 @@ contract BBFreelancerPayment is BBFreelancer{
    */
   function claimePayment(uint256 jobID) public
   {
+    //TODO freelancer address ??? && owner job
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
     address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
     require(msg.sender == freelancer || msg.sender == jobOwner);
@@ -107,7 +125,7 @@ contract BBFreelancerPayment is BBFreelancer{
       require(rejectedEndTimestamp <= now );
     }
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 5);
-    uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,'JOB_BID'));
     address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
     if(tokenAddress==ETH_TOKEN_ADDRESS){
        msg.sender.transfer(bid);
@@ -131,33 +149,18 @@ contract BBFreelancerPayment is BBFreelancer{
 
   function refundBBO(uint256 jobID) public  returns(bool) {
       address owner = bbs.getAddress(BBLib.toB32(jobID));
-      uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID, owner, 'DEPOSIT'));
+      uint256 bid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
       address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
     
-      if(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true) {
-          bbs.setUint(BBLib.toB32(jobID, owner,'DEPOSIT'), 0);
-          if(lastDeposit > 0) {
-            if(tokenAddress==ETH_TOKEN_ADDRESS){
-                owner.transfer(lastDeposit);
-                return true;
-            }else{
-              return ERC20(tokenAddress).transfer(owner, lastDeposit);
-            }
-          }else
-            return true;
-      } else {
-        address freelancer = bbs.getAddress(keccak256(abi.encodePacked(jobID, 'FREELANCER')));
-        uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,freelancer)));
-        require(bid > 0);
-        require(lastDeposit > bid);
-        if(tokenAddress==ETH_TOKEN_ADDRESS){
-            owner.transfer(lastDeposit - bid);
-            return true;
-        }else{
-            return ERC20(tokenAddress).transfer(owner, lastDeposit - bid);
-        }
-      }
+      require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true);
 
+      if(tokenAddress==ETH_TOKEN_ADDRESS)
+      {
+        owner.transfer(bid);
+        return true;
+      }else{
+        return ERC20(tokenAddress).transfer(owner, bid);
+      }
   }
 
   /**
@@ -173,7 +176,7 @@ contract BBFreelancerPayment is BBFreelancer{
     require(winner!=address(0x0));
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
     address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
-    uint256 bid = bbs.getUint(BBLib.toB32(jobID,freelancer));
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,'JOB_BID'));
     require(winner==freelancer||winner==jobOwner);
     bbs.setBool(BBLib.toB32(jobID, 'PAYMENT_FINALIZED'), true);
     if(tokenAddress==ETH_TOKEN_ADDRESS){
@@ -184,5 +187,6 @@ contract BBFreelancerPayment is BBFreelancer{
     emit DisputeFinalized(jobID, winner);
 
     return true;
-  } 
+  }
+
 }
