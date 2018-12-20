@@ -27,19 +27,19 @@ contract BBFreelancerJob is BBFreelancer {
   event JobCanceled(uint256 indexed jobID);
   event JobStarted(uint256 indexed jobID);
   event JobFinished(uint256 indexed jobID);
+  event JobStatus(uint256 indexed jobID, uint256 status);
 
   /**
    * @dev 
    * @param jobID Job ID
    */
-  function getJob(uint256 jobID) public view returns(address, uint256, uint256, bool, uint256, address){
+  function getJob(uint256 jobID) public view returns(address, uint256, uint256, uint256, address){
     address owner = bbs.getAddress(BBLib.toB32(jobID));
     uint256 expired = bbs.getUint(BBLib.toB32(jobID, 'JOB_EXPIRED'));
     uint256 budget = bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET'));
-    bool cancel = bbs.getBool(BBLib.toB32(jobID, 'JOB_CANCEL'));
     uint256 status = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
     address freelancer = bbs.getAddress(BBLib.toB32(jobID, 'FREELANCER'));
-    return (owner, expired, budget, cancel, status, freelancer);
+    return (owner, expired, budget, status, freelancer);
 
   }
 
@@ -101,7 +101,7 @@ contract BBFreelancerJob is BBFreelancer {
       uint timeStartJob = bbs.getUint(BBLib.toB32(jobID, 'JOB_STARTED_TIMESTAMP'));
       require(now > timeStartJob + bidTime);
     }
-    bbs.setBool(BBLib.toB32(jobID,'JOB_CANCEL'), true);
+    bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 3);
     //require(payment.refundBBO(jobID));
     emit JobCanceled(jobID);
   }
@@ -115,6 +115,7 @@ contract BBFreelancerJob is BBFreelancer {
   jobNotStarted(jobID)
   isFreelancerOfJob(jobID) {
     // set status to 1
+    require(bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS')) == 8); // require deposited
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 1);
     //Begin set time start job
     bbs.setUint(BBLib.toB32(jobID,'JOB_STARTED_TIMESTAMP'), now);
@@ -141,24 +142,24 @@ contract BBFreelancerJob is BBFreelancer {
       return bbs.getUint(BBLib.toB32(jobHash,'JOB_HASH'));
   }
 
-
-  function allowRating(address sender ,address  rateTo, uint256 jobID) public view returns(bool) {
-    address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
-    address freelancer = bbs.getAddress(BBLib.toB32(jobID, 'FREELANCER'));
-    if(sender != jobOwner && sender != freelancer) {
-      return false;
-    }
-    if(rateTo != jobOwner && rateTo != freelancer) {
-       return false;
-    }
-    if(sender == rateTo) {
-      return false;
-    }
-    uint256 jobStatus = bbs.getUint(BBLib.toB32(jobID ,'JOB_STATUS'));
-    if(jobStatus != 5 && jobStatus != 9) {
-       return false;
-    }
-    return true;
+  /**
+   * Job Status (set by chain?)
+   * 1. started (sidechain)  --> will call this function to set to on-chain
+   * 2. finished  (sidechain) --> will call this function to set to on-chain
+   * 3. cancelled (sidechain) --> will call this function to set to on-chain
+   * 4. payment rejected  (onchain)
+   * 5. payment claimed (onchain)
+   * 6. dispute started (onchain)
+   * 7. payment pending deposit (sidechain) --> will call this function to set to on-chain
+   * 8. payment deposited (onchain)
+   * 9. payment accepted (onchain)
+  **/
+  function updateJobStatus(uint256 jobID, uint256 status) public onlyOwner {
+    if(status!=4||status!=5||status!=8 || status != 6|| status != 9)
+      revert();
+    uint256 currentStatus = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
+    require(currentStatus != status);
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
+    emit JobStatus(jobID, status);
   }
-
 }

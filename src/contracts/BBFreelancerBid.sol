@@ -141,12 +141,12 @@ contract BBFreelancerBid is BBFreelancer{
     isOwnerJob(jobID) 
     jobNotStarted(jobID)
     isNotCanceled(jobID){
+    require(bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS')) != 8);
     uint256 bid = bbs.getUint(keccak256(abi.encodePacked(jobID,freelancer)));
     require(bid > 0);
-    require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) !=true);
     //update new freelancer
     bbs.setAddress(BBLib.toB32(jobID,'FREELANCER'), freelancer);
-    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 7);    
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 7);
     emit BidAccepted(jobID, bid ,freelancer);
   }
 }

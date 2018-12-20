@@ -39,7 +39,7 @@ contract BBFreelancer is BBStandard{
     _;
   }
   modifier isNotCanceled(uint256 jobID){
-    require(bbs.getBool(keccak256(abi.encodePacked(jobID, 'JOB_CANCEL'))) !=true);
+    require(bbs.getUint(keccak256(abi.encodePacked(jobID, 'JOB_STATUS'))) != 3);
     _;
   }
   
@@ -50,7 +50,7 @@ contract BBFreelancer is BBStandard{
       return (bbs.getUint(keccak256(abi.encodePacked(jobID, 'JOB_STATUS'))) != 0x0);
   }
   function isJobCancel(uint256 jobID) public view returns (bool) {
-      return bbs.getBool(keccak256(abi.encodePacked(jobID, 'JOB_CANCEL')));
+      return bbs.getBool(keccak256(abi.encodePacked(jobID, msg.sender, 'JOB_CANCEL')));
   }
   function isJobExpired(uint256 jobID) public view returns (bool) {
       return (now > bbs.getUint(keccak256(abi.encodePacked(jobID, 'JOB_EXPIRED'))));

@@ -20,6 +20,8 @@ contract BBFreelancerPayment is BBFreelancer{
   event DisputeFinalized(uint256 indexed jobID, address indexed winner);
   event PaymentTokenAdded(address indexed tokenAddress, bool isAdded);
   event TokenDeposit(address indexed sender, address indexed tokenAddress, uint256 amount, uint256 indexed jobID);
+  event JobStatus(uint256 indexed jobID, uint256 status);
+  event JobInit(uint256 indexed jobID, address freelancer, address owner, uint256 status, address tokenAddress, uint256 bid);
 
   address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
   
@@ -31,30 +33,65 @@ contract BBFreelancerPayment is BBFreelancer{
     emit PaymentTokenAdded(tokenAddress, isAdded);
   
   }
-  function jobSync(uint256 jobID, address freelancer, address owner, uint256 status, 
-   address tokenAddress, bool isCancel, uint256 bid) public onlyOwner {
+  /** will call when deposited job **/
+  function initJob(uint256 jobID, address freelancer, address owner, uint256 status, 
+   address tokenAddress, uint256 bid) public onlyOwner {
     bbs.setAddress(BBLib.toB32(jobID), owner);
     bbs.setAddress(BBLib.toB32(jobID, 'FREELANCER'), freelancer);
     bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
     bbs.setUint(BBLib.toB32(jobID, 'JOB_BID'), bid);
     bbs.setAddress(BBLib.toB32(jobID, 'TOKEN_ADDRESS'), tokenAddress);
-    bbs.setBool(BBLib.toB32(jobID,'JOB_CANCEL'), isCancel);
+    emit JobInit(jobID, freelancer, owner, status, tokenAddress, bid);
   }
+  /**
+   * Job Status (set by chain?)
+   * 1. started (sidechain)  --> will call this function to set to on-chain
+   * 2. finished  (sidechain) --> will call this function to set to on-chain
+   * 3. cancelled (sidechain) --> will call this function to set to on-chain
+   * 4. payment rejected  (onchain)
+   * 5. payment claimed (onchain)
+   * 6. dispute started (onchain)
+   * 7. payment pending deposit (sidechain) --> will call this function to set to on-chain
+   * 8. payment deposited (onchain)
+   * 9. payment accepted (onchain)
+  **/
+  function updateJobStatus(uint256 jobID, uint256 status) public onlyOwner {
+    if(status!=1||status!=2||status!=8 || status != 3)
+      revert();
+    uint256 currentStatus = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
+    require(currentStatus != status);
+    // if status change to start -> require currentStatus is deposited
+    if(status == 1)
+      require(currentStatus==8);
+    // if status change to finished -> require currentStatus is started
+    if(status == 2)
+      require(currentStatus==1);
+    // if status change to deposited -> require currentStatus is pending deposit
+    // require deposit balance >= job bid
+    if(status == 8){
+      require(currentStatus==7);
+      address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+      uint256 jobDeposited = bbs.getUint(BBLib.toB32(jobID, tokenAddress ,'DEPOSIT'));
+      uint256 jobBid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
+      require (jobDeposited>=jobBid);
+    }
+    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
+    emit JobStatus(jobID, status);
+  }
+  // 
   function deposit(uint256 jobID, address tokenAddress, uint256 amount) public payable {
+    uint256 currentStatus = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
+    require(currentStatus == 0 || currentStatus == 7);
     require(isWhiteList(tokenAddress)==true);
-    uint256 bid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
-    uint256 status = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
-    require (status==7);
-    require (bid>0);
-    require (amount == bid);
+    require(amount > 0);
     if(tokenAddress==ETH_TOKEN_ADDRESS){
       require (amount==msg.value);
     }else{
       require(ERC20(tokenAddress).transferFrom(msg.sender, address(this), amount));
     }
-    // check amount > bid
-    // bbs.setUint(BBLib.toB32(jobID, 'DEPOSIT'), amount);
-    bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), 8);
+    uint256 currentBalance = bbs.getUint(BBLib.toB32(jobID, tokenAddress ,'DEPOSIT'));
+    bbs.setUint(BBLib.toB32(jobID, tokenAddress ,'DEPOSIT'), currentBalance.add(amount));
+    uint256 jobBid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
     emit TokenDeposit(msg.sender, tokenAddress, amount, jobID);
   }
 
@@ -73,6 +110,7 @@ contract BBFreelancerPayment is BBFreelancer{
     require(status >= 2);
     require(status <= 4);
     require(status != 9);
+    require(status != 3);
     bbs.setUint(BBLib.toB32(jobID,'JOB_STATUS'), 9);
     address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
     uint256 bid = bbs.getUint(BBLib.toB32(jobID,'JOB_BID'));
@@ -84,6 +122,34 @@ contract BBFreelancerPayment is BBFreelancer{
     }
     emit PaymentAccepted(jobID, msg.sender);
 
+  }
+  function refundPayment(uint256 jobID) public 
+  isOwnerJob(jobID){
+    uint256 bid = bbs.getUint(BBLib.toB32(jobID,'JOB_BID'));
+    uint256 status = bbs.getUint(BBLib.toB32(jobID,'JOB_STATUS'));
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+    uint256 currentBalance = bbs.getUint(BBLib.toB32(jobID, tokenAddress ,'DEPOSIT'));
+    require(bid > 0);
+    require(status != 7);
+    //cancelled
+    if(status == 3){
+      require(currentBalance > 0);
+      bbs.setUint(BBLib.toB32(jobID, tokenAddress ,'DEPOSIT'), 0);
+      if(tokenAddress==ETH_TOKEN_ADDRESS){
+         msg.sender.transfer(currentBalance);
+      }else{
+        require(ERC20(tokenAddress).transfer(msg.sender, currentBalance));
+      }
+    }else{
+      require(currentBalance > bid);
+      uint256 amount = currentBalance.sub(bid);
+      bbs.setUint(BBLib.toB32(jobID, tokenAddress ,'DEPOSIT'), bid);
+      if(tokenAddress==ETH_TOKEN_ADDRESS){
+         msg.sender.transfer(amount);
+      }else{
+        require(ERC20(tokenAddress).transfer(msg.sender, amount));
+      }
+    }
   }
   // hirer not ok with finish Job
   /**
@@ -147,21 +213,21 @@ contract BBFreelancerPayment is BBFreelancer{
   }
 
 
-  function refundBBO(uint256 jobID) public  returns(bool) {
-      address owner = bbs.getAddress(BBLib.toB32(jobID));
-      uint256 bid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
-      address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+  // function refundBBO(uint256 jobID) public  returns(bool) {
+  //     address owner = bbs.getAddress(BBLib.toB32(jobID));
+  //     uint256 bid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
+  //     address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
     
-      require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true);
+  //     require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true);
 
-      if(tokenAddress==ETH_TOKEN_ADDRESS)
-      {
-        owner.transfer(bid);
-        return true;
-      }else{
-        return ERC20(tokenAddress).transfer(owner, bid);
-      }
-  }
+  //     if(tokenAddress==ETH_TOKEN_ADDRESS)
+  //     {
+  //       owner.transfer(bid);
+  //       return true;
+  //     }else{
+  //       return ERC20(tokenAddress).transfer(owner, bid);
+  //     }
+  // }
 
   /**
    * @dev finalize Dispute
