@@ -213,22 +213,6 @@ contract BBFreelancerPayment is BBFreelancer{
   }
 
 
-  // function refundBBO(uint256 jobID) public  returns(bool) {
-  //     address owner = bbs.getAddress(BBLib.toB32(jobID));
-  //     uint256 bid = bbs.getUint(BBLib.toB32(jobID, 'JOB_BID'));
-  //     address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
-    
-  //     require(bbs.getBool(BBLib.toB32(jobID,'JOB_CANCEL')) == true);
-
-  //     if(tokenAddress==ETH_TOKEN_ADDRESS)
-  //     {
-  //       owner.transfer(bid);
-  //       return true;
-  //     }else{
-  //       return ERC20(tokenAddress).transfer(owner, bid);
-  //     }
-  // }
-
   /**
    * @dev finalize Dispute
    * @param jobID The job ID 
