@@ -1,16 +1,18 @@
 # Ropsten Testnet
 
 ```javascript
-var proxyAddressJob = '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1'
-var proxyAddressBid = '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4'
-var proxyAddressPayment = '0x253f112b946a72a008343d5bccd14e04288ca45c'
-var storageAddress = '0x99a2c9bc3793cc72a7a9b352e97deece4f4961c7'
+	 var proxyAddressJob = '0x0c31cb2173d03321f2f167328333eaf2e4d13a8e'
+     var proxyAddressBid = '0x086f13456f962f0363a1c684b3ae3329d3b2676f'
+     var proxyAddressPayment = '0xf5cf17e2059b78ca9012475309c296c4e6c8a79c'
+     var storageAddress = '0xb83d8faa19b3bd03d200e4eb9f985ac247497726'
+     var proxyFactAddress = '0xf3f2550093c8f33d5a5efcd01e13907956bd4d00'
+     BBParams: 0xda452218a3c7521f7de4aa1a1e9411998d77e468
+     paramsProxy 0x76ec7e437e946b07f3a78928a51d36cdcf447f0c
+     disputeProxy 0xd3471fd83e7f17f5b39792ed35ded27582fc11f6
+     votingProxy 0x13d149ff5b9bdac07ddc776f7baf5ac7daa83510
+     votingHelperProxy 0x457b7c89bac3e5bd35db5f80cf78cab7ad1207b5
+     proxyRatingAddress 0xe177b6568e4a62f0b8ae3e145f222d411926034e
 
-var proxyFactAddress = '0xac141d2fa2740bd57e5c035a811b6fb6cceb4b71'
-var paramsProxy = '0xc0647055b50dce8751908bfbd7f1d219ed592d6f'
-var disputeProxy = '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e'
-var votingProxy = '0xc7252214d78b15f37b94ae73027419a9f275c36f'
-var bbo = '0x1d893910d30edc1281d97aecfe10aefeabe0c41b'
-var votingHelperProxy = '0x771911025b4eafb6395042b7dca728b275e5d8c0'
+	 var bbo = '0x1d893910d30edc1281d97aecfe10aefeabe0c41b'
 
 ```
