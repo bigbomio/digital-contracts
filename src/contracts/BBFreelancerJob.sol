@@ -43,7 +43,6 @@ contract BBFreelancerJob is BBFreelancer {
 
   }
 
-
   /**
    * @dev 
    * @param jobHash Job Hash

@@ -20,7 +20,7 @@ contract BBFreelancerPayment is BBFreelancer{
   event DisputeFinalized(uint256 indexed jobID, address indexed winner);
   event PaymentTokenAdded(address indexed tokenAddress, bool isAdded);
 
-  address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
+  address constant ETH_TOKEN_ADDRESS  = address(0x00eEeEEEeEEeEEEeEeeeEeEEeeEeeeeEEEeEEbb0);
   
   mapping(address => bool) private tokens;
   function addToken(address tokenAddress, bool isAdded) public onlyOwner {
@@ -29,6 +29,11 @@ contract BBFreelancerPayment is BBFreelancer{
     tokens[tokenAddress] = isAdded;
     emit PaymentTokenAdded(tokenAddress, isAdded);
   
+  }
+
+   /// @dev Fallback function allows to deposit ether.
+  function () public payable
+  {
   }
 
   function isWhiteList(address tokenAddress) public view returns(bool){
@@ -174,4 +179,7 @@ contract BBFreelancerPayment is BBFreelancer{
 
     return true;
   } 
+  function getToken(uint256 jobID) public view returns(address tokenAddress){
+    tokenAddress = bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+  }
 }

@@ -13,7 +13,7 @@ import './zeppelin/token/ERC20/ERC20.sol';
  * @title BBFreelancerBid
  */
 contract BBFreelancerBid is BBFreelancer{
-  address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
+  address constant ETH_TOKEN_ADDRESS  = address(0x00eEeEEEeEEeEEEeEeeeEeEEeeEeeeeEEEeEEbb0);
   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
@@ -29,7 +29,6 @@ contract BBFreelancerBid is BBFreelancer{
   event BidCreated(uint256  indexed jobID, address indexed owner, uint256 bid, uint256 bidTime);
   event BidCanceled(uint256 indexed jobID, address indexed owner);
   event BidAccepted(uint256 indexed jobID, uint256 bid, address indexed freelancer);
-
 
   // freelancer bid job
   /** 
@@ -166,8 +165,10 @@ contract BBFreelancerBid is BBFreelancer{
       // eth default address
       if(tokenAddress==ETH_TOKEN_ADDRESS){
         require (msg.value == (bid - lastDeposit));
+        address(payment).transfer(msg.value);
       }else{
          //Deposit more token
+        require(msg.value==0);
         require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
       }
     } 
