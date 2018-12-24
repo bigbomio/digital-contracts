@@ -21,7 +21,7 @@ contract BBFreelancerPayment is BBFreelancer{
   event PaymentTokenAdded(address indexed tokenAddress, bool isAdded);
   event TokenDeposit(address indexed sender, address indexed tokenAddress, uint256 amount, uint256 indexed jobID);
   event JobStatus(uint256 indexed jobID, uint256 status);
-  event JobInit(uint256 indexed jobID, address freelancer, address owner, uint256 status, address tokenAddress, uint256 bid);
+  event JobInit(uint256 indexed jobID, address freelancer, address owner, uint256 status, address tokenAddress, uint256 bid, uint256 blockNumber);
 
   address constant ETH_TOKEN_ADDRESS  = address(0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0);
   
@@ -35,13 +35,17 @@ contract BBFreelancerPayment is BBFreelancer{
   }
   /** will call when deposited job **/
   function initJob(uint256 jobID, address freelancer, address owner, uint256 status, 
-   address tokenAddress, uint256 bid) public onlyOwner {
+   address tokenAddress, uint256 bid, uint256 blockNumber) public onlyOwner {
+    uint256 lastSync = bbs.getUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'));
+    require(blockNumber > lastSync);
+    require(bbs.getAddress(BBLib.toB32(jobID))==address(0x0));
+    bbs.setUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'), blockNumber);
     bbs.setAddress(BBLib.toB32(jobID), owner);
     bbs.setAddress(BBLib.toB32(jobID, 'FREELANCER'), freelancer);
     bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
     bbs.setUint(BBLib.toB32(jobID, 'JOB_BID'), bid);
     bbs.setAddress(BBLib.toB32(jobID, 'TOKEN_ADDRESS'), tokenAddress);
-    emit JobInit(jobID, freelancer, owner, status, tokenAddress, bid);
+    emit JobInit(jobID, freelancer, owner, status, tokenAddress, bid, blockNumber);
   }
   /**
    * Job Status (set by chain?)
@@ -55,7 +59,9 @@ contract BBFreelancerPayment is BBFreelancer{
    * 8. payment deposited (onchain)
    * 9. payment accepted (onchain)
   **/
-  function updateJobStatus(uint256 jobID, uint256 status) public onlyOwner {
+  function updateJobStatus(uint256 jobID, uint256 status, uint256 blockNumber) public onlyOwner {
+    uint256 lastSync = bbs.getUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'));
+    require(blockNumber > lastSync);
     if(status!=1||status!=2||status!=8 || status != 3)
       revert();
     uint256 currentStatus = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
@@ -76,6 +82,7 @@ contract BBFreelancerPayment is BBFreelancer{
       require (jobDeposited>=jobBid);
     }
     bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
+    bbs.setUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'), blockNumber);
     emit JobStatus(jobID, status);
   }
   // 
@@ -238,5 +245,7 @@ contract BBFreelancerPayment is BBFreelancer{
 
     return true;
   }
-
+  function getLatestSyncBlockNumber(uint256 jobID)public view returns(uint256 blockNumber){
+    blockNumber = bbs.getUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'));
+  }
 }

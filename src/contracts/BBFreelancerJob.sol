@@ -154,12 +154,17 @@ contract BBFreelancerJob is BBFreelancer {
    * 8. payment deposited (onchain)
    * 9. payment accepted (onchain)
   **/
-  function updateJobStatus(uint256 jobID, uint256 status) public onlyOwner {
+  function updateJobStatus(uint256 jobID, uint256 status, uint256 blockNumber) public onlyOwner {
+    uint256 lastSync = bbs.getUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'));
     if(status!=4||status!=5||status!=8 || status != 6|| status != 9)
       revert();
     uint256 currentStatus = bbs.getUint(BBLib.toB32(jobID, 'JOB_STATUS'));
     require(currentStatus != status);
     bbs.setUint(BBLib.toB32(jobID, 'JOB_STATUS'), status);
+    bbs.setUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'), blockNumber);
     emit JobStatus(jobID, status);
+  }
+  function getLatestSyncBlockNumber(uint256 jobID)public view returns(uint256 blockNumber){
+    blockNumber = bbs.getUint(BBLib.toB32(jobID, 'BLOCK_NUMBER'));
   }
 }
