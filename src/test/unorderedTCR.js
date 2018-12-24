@@ -249,13 +249,14 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("set & get params", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
+     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  50e18, 24 * 60 * 60,{
       from: userA
     });
 
      await TCRHelper.getListParams(listID_0,{
       from: userA
     });
+
 
     return true;    
   });
@@ -534,7 +535,7 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    assert(c3 == false);
+    assert(c3 == true);
   });
 
   it("updateStatus resolveChallenge in draw voting", async () => {
