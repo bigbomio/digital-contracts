@@ -58,7 +58,7 @@ module.exports = {
       gas: 6800000
     },
     rinkeby: {
-      provider: new HDWalletProvider(privKeys, "https://rinkeby.infura.io/" + infura_apikey),
+      provider: new HDWalletProvider("52f0d9c78c406446a465651010e23766f47bc13dc19bd7ca30a10ac1d15ce7e4", "https://rinkeby.infura.io/" + infura_apikey),
       network_id: 4,
       from: '0x83e5353fc26643c29b041a3b692c6335c97a9aed', 
       gas: 6800000
@@ -79,13 +79,13 @@ module.exports = {
       network_id: 777, // Match any network id
     }
   },
-  mocha: {
-    reporter: 'eth-gas-reporter',
-    reporterOptions : {
-      currency: 'USD',
-      gasPrice: 21
-    }
-  },
+  // mocha: {
+  //   reporter: 'eth-gas-reporter',
+  //   reporterOptions : {
+  //     currency: 'USD',
+  //     gasPrice: 21
+  //   }
+  // },
 
 
 };

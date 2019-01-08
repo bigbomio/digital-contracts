@@ -84,3 +84,17 @@ src/coverage.json
 src/coverage.json
 src/coverage.json
 src/coverage.json
+src/contracts/BBDispute.sol
+src/contracts/BBFreelancer.sol
+src/contracts/BBFreelancerBid.sol
+src/contracts/BBFreelancerJob.sol
+src/contracts/BBFreelancerPayment.sol
+src/contracts/BBVoting.sol
+src/migrations/16_initial_bbexpertHash_contract.js
+src/migrations/72_initial_freelancer_contract_rinkerby.js
+src/test/digitalcontract.js
+src/test/dispute_test_for_finalizePoll.js
+src/test/freelancer.js
+src/test/unorderedTCR.js
+src/test/voting.js
+src/test/voting_with_no_against.js
