@@ -38,8 +38,6 @@ var proxyAddressParams = '';
 var bboAddress = '';
 var storageAddress = '';
 contract('Voting Test', async (accounts) => {
-    return;
-
   it("initialize  contract", async () => {
     var erc20 = await BBOTest.new({from: accounts[0]});
     bboAddress = erc20.address;

@@ -44,7 +44,7 @@ function encodeCall(name, args = [], rawValues = []) {
 
 
 contract('BigbomDigitalContract Test', async (accounts) => {
-  return;
+
   it("user A sign first contract", async () => {
 
      // var filesrs = await ipfs.files.add(files);

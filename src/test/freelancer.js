@@ -52,7 +52,6 @@ var proxyAddressPayment = '';
 var bboAddress = '';
 var storageAddress = '';
 contract('BBFreelancer Test', async (accounts) => {
-  return;
 
   it("initialize contract", async () => {
 

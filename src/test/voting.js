@@ -69,8 +69,7 @@ var pollID;
 var optionID;
 
 contract('Dispute Test', async (accounts) => {
-  return;
-
+  
   it("initialize contract", async () => {
 
     // var filesrs = await ipfs.files.add(files);
