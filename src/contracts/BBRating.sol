@@ -9,7 +9,7 @@ contract BBRating is BBStandard {
     event Rating(uint256 jobID,  address  whoRate, address indexed rateToAddress, uint256 totalStar, uint256 totalUser ,uint256 star, bytes commentHash);
 
     
-    function allowRating(address sender, address rateToAddress, uint256 jobID) public view returns(bool) {
+    function allowRating(address sender, address rateToAddress, uint256 jobID) private view returns(bool) {
 
         address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
         address freelancer = bbs.getAddress(BBLib.toB32(jobID, 'FREELANCER'));

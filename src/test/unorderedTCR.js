@@ -34,6 +34,8 @@ var proxyAddressTCR = '';
 var proxyAddressTCRHelper = '';
 
 contract('BBUnOrderedTCR Test', async (accounts) => {
+  return;
+
   it("initialize  contract", async () => {
 
     var erc20 = await BBOTest.new({

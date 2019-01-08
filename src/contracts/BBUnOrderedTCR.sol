@@ -40,7 +40,7 @@ contract BBUnOrderedTCR is BBStandard{
 
     //Lam sao user bi remove, kiem tra so deposit
     function depositToken(uint256 listID, bytes32 itemHash, uint amount) public returns(bool) {
-        (,,, uint256 minStake,,) = tcrHelper.getListParams(listID);
+        (,,, uint256 minStake) = tcrHelper.getListParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked.add(amount) >= minStake);
         require ( getERC20(listID).transferFrom(msg.sender, address(this), amount));
@@ -51,7 +51,7 @@ contract BBUnOrderedTCR is BBStandard{
     	//TODO add index of item in the list
         require(tcrHelper.canApply(listID,itemHash, msg.sender));
         //
-    	(uint256 applicationDuration,,,,,) = tcrHelper.getListParams(listID);
+    	(uint256 applicationDuration,,,) = tcrHelper.getListParams(listID);
         require(depositToken(listID, itemHash,amount));
         // save creator
         bbs.setAddress(BBLib.toB32('TCR',listID, itemHash, 'OWNER'), msg.sender);
@@ -68,7 +68,7 @@ contract BBUnOrderedTCR is BBStandard{
     	//TODO allow withdraw unlocked token
         require (tcrHelper.isOwnerItem(listID, itemHash, msg.sender));
 
-        (,,, uint256 minStake,,) = tcrHelper.getListParams(listID);
+        (,,, uint256 minStake) = tcrHelper.getListParams(listID);
         uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));
         require(staked - minStake >= _amount);
 
@@ -103,7 +103,7 @@ contract BBUnOrderedTCR is BBStandard{
         require(bbs.getUint(BBLib.toB32('TCR',listID, itemHash,'STAGE')) != 2);
         // require deposit token        
 
-        (, uint256 commitDuration, uint256 revealDuration, uint256 minStake,,) = tcrHelper.getListParams(listID);
+        (, uint256 commitDuration, uint256 revealDuration, uint256 minStake) = tcrHelper.getListParams(listID);
         require ( getERC20(listID).transferFrom(msg.sender, address(this), minStake));
         
         pollID = voting.startPoll(_data, 0 , commitDuration, revealDuration);
