@@ -737,13 +737,13 @@ it("getPollWinner", async () => {
     });
   });
 
-  it("finalizeExit", async () => {
-    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+  // it("finalizeExit", async () => {
+  //   let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
     
-    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
-      from: userC
-    });
-  });
+  //   await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+  //     from: userC
+  //   });
+  // });
 
   it("[Fail] finalizeExit again", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
