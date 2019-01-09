@@ -8,10 +8,10 @@ var ipfs = ipfsAPI('ipfs.infura.io', '5001', {
 
 var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
-const BBWrapMainChain = artifacts.require("BBWrapMainChain");
+const BBWrap = artifacts.require("BBWrap");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
-
+const BBOTest = artifacts.require("BBOTest");
 
 const files = [{
   path: 'README.md',
@@ -36,11 +36,18 @@ function encodeCall(name, args = [], rawValues = []) {
   return '0x' + methodId + params;
 }
 
-var proxyAddressWrapMainChain = '';
+var proxyAddressWrap = '';
+var tokenAddress = ';'
+var ether_address = '0x00eEeEEEeEEeEEEeEeeeEeEEeeEeeeeEEEeEEbb0'; 
 
 contract('BBWrap Main Chain Test', async (accounts) => {
   
   it("Initialize contract", async () => {
+
+    erc20 = await BBOTest.new({
+      from: accounts[0]
+    });
+    tokenAddress = erc20.address;
 
 
     let storage = await BBStorage.new({
@@ -49,7 +56,7 @@ contract('BBWrap Main Chain Test', async (accounts) => {
 
     storageAddress = storage.address;
     // create bb contract
-    let wrapMainChain = await BBWrapMainChain.new({
+    let wrapContract = await BBWrap.new({
       from: accounts[0]
     });
    
@@ -60,44 +67,84 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     // create proxy to docsign
     const {
       logs
-    } = await proxyFact.createProxy(accounts[8], wrapMainChain.address, {
+    } = await proxyFact.createProxy(accounts[8], wrapContract.address, {
       from: accounts[0]
     });
-    proxyAddressWrapMainChain = logs.find(l => l.event === 'ProxyCreated').args.proxy
+    proxyAddressWrap = logs.find(l => l.event === 'ProxyCreated').args.proxy
 
 
     // set admin to storage
-    await storage.addAdmin(proxyAddressWrapMainChain, true, {
+    await storage.addAdmin(proxyAddressWrap, true, {
       from: accounts[0]
     });
    
-    let wrapMainChainInstance = await BBWrapMainChain.at(proxyAddressWrapMainChain);
-    await wrapMainChainInstance.transferOwnership(accounts[0], {
+    let wrapInstance = await BBWrap.at(proxyAddressWrap);
+    await wrapInstance.transferOwnership(accounts[0], {
       from: accounts[0]
     });
-    await wrapMainChainInstance.setStorage(storage.address, {
+    await wrapInstance.setStorage(storage.address, {
       from: accounts[0]
     });
-    await wrapMainChainInstance.addAdmin(accounts[1],true, {
+    await wrapInstance.addAdmin(accounts[1],true, {
         from: accounts[0]
       });
+
+
+    let tokenEther = await BBOTest.at(tokenAddress);
+    await tokenEther.transfer(accounts[1], 100000e18, {
+      from: accounts[0]
+    });
+    await tokenEther.transfer(accounts[2], 100000e18, {
+      from: accounts[0]
+    });
+    await tokenEther.transfer(accounts[3], 100000e18, {
+      from: accounts[0]
+    });
+    await tokenEther.transfer(accounts[4], 100000e18, {
+      from: accounts[0]
+    });
+
+    await tokenEther.transfer(proxyAddressWrap, 100000e18, {
+      from: accounts[0]
+    });
   
     });
 
 
+    it("Set Token in side-chain", async () => {
+      let wrapContract = await BBWrap.at(proxyAddressWrap);
+      let l = await wrapContract.setToken(tokenAddress,'TOKEN_ETHER', {from : accounts[1]});
+      const token = l.logs.find(l => l.event === 'SetTokenSideChain').args.token;
+      
+      assert.equal(token, tokenAddress);
+    });
+
+    it("[Fail] Not Admin Set Token in side-chain", async () => {
+      let wrapContract = await BBWrap.at(proxyAddressWrap);
+      try {
+        await wrapContract.setToken(tokenAddress,'TOKEN_ETHER', {from : accounts[3]});
+        console.log('Not Admin Set Token in side-chain OK');
+        return false;
+      } catch(e) {
+        return true;
+      }
+      
+    });
+   
+
   it("Deposit Ether", async () => {
 
-    let wrapMainChain = await BBWrapMainChain.at(proxyAddressWrapMainChain);
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
      
     let l =  await web3.eth.sendTransaction({
         from: accounts[3],
-        to: wrapMainChain.address,
+        to: wrapContract.address,
         value: web3.utils.toWei('9', "ether")
     });
 
     await web3.eth.sendTransaction({
         from: accounts[4],
-        to: wrapMainChain.address,
+        to: wrapContract.address,
         value: web3.utils.toWei('7', "ether")
     });
 
@@ -105,13 +152,47 @@ contract('BBWrap Main Chain Test', async (accounts) => {
 
   });
 
+  it("Mint Token in side-chain", async () => {
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+
+    let l = await wrapContract.mintToken(accounts[3], 99e18,'TOKEN_ETHER', 'txhashxxxx', {from : accounts[1]});
+    const receiverAddress = l.logs.find(l => l.event === 'MintTokenSideChain').args.receiverAddress;
+    assert.equal(receiverAddress, accounts[3]);
+  });
+
+
+  it("Deposit Token in side-chain", async () => {
+
+    let etherToken = await BBOTest.at(tokenAddress);
+
+    await etherToken.approve(proxyAddressWrap, 99e18, {from : accounts[3]});
+
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+
+    let l = await wrapContract.depositToken(tokenAddress, 99e18, {from : accounts[3]});
+    const sender = l.logs.find(l => l.event === 'DepositTokenSideChain').args.sender;
+    assert.equal(sender, accounts[3]);
+  });
+
+
+  it("[Fail] Not Admin Mint Token in side-chain", async () => {
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+    try {
+      await wrapContract.mintToken(accounts[3], 99e18,'TOKEN_ETHER', 'txhashxxxx', {from : accounts[6]});
+      console.log('Not Admin Mint Token in side-chain OK');
+      return false;
+    } catch(e) {
+      return true;
+    }
+  });
+
   it("[Fail] Not Admin WithDrawal Ether", async () => {
 
-    let wrapMainChain = await BBWrapMainChain.at(proxyAddressWrapMainChain);
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
     try {
-    await wrapMainChain.withDrawal(accounts[3], 
-        {from : accounts[3]}
+    await wrapContract.withDrawal(accounts[3], ether_address, 10, {from : accounts[3]}
        );
+       console.log(' Not Admin WithDrawal Ether OK');
        return false;
     } catch(e) {
         return true;
@@ -121,29 +202,14 @@ contract('BBWrap Main Chain Test', async (accounts) => {
  
   it("WithDrawal Ether", async () => {
 
-    let wrapMainChain = await BBWrapMainChain.at(proxyAddressWrapMainChain);
-    let l = await wrapMainChain.withDrawal(accounts[3], 
-        {from : accounts[1]}
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+    let l = await wrapContract.withDrawal(accounts[3], ether_address, 10 ,{from : accounts[1]}
        );
     const receiverAddress = l.logs.find(l => l.event === 'WithDrawal').args.receiver;
     
     assert.equal(receiverAddress, accounts[3]);
        
   });
-
-  it("[Fail] WithDrawal Ether again", async () => {
-    try {
-    let wrapMainChain = await BBWrapMainChain.at(proxyAddressWrapMainChain);
-    await wrapMainChain.withDrawal(accounts[3], 
-        {from : accounts[1]}
-       );
-       return false;
-    } catch(e) {
-        return true;
-    }
-       
-  });
- 
  
 
 });
