@@ -46,14 +46,14 @@ contract BBWrap is BBStandard {
 
     //Operator mint token to user in side-chain after user depost ether / erc20 token to contract in mainet
     function mintToken(address receiverAddress, uint256 value, bytes key ,bytes txHash) public onlyAdmin {
-        bool isMintToken = bbs.getBool(BBLib.toB32('MIN',txHash));
+        bool isMintToken = bbs.getBool(BBLib.toB32('MINT',txHash));
         require(isMintToken == false);
         require(receiverAddress != address(0x0));
         address tokenAddress = bbs.getAddress(BBLib.toB32('TOKEN', key));
         require(tokenAddress != address(0x0));
         ERC20 token = ERC20(tokenAddress);
 
-        bbs.setBool(BBLib.toB32('MIN',txHash), true);
+        bbs.setBool(BBLib.toB32('MINT',txHash), true);
         require(token.transfer(receiverAddress, value));
 
         emit MintToken(receiverAddress, tokenAddress, value, txHash);
