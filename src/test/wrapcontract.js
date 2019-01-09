@@ -114,7 +114,7 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     it("Set Token in side-chain", async () => {
       let wrapContract = await BBWrap.at(proxyAddressWrap);
       let l = await wrapContract.setToken(tokenAddress,'TOKEN_ETHER', {from : accounts[1]});
-      const token = l.logs.find(l => l.event === 'SetTokenSideChain').args.token;
+      const token = l.logs.find(l => l.event === 'SetToken').args.token;
       
       assert.equal(token, tokenAddress);
     });
@@ -156,12 +156,23 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     let wrapContract = await BBWrap.at(proxyAddressWrap);
 
     let l = await wrapContract.mintToken(accounts[3], 99e18,'TOKEN_ETHER', 'txhashxxxx', {from : accounts[1]});
-    const receiverAddress = l.logs.find(l => l.event === 'MintTokenSideChain').args.receiverAddress;
+    const receiverAddress = l.logs.find(l => l.event === 'MintToken').args.receiverAddress;
     assert.equal(receiverAddress, accounts[3]);
   });
 
+  it("[Fail] Mint Token in side-chain again with same txHash", async () => {
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+    try {
+     await wrapContract.mintToken(accounts[3], 99e18,'TOKEN_ETHER', 'txhashxxxx', {from : accounts[1]});
+       console.log('[Fail] Mint Token in side-chain again with same txHash OK');
+       return false;
 
-  it("Deposit Token in side-chain", async () => {
+    } catch(e) {
+      return true;
+    }
+  });
+
+  it("Deposit Token", async () => {
 
     let etherToken = await BBOTest.at(tokenAddress);
 
@@ -170,7 +181,7 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     let wrapContract = await BBWrap.at(proxyAddressWrap);
 
     let l = await wrapContract.depositToken(tokenAddress, 99e18, {from : accounts[3]});
-    const sender = l.logs.find(l => l.event === 'DepositTokenSideChain').args.sender;
+    const sender = l.logs.find(l => l.event === 'DepositToken').args.sender;
     assert.equal(sender, accounts[3]);
   });
 
@@ -203,7 +214,33 @@ contract('BBWrap Main Chain Test', async (accounts) => {
   it("WithDrawal Ether", async () => {
 
     let wrapContract = await BBWrap.at(proxyAddressWrap);
-    let l = await wrapContract.withDrawal(accounts[3], ether_address, 10 ,{from : accounts[1]}
+    let l = await wrapContract.withDrawal(accounts[3], ether_address, 10, 'txHash001' ,{from : accounts[1]}
+       );
+    const receiverAddress = l.logs.find(l => l.event === 'WithDrawal').args.receiver;
+    
+    assert.equal(receiverAddress, accounts[3]);
+       
+  });
+
+
+  it("[Fail] WithDrawal Ether agian with the same txHash", async () => {
+    try {
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+     await wrapContract.withDrawal(accounts[3], ether_address, 10, 'txHash001' ,{from : accounts[1]}
+       );
+       console.log('[Fail] WithDrawal Ether agian with the same txHash OK');
+       return false;
+    } catch(e) {
+      return true;
+    }
+    
+       
+  });
+
+  it("WithDrawal Token", async () => {
+
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+    let l = await wrapContract.withDrawal(accounts[3], tokenAddress, 10, 'txHash003' ,{from : accounts[1]}
        );
     const receiverAddress = l.logs.find(l => l.event === 'WithDrawal').args.receiver;
     
