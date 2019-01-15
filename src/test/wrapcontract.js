@@ -11,7 +11,7 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const BBWrap = artifacts.require("BBWrap");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
-const BBOTest = artifacts.require("BBOTest");
+const TokenSideChain = artifacts.require("TokenSideChain");
 
 const files = [{
   path: 'README.md',
@@ -44,11 +44,10 @@ contract('BBWrap Main Chain Test', async (accounts) => {
   
   it("Initialize contract", async () => {
 
-    erc20 = await BBOTest.new({
+    erc20 = await TokenSideChain.new('BEther','BETH',18,{
       from: accounts[0]
     });
     tokenAddress = erc20.address;
-
 
     let storage = await BBStorage.new({
       from: accounts[0]
@@ -90,27 +89,16 @@ contract('BBWrap Main Chain Test', async (accounts) => {
       });
 
 
-    let tokenEther = await BBOTest.at(tokenAddress);
-    await tokenEther.transfer(accounts[1], 100000e18, {
-      from: accounts[0]
-    });
-    await tokenEther.transfer(accounts[2], 100000e18, {
-      from: accounts[0]
-    });
-    await tokenEther.transfer(accounts[3], 100000e18, {
-      from: accounts[0]
-    });
-    await tokenEther.transfer(accounts[4], 100000e18, {
-      from: accounts[0]
-    });
+    let tokenEther = await TokenSideChain.at(tokenAddress);
+  
 
-    await tokenEther.transfer(proxyAddressWrap, 100000e18, {
+    await tokenEther.transferOwnership(proxyAddressWrap, {
       from: accounts[0]
     });
   
     });
 
-
+    
     it("Set Token in side-chain", async () => {
       let wrapContract = await BBWrap.at(proxyAddressWrap);
       let l = await wrapContract.setToken(tokenAddress,'TOKEN_ETHER', {from : accounts[1]});
@@ -152,6 +140,23 @@ contract('BBWrap Main Chain Test', async (accounts) => {
 
   });
 
+
+  it("[Fail] Deposit 0 Ether", async () => {
+
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+     try {
+      await web3.eth.sendTransaction({
+        from: accounts[3],
+        to: wrapContract.address,
+        value: web3.utils.toWei('0', "ether")
+    });
+    return false;
+  } catch(e) {
+    return true;
+  }
+
+  });
+
   it("Mint Token in side-chain", async () => {
     let wrapContract = await BBWrap.at(proxyAddressWrap);
 
@@ -172,9 +177,26 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     }
   });
 
+  it("[Fail] Deposit 0 Token ", async () => {
+
+    let etherToken = await TokenSideChain.at(tokenAddress);
+
+    await etherToken.approve(proxyAddressWrap, 99e18, {from : accounts[3]});
+
+    let wrapContract = await BBWrap.at(proxyAddressWrap);
+    try {
+      await wrapContract.depositToken(tokenAddress, 0, {from : accounts[3]});
+      return false;
+    } catch (e) {
+      return true;
+    }
+    
+  });
+
+
   it("Deposit Token", async () => {
 
-    let etherToken = await BBOTest.at(tokenAddress);
+    let etherToken = await TokenSideChain.at(tokenAddress);
 
     await etherToken.approve(proxyAddressWrap, 99e18, {from : accounts[3]});
 

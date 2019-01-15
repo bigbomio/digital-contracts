@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import './BBStandard.sol';
 import './BBLib.sol';
-import './zeppelin/token/ERC20/ERC20.sol';
+import './zeppelin/token/ERC20/TokenSideChain.sol';
 
 
 contract BBWrap is BBStandard {
@@ -51,10 +51,10 @@ contract BBWrap is BBStandard {
         require(receiverAddress != address(0x0));
         address tokenAddress = bbs.getAddress(BBLib.toB32('TOKEN', key));
         require(tokenAddress != address(0x0));
-        ERC20 token = ERC20(tokenAddress);
+        TokenSideChain token = TokenSideChain(tokenAddress);
 
         bbs.setBool(BBLib.toB32('MINT',txHash), true);
-        require(token.transfer(receiverAddress, value));
+        require(token.mint(receiverAddress, value));
 
         emit MintToken(receiverAddress, tokenAddress, value, txHash);
     }
@@ -62,6 +62,7 @@ contract BBWrap is BBStandard {
     //User depost token in side-chain or mainnet to get back ether / token in mainnet or mint token in side-chain
     function depositToken(address tokenAddress, uint256 value) public {
         require(tokenAddress != address(0x0));
+        require(value  > 0);
         ERC20 token = ERC20(tokenAddress);
         require(token.transferFrom(msg.sender, address(this), value));
 
