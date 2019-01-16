@@ -7,7 +7,7 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBLib.sol';
 import './BBTCRHelper.sol';
-import './zeppelin/token/ERC20/ERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 /**
  * @title BBFreelancerPayment

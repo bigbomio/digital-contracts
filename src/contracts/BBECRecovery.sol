@@ -8,7 +8,7 @@ pragma solidity ^0.4.24;
  * See https://github.com/ethereum/solidity/issues/864
  */
 
-library ECRecovery {
+library BBECRecovery {
 
   /**
    * @dev Recover signer address from a message by using their signature

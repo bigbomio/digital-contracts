@@ -10,7 +10,7 @@ import './BBLib.sol';
 import './BBVoting.sol';
 import './BBVotingHelper.sol';
 import './BBTCRHelper.sol';
-import './zeppelin/token/ERC20/ERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 
 
