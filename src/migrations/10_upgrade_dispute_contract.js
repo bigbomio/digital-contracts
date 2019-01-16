@@ -11,9 +11,9 @@ module.exports = async function(deployer) {
 
    if(deployer.network_id == 3){
 
-     var disputeProxy = '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e'
-     var votingProxy = '0xc7252214d78b15f37b94ae73027419a9f275c36f'
-     var votingHelperProxy = '0x771911025b4eafb6395042b7dca728b275e5d8c0'
+     var disputeProxy = '0xd3471fd83e7f17f5b39792ed35ded27582fc11f6'
+     var votingProxy = '0x13d149ff5b9bdac07ddc776f7baf5ac7daa83510'
+     var votingHelperProxy = '0x457b7c89bac3e5bd35db5f80cf78cab7ad1207b5'
 
       // create bb contract
      let dispute = await BBDispute.deployed();

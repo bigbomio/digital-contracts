@@ -7,11 +7,13 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
+import './zeppelin/token/ERC20/ERC20.sol';
+
 /**
  * @title BBFreelancerBid
  */
 contract BBFreelancerBid is BBFreelancer{
-
+  address constant ETH_TOKEN_ADDRESS  = address(0x00eEeEEEeEEeEEEeEeeeEeEEeeEeeeeEEEeEEbb0);
   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
@@ -23,10 +25,10 @@ contract BBFreelancerBid is BBFreelancer{
   }
 
 
+
   event BidCreated(uint256  indexed jobID, address indexed owner, uint256 bid, uint256 bidTime);
   event BidCanceled(uint256 indexed jobID, address indexed owner);
   event BidAccepted(uint256 indexed jobID, uint256 bid, address indexed freelancer);
-
 
   // freelancer bid job
   /** 
@@ -134,7 +136,7 @@ contract BBFreelancerBid is BBFreelancer{
    * @param jobID Job ID
    * @param freelancer address of the freelancer
    */
-  function acceptBid(uint256 jobID, address freelancer) public 
+  function acceptBid(uint256 jobID, address freelancer) public payable
     isOwnerJob(jobID) 
     jobNotStarted(jobID)
     isNotCanceled(jobID){
@@ -149,6 +151,8 @@ contract BBFreelancerBid is BBFreelancer{
     uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'));
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), freelancer);
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+    require(payment.isWhiteList(tokenAddress)==true);
     if(lastDeposit > bid) {
       //Refun BBO to job owner
       require(payment.refundBBO(jobID));
@@ -158,8 +162,15 @@ contract BBFreelancerBid is BBFreelancer{
     } else if(bid - lastDeposit > 0) {
       //Storage amount of BBO that Job owner transferred to payment address
       bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
-      //Deposit more BBO
-      require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      // eth default address
+      if(tokenAddress==ETH_TOKEN_ADDRESS){
+        require (msg.value == (bid - lastDeposit));
+        address(payment).transfer(msg.value);
+      }else{
+         //Deposit more token
+        require(msg.value==0);
+        require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      }
     } 
     emit BidAccepted(jobID, bid ,freelancer);
   }

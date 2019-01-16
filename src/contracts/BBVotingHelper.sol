@@ -77,7 +77,7 @@ contract BBVotingHelper is BBStandard{
         }
       }
       if(totalVotes > 0)
-        quorum = winnerVotes.mul(100).div(totalVotes);
+        quorum = winnerVotes.mul(1e20).div(totalVotes);
     }
   }
   /**

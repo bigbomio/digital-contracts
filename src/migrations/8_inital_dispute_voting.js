@@ -9,11 +9,11 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 module.exports = async function(deployer) {
 
    if(deployer.network_id == 3){
-     var proxyAddressJob = '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1'
-     var proxyAddressBid = '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4'
-     var proxyAddressPayment = '0x253f112b946a72a008343d5bccd14e04288ca45c'
-     var storageAddress = '0x99a2c9bc3793cc72a7a9b352e97deece4f4961c7'
-     var proxyFactAddress = '0xac141d2fa2740bd57e5c035a811b6fb6cceb4b71'
+     var proxyAddressJob = '0x0c31cb2173d03321f2f167328333eaf2e4d13a8e'
+     var proxyAddressBid = '0x086f13456f962f0363a1c684b3ae3329d3b2676f'
+     var proxyAddressPayment = '0xf5cf17e2059b78ca9012475309c296c4e6c8a79c'
+     var storageAddress = '0xb83d8faa19b3bd03d200e4eb9f985ac247497726'
+     var proxyFactAddress = '0xf3f2550093c8f33d5a5efcd01e13907956bd4d00'
 
     // var paramsProxy = '0x2866cef47dce5db897678695d08f0633102f164a'
     // var disputeProxy = '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28'

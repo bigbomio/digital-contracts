@@ -110,6 +110,10 @@ module.exports = async function (deployer) {
       console.log('bid setPaymentContract ....')
       return bid.setPaymentContract(proxyAddressPayment)
     }).then(function(rs){
+      return job.setPaymentContract(proxyAddressPayment)
+      console.log('Done')
+    })
+    .then(function(rs){
       console.log('Done')
     })
   }

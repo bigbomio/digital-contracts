@@ -283,7 +283,11 @@ contract('Voting Test 2', async (accounts) => {
     await bid.setPaymentContract(proxyAddressPayment, {
       from: accounts[0]
     });
-
+     await job.setPaymentContract(proxyAddressPayment, {
+      from: accounts[0]
+    });
+     await payment.addToken(bboAddress, true,{ from: accounts[0]});
+     await payment.addToken('0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0', true,{ from: accounts[0]});
   });
 
 
@@ -339,7 +343,7 @@ contract('Voting Test 2', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let  l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    let  l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 

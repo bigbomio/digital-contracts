@@ -312,7 +312,11 @@ contract('Dispute Test', async (accounts) => {
     await bid.setPaymentContract(proxyAddressPayment, {
       from: accounts[0]
     });
-
+    await job.setPaymentContract(proxyAddressPayment, {
+      from: accounts[0]
+    });
+    await payment.addToken(bboAddress, true,{ from: accounts[0]});
+    await payment.addToken('0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0', true,{ from: accounts[0]});
   });
 
   var jobIDA;
@@ -326,16 +330,16 @@ contract('Dispute Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
     //Create Job
-    let jobLog = await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+    let jobLog = await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', bboAddress,{
       from: userA
     });
     jobIDA = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID
 
-    let l = await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', {
+    let l = await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', bboAddress,{
       from: userA
     });
     jobIDB = l.logs.find(l => l.event === 'JobCreated').args.jobID;
-    l = await job.createJob(jobHash4 + 'yes', expiredTime, estimatedTime, 500e18, 'banner', {
+    l = await job.createJob(jobHash4 + 'yes', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
     jobIDC = l.logs.find(l => l.event === 'JobCreated').args.jobID;
@@ -418,7 +422,7 @@ contract('Dispute Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let jobLog = await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
+    let jobLog = await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', bboAddress,{
       from: userA
     });
     jobIDD = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID
@@ -772,7 +776,7 @@ contract('Dispute Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let jobLog = await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner', {
+    let jobLog = await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
     jobIDE = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID

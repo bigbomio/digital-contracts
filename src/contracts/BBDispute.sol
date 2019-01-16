@@ -77,7 +77,7 @@ contract BBDispute is BBStandard{
       require(isFinished == true);
       address jobOwner = bbs.getAddress(BBLib.toB32(jobID));
       address freelancer = bbs.getAddress(BBLib.toB32(jobID,'FREELANCER'));
-      if(winner == 0 || quorum == 50){
+      if(winner == 0 || quorum == 50e18){
         // cancel poll
         //assert(voting.updatePoll(pID, true, 0, 0));
         // refun money staked
@@ -223,7 +223,7 @@ contract BBDispute is BBStandard{
       address creator = bbs.getAddress(BBLib.toB32(jobID, 'POLL_STARTED'));
       (bool isFinished,, uint256 winnerVotes, bool hasVote, uint256 quorum) = votingHelper.getPollWinner(pollID);
       if(isFinished==true && hasVote == true){
-        if(userVotes>0 && quorum > 50){
+        if(userVotes>0 && quorum > 50e18){
           uint256 bboStake = bbs.getUint(BBLib.toB32(jobID, 'STAKED_DEPOSIT', pollID,creator));
           numReward = userVotes.mul(bboStake).div(winnerVotes); // (vote/totalVotes) * staked
           win = true;
