@@ -738,6 +738,7 @@ it("getPollWinner", async () => {
     });
   });
 
+
   it("finalizeExit", async () => {
     var fastForwardTime = 24 * 3600 * 1 +  10;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
