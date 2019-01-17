@@ -19,6 +19,7 @@
     "ethereumjs-abi": "^0.6.5",
     "ganache-cli": "^6.1.6",
     "ipfs-api": "^22.2.1",
+    "openzeppelin-solidity": "^2.0.0",
     "solc": "^0.4.24",
     "truffle": "^4.1.13",
     "truffle-hdwallet-provider-privkey": "^0.2.0",
