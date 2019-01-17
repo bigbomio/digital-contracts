@@ -2,8 +2,7 @@ pragma solidity ^0.4.24;
 
 import './BBStandard.sol';
 import './BBLib.sol';
-import './zeppelin/token/ERC20/TokenSideChain.sol';
-
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol';
 
 contract BBWrap is BBStandard {
 
@@ -11,7 +10,7 @@ contract BBWrap is BBStandard {
 
     event AdminAdded(address indexed admin, bool add);
     event DepositEther(address indexed sender, uint256 value);
-    event WithDrawal(address indexed receiver, address indexed token, uint256 value);
+    event Withdrawal(address indexed receiver, address indexed token, uint256 value);
     event SetToken(address token, bytes key);
     event MintToken(address indexed receiverAddress, address indexed token, uint256 value, bytes txHash);
     event DepositToken(address indexed sender, address indexed token, uint256 value);
@@ -51,10 +50,9 @@ contract BBWrap is BBStandard {
         require(receiverAddress != address(0x0));
         address tokenAddress = bbs.getAddress(BBLib.toB32('TOKEN', key));
         require(tokenAddress != address(0x0));
-        TokenSideChain token = TokenSideChain(tokenAddress);
 
         bbs.setBool(BBLib.toB32('MINT',txHash), true);
-        require(token.mint(receiverAddress, value));
+        require(ERC20Mintable(tokenAddress).mint(receiverAddress, value));
 
         emit MintToken(receiverAddress, tokenAddress, value, txHash);
     }
@@ -63,8 +61,7 @@ contract BBWrap is BBStandard {
     function depositToken(address tokenAddress, uint256 value) public {
         require(tokenAddress != address(0x0));
         require(value  > 0);
-        ERC20 token = ERC20(tokenAddress);
-        require(token.transferFrom(msg.sender, address(this), value));
+        require(ERC20(tokenAddress).transferFrom(msg.sender, address(this), value));
 
         emit DepositToken(msg.sender, tokenAddress, value);
     }
@@ -80,9 +77,9 @@ contract BBWrap is BBStandard {
 
 
     //Operator send back ether / erc20 token to user in mainet
-    function withDrawal(address receiverAddress, address tokenAddress, uint256 value, bytes txHash) public onlyAdmin {
-         bool isWithDrawal = bbs.getBool(BBLib.toB32('WD',txHash));
-         require(isWithDrawal == false);
+    function doWithdrawal(address receiverAddress, address tokenAddress, uint256 value, bytes txHash) public onlyAdmin {
+         bool isWithdrawal = bbs.getBool(BBLib.toB32('WD',txHash));
+         require(isWithdrawal == false);
          require(receiverAddress != address(0x0));
          require(tokenAddress != address(0x0));
          require(value > 0);
@@ -90,11 +87,10 @@ contract BBWrap is BBStandard {
          if(tokenAddress==ETH_TOKEN_ADDRESS){
             receiverAddress.transfer(value);
          } else {
-            ERC20 token = ERC20(tokenAddress);
-            require(token.transfer(receiverAddress, value));
+            require(ERC20(tokenAddress).transfer(receiverAddress, value));
 
          }
-         emit WithDrawal(receiverAddress, tokenAddress, value);
+         emit Withdrawal(receiverAddress, tokenAddress, value);
     }
 
     

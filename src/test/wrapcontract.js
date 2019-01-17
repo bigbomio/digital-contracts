@@ -11,7 +11,7 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const BBWrap = artifacts.require("BBWrap");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
-const TokenSideChain = artifacts.require("TokenSideChain");
+const BBToken = artifacts.require("BBToken");
 
 const files = [{
   path: 'README.md',
@@ -44,7 +44,7 @@ contract('BBWrap Main Chain Test', async (accounts) => {
   
   it("Initialize contract", async () => {
 
-    erc20 = await TokenSideChain.new('BEther','BETH',18,{
+    erc20 = await BBToken.new('BEther','BETH',18,{
       from: accounts[0]
     });
     tokenAddress = erc20.address;
@@ -89,10 +89,10 @@ contract('BBWrap Main Chain Test', async (accounts) => {
       });
 
 
-    let tokenEther = await TokenSideChain.at(tokenAddress);
+    let tokenEther = await BBToken.at(tokenAddress);
   
 
-    await tokenEther.transferOwnership(proxyAddressWrap, {
+    await tokenEther.addMinter(proxyAddressWrap, {
       from: accounts[0]
     });
   
@@ -213,7 +213,7 @@ contract('BBWrap Main Chain Test', async (accounts) => {
 
   it("[Fail] Deposit 0 Token ", async () => {
 
-    let etherToken = await TokenSideChain.at(tokenAddress);
+    let etherToken = await BBToken.at(tokenAddress);
 
     await etherToken.approve(proxyAddressWrap, 99e18, {from : accounts[3]});
 
@@ -230,7 +230,7 @@ contract('BBWrap Main Chain Test', async (accounts) => {
 
   it("Deposit Token", async () => {
 
-    let etherToken = await TokenSideChain.at(tokenAddress);
+    let etherToken = await BBToken.at(tokenAddress);
 
     await etherToken.approve(proxyAddressWrap, 99e18, {from : accounts[3]});
 
@@ -253,13 +253,13 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     }
   });
 
-  it("[Fail] Not Admin WithDrawal Ether", async () => {
+  it("[Fail] Not Admin Withdrawal Ether", async () => {
 
     let wrapContract = await BBWrap.at(proxyAddressWrap);
     try {
-    await wrapContract.withDrawal(accounts[3], ether_address, 10, {from : accounts[3]}
+    await wrapContract.doWithdrawal(accounts[3], ether_address, 10, {from : accounts[3]}
        );
-       console.log(' Not Admin WithDrawal Ether OK');
+       console.log(' Not Admin Withdrawal Ether OK');
        return false;
     } catch(e) {
         return true;
@@ -267,24 +267,24 @@ contract('BBWrap Main Chain Test', async (accounts) => {
    
   });
  
-  it("WithDrawal Ether", async () => {
+  it("Withdrawal Ether", async () => {
 
     let wrapContract = await BBWrap.at(proxyAddressWrap);
-    let l = await wrapContract.withDrawal(accounts[3], ether_address, 10, 'txHash001' ,{from : accounts[1]}
+    let l = await wrapContract.doWithdrawal(accounts[3], ether_address, 10, 'txHash001' ,{from : accounts[1]}
        );
-    const receiverAddress = l.logs.find(l => l.event === 'WithDrawal').args.receiver;
+    const receiverAddress = l.logs.find(l => l.event === 'Withdrawal').args.receiver;
     
     assert.equal(receiverAddress, accounts[3]);
        
   });
 
 
-  it("[Fail] WithDrawal Ether agian with the same txHash", async () => {
+  it("[Fail] Withdrawal Ether agian with the same txHash", async () => {
     try {
     let wrapContract = await BBWrap.at(proxyAddressWrap);
-     await wrapContract.withDrawal(accounts[3], ether_address, 10, 'txHash001' ,{from : accounts[1]}
+     await wrapContract.doWithdrawal(accounts[3], ether_address, 10, 'txHash001' ,{from : accounts[1]}
        );
-       console.log('[Fail] WithDrawal Ether agian with the same txHash OK');
+       console.log('[Fail] Withdrawal Ether agian with the same txHash OK');
        return false;
     } catch(e) {
       return true;
@@ -293,12 +293,12 @@ contract('BBWrap Main Chain Test', async (accounts) => {
        
   });
 
-  it("WithDrawal Token", async () => {
+  it("Withdrawal Token", async () => {
 
     let wrapContract = await BBWrap.at(proxyAddressWrap);
-    let l = await wrapContract.withDrawal(accounts[3], tokenAddress, 10, 'txHash003' ,{from : accounts[1]}
+    let l = await wrapContract.doWithdrawal(accounts[3], tokenAddress, 10, 'txHash003' ,{from : accounts[1]}
        );
-    const receiverAddress = l.logs.find(l => l.event === 'WithDrawal').args.receiver;
+    const receiverAddress = l.logs.find(l => l.event === 'Withdrawal').args.receiver;
     
     assert.equal(receiverAddress, accounts[3]);
        

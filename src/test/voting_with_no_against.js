@@ -14,7 +14,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 
 const BBVotingHelper = artifacts.require("BBVotingHelper");
@@ -68,7 +68,7 @@ contract('Voting Test 2', async (accounts) => {
 
     // var filesrs = await ipfs.files.add(files);
     // jobHash = filesrs[0].hash;
-    erc20 = await BBOTest.new({
+    erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
     bboAddress = erc20.address;
@@ -178,7 +178,7 @@ contract('Voting Test 2', async (accounts) => {
     await storage.addAdmin(proxyAddressVotingHelper, true, {from: accounts[0] });
 
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
     });
@@ -350,7 +350,7 @@ contract('Voting Test 2', async (accounts) => {
     jobIDA = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
     
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let xxx = await bbo.balanceOf(userA, {
       from: userA
     });
@@ -477,7 +477,7 @@ contract('Voting Test 2', async (accounts) => {
 
       let votingRight = await BBDispute.at(proxyAddressDispute);
        
-      let bbo = await BBOTest.at(bboAddress);
+      let bbo = await BBToken.at(bboAddress);
 
       let bl = await getBalance(bbo, userB);
 

@@ -14,7 +14,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 const BBVotingHelper = artifacts.require("BBVotingHelper");
 const BBParams = artifacts.require("BBParams");
@@ -39,7 +39,7 @@ var bboAddress = '';
 var storageAddress = '';
 contract('Voting Test', async (accounts) => {
   it("initialize  contract", async () => {
-    var erc20 = await BBOTest.new({from: accounts[0]});
+    var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{from: accounts[0]});
     bboAddress = erc20.address;
     var storage = await BBStorage.new({ from: accounts[0]});
     storageAddress = storage.address;
@@ -87,7 +87,7 @@ contract('Voting Test', async (accounts) => {
     await storage.addAdmin(accounts[7], true, {from: accounts[0] });
 
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {from: accounts[0] });
     await bbo.transfer(accounts[2], 100000e18, {from: accounts[0] });
     await bbo.transfer(accounts[3], 100000e18, {from: accounts[0] });
@@ -182,7 +182,7 @@ it("add Poll Option", async () => {
 it("reqest voting rights", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[1];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userC
     });
@@ -284,7 +284,7 @@ it("fast forward to 24h after extend vote poll jobHash5", function() {
 });
 it("white-flag Poll when no one commit vote", async () => {
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     var userB = accounts[2];
     let voting = await BBVoting.at(proxyAddressVoting);
     
@@ -296,7 +296,7 @@ it("white-flag Poll when no one commit vote", async () => {
 });
 it("[FAIL] white-flag Poll again should fail", async () => {
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     var userA = accounts[0];
     let voting = await BBVoting.at(proxyAddressVoting);
     try{

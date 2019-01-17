@@ -7,7 +7,7 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
-import './zeppelin/token/ERC20/ERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 /**
  * @title BBFreelancerBid
@@ -60,52 +60,52 @@ contract BBFreelancerBid is BBFreelancer{
     emit BidCreated(jobID, msg.sender, bid, bidTime);
   }
 
-   function createSingleBid(uint256 jobID, uint256 bid, uint bidTime) public {
-     //Job owner call
-     if(isOwnerOfJob(msg.sender, jobID)) {
-       return;
-     }
-     //Job has not started
-     if(isJobStart(jobID)) {
-       return;
-     }
+  //  function createSingleBid(uint256 jobID, uint256 bid, uint bidTime) public {
+  //    //Job owner call
+  //    if(isOwnerOfJob(msg.sender, jobID)) {
+  //      return;
+  //    }
+  //    //Job has not started
+  //    if(isJobStart(jobID)) {
+  //      return;
+  //    }
     
-    //sender should not cancel previous bid yet
-    if(isJobCancel(jobID)) {
-      return;
-    }
-    //bid must in range budget
-    if(bid > bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET' ))) {
-       return;
-    }
-    //is job expired
-    if(isJobExpired(jobID)) {
-      return;
-    }
-    if(isJobHasFreelancer(jobID)) {
-      return;
-    }
-    if(bidTime <= 0) {
-      return;
-    }
-    // set user bid value
-    bbs.setUint(BBLib.toB32(jobID,msg.sender), bid);
-    //set user bidTime value
-    bbs.setUint(BBLib.toB32(jobID,'BID_TIME',msg.sender), bidTime);
+  //   //sender should not cancel previous bid yet
+  //   if(isJobCancel(jobID)) {
+  //     return;
+  //   }
+  //   //bid must in range budget
+  //   if(bid > bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET' ))) {
+  //      return;
+  //   }
+  //   //is job expired
+  //   if(isJobExpired(jobID)) {
+  //     return;
+  //   }
+  //   if(isJobHasFreelancer(jobID)) {
+  //     return;
+  //   }
+  //   if(bidTime <= 0) {
+  //     return;
+  //   }
+  //   // set user bid value
+  //   bbs.setUint(BBLib.toB32(jobID,msg.sender), bid);
+  //   //set user bidTime value
+  //   bbs.setUint(BBLib.toB32(jobID,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(jobID, msg.sender, bid, bidTime);
+  //   emit BidCreated(jobID, msg.sender, bid, bidTime);
 
-  }
+  // }
 
-  function createMultipleBid(uint256[] jobIDs, uint256[] bids, uint[] bidTimes) public {
-      require(jobIDs.length == bids.length);
-      require(bidTimes.length == bids.length);
-      require(jobIDs.length <= 10);
+  // function createMultipleBid(uint256[] jobIDs, uint256[] bids, uint[] bidTimes) public {
+  //     require(jobIDs.length == bids.length);
+  //     require(bidTimes.length == bids.length);
+  //     require(jobIDs.length <= 10);
 
-      for(uint i = 0; i < jobIDs.length; i++) {
-        createSingleBid(jobIDs[i], bids[i], bidTimes[i]);
-      }      
-  }
+  //     for(uint i = 0; i < jobIDs.length; i++) {
+  //       createSingleBid(jobIDs[i], bids[i], bidTimes[i]);
+  //     }      
+  // }
   
   // freelancer cancel bid
   /**
