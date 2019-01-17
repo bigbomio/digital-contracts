@@ -14,7 +14,7 @@ var accounts;
 module.exports = async function (deployer) {
   
   console.log('deployer.network_id ', deployer.network_id);
-  if (deployer.network_id == 3) {
+  if (deployer.network_id == 33) {
 
     var admin = '0x83e5353fc26643c29b041a3b692c6335c97a9aed';
     var adminProxy = '0xa867a6a820928c64ffe3e30166481ec526d38bc5';

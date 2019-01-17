@@ -11,7 +11,7 @@ const BBOTest = artifacts.require("BBOTest");
 module.exports = function (deployer) {
 
   console.log('deployer.network_id ', deployer.network_id);
-  if (deployer.network_id == 3) {
+  if (deployer.network_id == 33) {
 
     var admin = '0xb10ca39dfa4903ae057e8c26e39377cfb4989551';
     var adminProxy = '0xf76fca3604e2005fe59bd59bdf97075f631fd2bc';

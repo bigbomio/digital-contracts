@@ -5,7 +5,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 
 
 module.exports = function(deployer) {
-   if(deployer.network_id != 777){
+   if(deployer.network_id == 33){
      if(DigitalContract.deployed()){
 
    		var proxyAddress = '0x8f4d25f6f41568461167d62d0dd96f55ecdba58c';

@@ -9,7 +9,7 @@ const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
 
 module.exports = async function(deployer) {
 
-   if(deployer.network_id == 3){
+   if(deployer.network_id == 33){
 
      var disputeProxy = '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e'
      var votingProxy = '0xc7252214d78b15f37b94ae73027419a9f275c36f'

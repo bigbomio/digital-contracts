@@ -22,7 +22,7 @@ module.exports = function(deployer) {
     // disputeProxy = '0xdb5134f53d003d478a71973543f187304097b039'
     // votingProxy = '0x9899fcb82031f8cba60eb13d6e93e88365256612'
 
-   if(deployer.network_id == 3){
+   if(deployer.network_id == 33){
     
         return BBDispute.at('0x278636913d5203a057adb7e0521b8df9431bdaa5').transferOwnership('0xb10ca39dfa4903ae057e8c26e39377cfb4989551')
  

@@ -17,7 +17,7 @@ module.exports = async function (deployer) {
 
   // });
   console.log('deployer.network_id ', deployer.network_id);
-  if (deployer.network_id == 3) {
+  if (deployer.network_id == 33) {
 
  
     var admin = '0xb10ca39dfa4903ae057e8c26e39377cfb4989551';
