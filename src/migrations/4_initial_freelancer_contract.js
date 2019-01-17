@@ -4,14 +4,14 @@ const BBFreelancerPayment =  artifacts.require("BBFreelancerPayment");
 const BBStorage =  artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 
 
 module.exports = async function(deployer) {
 
    if(deployer.network_id != 777){
 
-     let bbo = await BBOTest.at('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
+     let bbo = await BBToken.at('0x1d893910d30edc1281d97aecfe10aefeabe0c41b');
      console.log('bbo', bbo.address);
      let storage = await BBStorage.new();
 

@@ -7,7 +7,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 const BBParams = artifacts.require("BBParams");
 const BBDispute = artifacts.require("BBDispute");
@@ -33,7 +33,7 @@ module.exports = async function(deployer,network,accounts) {
 
 
 //     // jobHash = filesrs[0].hash;
-//     erc20 = await BBOTest.new({
+//     erc20 = await BBToken.new({
 //       from: accounts[0]
 //     });
 //     bboAddress = erc20.address;
@@ -146,7 +146,7 @@ module.exports = async function(deployer,network,accounts) {
 //     });
 
 
-//     let bbo = await BBOTest.at(bboAddress);
+//     let bbo = await BBToken.at(bboAddress);
 //     await bbo.transfer(accounts[1], 100000e18, {
 //       from: accounts[0]
 //     });
