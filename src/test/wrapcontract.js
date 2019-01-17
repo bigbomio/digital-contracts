@@ -47,6 +47,10 @@ contract('BBWrap Main Chain Test', async (accounts) => {
     erc20 = await BBToken.new('BEther','BETH',18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     tokenAddress = erc20.address;
 
     let storage = await BBStorage.new({

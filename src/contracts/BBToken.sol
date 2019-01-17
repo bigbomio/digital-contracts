@@ -10,6 +10,5 @@ contract BBToken is ERC20Mintable {
          name = _name;
          symbol =  _symbol;
          decimals = _decimals;  
-         mint(msg.sender, 2000000000 * 1e18);
     }
 }

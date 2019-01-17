@@ -62,6 +62,10 @@ contract('BBFreelancer Test', async (accounts) => {
     erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     bboAddress = erc20.address;
     
     // create storage

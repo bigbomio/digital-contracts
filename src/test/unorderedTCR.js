@@ -39,6 +39,10 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     bboAddress = erc20.address;
     var storage = await BBStorage.new({
       from: accounts[0]
@@ -221,6 +225,10 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     try {
      await TCRHelper.updateToken(listID_0 ,erc20.address,{ from: userB});
      return false;
@@ -237,6 +245,10 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
     var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
      await TCRHelper.updateToken(listID_0 ,erc20.address,{ from: userA});
      
      let newToken = await TCRHelper.getToken(listID_0, { from: userA});
