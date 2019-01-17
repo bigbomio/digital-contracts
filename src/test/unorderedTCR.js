@@ -249,13 +249,14 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("set & get params", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
+     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  50e18, 24 * 60 * 60,{
       from: userA
     });
 
      await TCRHelper.getListParams(listID_0,{
       from: userA
     });
+
 
     return true;    
   });
@@ -534,7 +535,7 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    assert(c3 == false);
+    assert(c3 == true);
   });
 
   it("updateStatus resolveChallenge in draw voting", async () => {
@@ -729,7 +730,7 @@ it("getPollWinner", async () => {
   });
 
   it("fast forward to  1 day + 1 sec", function () {
-    var fastForwardTime = 24 * 3600 * 20 +  10;
+    var fastForwardTime = 24 * 3600 * 1 +  10;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
         return true;
@@ -737,13 +738,21 @@ it("getPollWinner", async () => {
     });
   });
 
-  // it("finalizeExit", async () => {
-  //   let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-    
-  //   await unOrderedTCR.finalizeExit(listID_0, 'ac', {
-  //     from: userC
-  //   });
-  // });
+
+  it("finalizeExit", async () => {
+    var fastForwardTime = 24 * 3600 * 1 +  10;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(async function () {
+            
+        let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+        
+        await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+          from: userC
+        });
+      });
+    });
+
+  });
 
   it("[Fail] finalizeExit again", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);

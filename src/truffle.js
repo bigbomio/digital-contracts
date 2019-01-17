@@ -14,7 +14,7 @@
 
 var HDWalletProvider = require("truffle-hdwallet-provider-privkey");
 var infura_apikey = "e7cf61fe75a64b2f91459362e0e5beb8"; // Either use this key or get yours at https://infura.io/signup. It's free.
-var privKeys = "52f0d9c78c406446a465651010e23766f47bc13dc19bd7ca30a10ac1d15ce7e4";
+var privKeys = "c3f1df2176c5bb432d970ecc4ceae7e7003829970c353cb132a816ed53e48e5f";
 
 
 module.exports = {
@@ -85,7 +85,9 @@ module.exports = {
       currency: 'USD',
       gasPrice: 21
     }
+
   },
+  
 
 
 };
