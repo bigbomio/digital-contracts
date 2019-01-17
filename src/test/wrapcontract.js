@@ -118,6 +118,40 @@ contract('BBWrap Main Chain Test', async (accounts) => {
       }
       
     });
+
+
+
+  it("Owner Mint token", async () => {
+    let tokenErc20 = await TokenSideChain.new('XEther','XETH',18,{
+      from: accounts[0]
+    });
+
+    let l = await tokenErc20.mint(accounts[2], 10e18,{
+      from: accounts[0]
+    });
+    const to = l.logs.find(l => l.event === 'Mint').args.to;
+
+    assert.equal(accounts[2], to);
+
+  });
+
+  it("[Fail] Not Owner Mint token", async () => {
+    let tokenErc20 = await TokenSideChain.new('XKEther','XKETH',18,{
+      from: accounts[0]
+    });
+    try {
+
+    await tokenErc20.mint(accounts[2], 10e18,{
+      from: accounts[1]
+    });
+    console.log('[Fail] Not Owner Mint token OK');
+    return false;
+  } catch(e) {
+    return true;
+  }
+
+  
+  });
    
 
   it("Deposit Ether", async () => {
