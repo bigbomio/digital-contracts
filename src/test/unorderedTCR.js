@@ -13,7 +13,7 @@ var web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 const BBVotingHelper = artifacts.require("BBVotingHelper");
 const BBParams = artifacts.require("BBParams");
@@ -36,9 +36,13 @@ var proxyAddressTCRHelper = '';
 contract('BBUnOrderedTCR Test', async (accounts) => {
   it("initialize  contract", async () => {
 
-    var erc20 = await BBOTest.new({
+    var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     bboAddress = erc20.address;
     var storage = await BBStorage.new({
       from: accounts[0]
@@ -106,7 +110,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
       from: accounts[0]
     });
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
     });
@@ -194,7 +198,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   var listID_0 = 0;
   it("createListID", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
     let l = await TCRHelper.createListID('assad',bbo.address,{ from: userA});
 
@@ -205,7 +209,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
 
   it("[Fail] Not owner createListID", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     try {
      await TCRHelper.createListID('assad',bbo.address,{ from: userB});
      return false;
@@ -218,9 +222,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("[Fail] not owner update Token ", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-    var erc20 = await BBOTest.new({
+    var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     try {
      await TCRHelper.updateToken(listID_0 ,erc20.address,{ from: userB});
      return false;
@@ -234,9 +242,13 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("update Token ", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-    var erc20 = await BBOTest.new({
+    var erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
      await TCRHelper.updateToken(listID_0 ,erc20.address,{ from: userA});
      
      let newToken = await TCRHelper.getToken(listID_0, { from: userA});
@@ -249,13 +261,14 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("set & get params", async () => {
     let TCRHelper = await BBTCRHelper.at(proxyAddressTCRHelper);
 
-     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  100000, 24 * 60 * 60,{
+     await TCRHelper.setParams(listID_0, 24 * 60 * 60, 24 * 60 * 60 * 2, 24 * 60 * 60, 1000e18,  50e18, 24 * 60 * 60,{
       from: userA
     });
 
      await TCRHelper.getListParams(listID_0,{
       from: userA
     });
+
 
     return true;    
   });
@@ -266,7 +279,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
   it("apply", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
     await bbo.approve(unOrderedTCR.address, 0, {
       from: userB
@@ -348,7 +361,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
 
   it("challenge", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
     await bbo.approve(unOrderedTCR.address, 0, {
       from: userE
@@ -408,7 +421,7 @@ contract('BBUnOrderedTCR Test', async (accounts) => {
  
   it("reqest voting rights", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userC
     });
@@ -534,13 +547,13 @@ it("getPollWinner", async () => {
       from: userE
     });
 
-    assert(c3 == false);
+    assert(c3 == true);
   });
 
   it("updateStatus resolveChallenge in draw voting", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let xxxy = await bbo.balanceOf(userF, {
       from: userF
     });
@@ -583,7 +596,7 @@ it("getPollWinner", async () => {
 
   it("claimReward", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let xxxycc = await bbo.balanceOf(userC, {
       from: userC
     });
@@ -608,16 +621,16 @@ it("getPollWinner", async () => {
   it("isWhitelisted", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
 
-     let c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'a',{
+    let c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'a',{
       from: userE
     });
 
-    assert(c3 == false);
-    c3 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'ac',{
+    assert.equal(c3, true);
+    let c4 = await BBTCRHelper.at(proxyAddressTCRHelper).isWhitelisted(listID_0, 'ac',{
       from: userE
     });
 
-    assert(c3 == true);
+    assert.equal(c4 , true);
   
   });
 
@@ -649,7 +662,7 @@ it("getPollWinner", async () => {
 
   it("withdraw", async () => {
     let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let xxxycc = await bbo.balanceOf(unOrderedTCR.address, {
       from: userC
     });
@@ -729,7 +742,7 @@ it("getPollWinner", async () => {
   });
 
   it("fast forward to  1 day + 1 sec", function () {
-    var fastForwardTime = 24 * 3600 * 20 +  10;
+    var fastForwardTime = 24 * 3600 * 1 +  10;
     return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
       return Helpers.sendPromise('evm_mine', []).then(function () {
         return true;
@@ -737,12 +750,20 @@ it("getPollWinner", async () => {
     });
   });
 
+
   it("finalizeExit", async () => {
-    let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
-    
-    await unOrderedTCR.finalizeExit(listID_0, 'ac', {
-      from: userC
+    var fastForwardTime = 24 * 3600 * 1 +  10;
+    return Helpers.sendPromise('evm_increaseTime', [fastForwardTime]).then(function () {
+      return Helpers.sendPromise('evm_mine', []).then(async function () {
+            
+        let unOrderedTCR = await BBUnOrderedTCR.at(proxyAddressTCR);
+        
+        await unOrderedTCR.finalizeExit(listID_0, 'ac', {
+          from: userC
+        });
+      });
     });
+
   });
 
   it("[Fail] finalizeExit again", async () => {

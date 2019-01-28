@@ -6,14 +6,14 @@
 pragma solidity ^0.4.24;
 
 import './BBStorage.sol';
-import './zeppelin/ownership/Ownable.sol';
-import './zeppelin/ECRecovery.sol';
+import './BBOwnable.sol';
+import './BBECRecovery.sol';
 
 /**
  * @title Document Sign contract 
  */
-contract BigbomDigitalContract is Ownable {
-  using ECRecovery for *;
+contract BigbomDigitalContract is BBOwnable {
+  using BBECRecovery for *;
   BBStorage bbs = BBStorage(0x0);
 
   mapping(bytes32=>bool) uniqueTemp;

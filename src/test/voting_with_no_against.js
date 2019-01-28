@@ -14,7 +14,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 
 const BBVotingHelper = artifacts.require("BBVotingHelper");
@@ -68,9 +68,13 @@ contract('Voting Test 2', async (accounts) => {
 
     // var filesrs = await ipfs.files.add(files);
     // jobHash = filesrs[0].hash;
-    erc20 = await BBOTest.new({
+    erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     bboAddress = erc20.address;
 
     // create storage
@@ -178,7 +182,7 @@ contract('Voting Test 2', async (accounts) => {
     await storage.addAdmin(proxyAddressVotingHelper, true, {from: accounts[0] });
 
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
     });
@@ -283,7 +287,11 @@ contract('Voting Test 2', async (accounts) => {
     await bid.setPaymentContract(proxyAddressPayment, {
       from: accounts[0]
     });
-
+     await job.setPaymentContract(proxyAddressPayment, {
+      from: accounts[0]
+    });
+     await payment.addToken(bboAddress, true,{ from: accounts[0]});
+     await payment.addToken('0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0', true,{ from: accounts[0]});
   });
 
 
@@ -339,14 +347,14 @@ contract('Voting Test 2', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let  l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    let  l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 
     jobIDA = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
     
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let xxx = await bbo.balanceOf(userA, {
       from: userA
     });
@@ -473,7 +481,7 @@ contract('Voting Test 2', async (accounts) => {
 
       let votingRight = await BBDispute.at(proxyAddressDispute);
        
-      let bbo = await BBOTest.at(bboAddress);
+      let bbo = await BBToken.at(bboAddress);
 
       let bl = await getBalance(bbo, userB);
 

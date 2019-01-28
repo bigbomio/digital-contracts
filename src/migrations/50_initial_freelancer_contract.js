@@ -4,7 +4,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 
 
 
@@ -28,7 +28,7 @@ module.exports = function (deployer) {
     var bid;
     var payment;
 
-    // return deployer.deploy(BBOTest).then(function(rs) {
+    // return deployer.deploy(BBToken).then(function(rs) {
     //  // BBOAddress = rs.address;
     //   console.log('BBOAddress', BBOAddress);
     return deployer.deploy(BBStorage).then(function (rs) {

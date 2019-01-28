@@ -7,11 +7,13 @@ pragma solidity ^0.4.24;
 import './BBFreelancer.sol';
 import './BBFreelancerPayment.sol';
 import './BBLib.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
+
 /**
  * @title BBFreelancerBid
  */
 contract BBFreelancerBid is BBFreelancer{
-
+  address constant ETH_TOKEN_ADDRESS  = address(0x00eEeEEEeEEeEEEeEeeeEeEEeeEeeeeEEEeEEbb0);
   BBFreelancerPayment public payment = BBFreelancerPayment(0x0);
 
   /**
@@ -23,10 +25,10 @@ contract BBFreelancerBid is BBFreelancer{
   }
 
 
+
   event BidCreated(uint256  indexed jobID, address indexed owner, uint256 bid, uint256 bidTime);
   event BidCanceled(uint256 indexed jobID, address indexed owner);
   event BidAccepted(uint256 indexed jobID, uint256 bid, address indexed freelancer);
-
 
   // freelancer bid job
   /** 
@@ -58,52 +60,52 @@ contract BBFreelancerBid is BBFreelancer{
     emit BidCreated(jobID, msg.sender, bid, bidTime);
   }
 
-   function createSingleBid(uint256 jobID, uint256 bid, uint bidTime) public {
-     //Job owner call
-     if(isOwnerOfJob(msg.sender, jobID)) {
-       return;
-     }
-     //Job has not started
-     if(isJobStart(jobID)) {
-       return;
-     }
+  //  function createSingleBid(uint256 jobID, uint256 bid, uint bidTime) public {
+  //    //Job owner call
+  //    if(isOwnerOfJob(msg.sender, jobID)) {
+  //      return;
+  //    }
+  //    //Job has not started
+  //    if(isJobStart(jobID)) {
+  //      return;
+  //    }
     
-    //sender should not cancel previous bid yet
-    if(isJobCancel(jobID)) {
-      return;
-    }
-    //bid must in range budget
-    if(bid > bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET' ))) {
-       return;
-    }
-    //is job expired
-    if(isJobExpired(jobID)) {
-      return;
-    }
-    if(isJobHasFreelancer(jobID)) {
-      return;
-    }
-    if(bidTime <= 0) {
-      return;
-    }
-    // set user bid value
-    bbs.setUint(BBLib.toB32(jobID,msg.sender), bid);
-    //set user bidTime value
-    bbs.setUint(BBLib.toB32(jobID,'BID_TIME',msg.sender), bidTime);
+  //   //sender should not cancel previous bid yet
+  //   if(isJobCancel(jobID)) {
+  //     return;
+  //   }
+  //   //bid must in range budget
+  //   if(bid > bbs.getUint(BBLib.toB32(jobID, 'JOB_BUDGET' ))) {
+  //      return;
+  //   }
+  //   //is job expired
+  //   if(isJobExpired(jobID)) {
+  //     return;
+  //   }
+  //   if(isJobHasFreelancer(jobID)) {
+  //     return;
+  //   }
+  //   if(bidTime <= 0) {
+  //     return;
+  //   }
+  //   // set user bid value
+  //   bbs.setUint(BBLib.toB32(jobID,msg.sender), bid);
+  //   //set user bidTime value
+  //   bbs.setUint(BBLib.toB32(jobID,'BID_TIME',msg.sender), bidTime);
 
-    emit BidCreated(jobID, msg.sender, bid, bidTime);
+  //   emit BidCreated(jobID, msg.sender, bid, bidTime);
 
-  }
+  // }
 
-  function createMultipleBid(uint256[] jobIDs, uint256[] bids, uint[] bidTimes) public {
-      require(jobIDs.length == bids.length);
-      require(bidTimes.length == bids.length);
-      require(jobIDs.length <= 10);
+  // function createMultipleBid(uint256[] jobIDs, uint256[] bids, uint[] bidTimes) public {
+  //     require(jobIDs.length == bids.length);
+  //     require(bidTimes.length == bids.length);
+  //     require(jobIDs.length <= 10);
 
-      for(uint i = 0; i < jobIDs.length; i++) {
-        createSingleBid(jobIDs[i], bids[i], bidTimes[i]);
-      }      
-  }
+  //     for(uint i = 0; i < jobIDs.length; i++) {
+  //       createSingleBid(jobIDs[i], bids[i], bidTimes[i]);
+  //     }      
+  // }
   
   // freelancer cancel bid
   /**
@@ -134,7 +136,7 @@ contract BBFreelancerBid is BBFreelancer{
    * @param jobID Job ID
    * @param freelancer address of the freelancer
    */
-  function acceptBid(uint256 jobID, address freelancer) public 
+  function acceptBid(uint256 jobID, address freelancer) public payable
     isOwnerJob(jobID) 
     jobNotStarted(jobID)
     isNotCanceled(jobID){
@@ -149,6 +151,8 @@ contract BBFreelancerBid is BBFreelancer{
     uint256 lastDeposit = bbs.getUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'));
     //update new freelancer
     bbs.setAddress(keccak256(abi.encodePacked(jobID,'FREELANCER')), freelancer);
+    address tokenAddress =  bbs.getAddress(BBLib.toB32(jobID,'TOKEN_ADDRESS'));
+    require(payment.isWhiteList(tokenAddress)==true);
     if(lastDeposit > bid) {
       //Refun BBO to job owner
       require(payment.refundBBO(jobID));
@@ -158,8 +162,15 @@ contract BBFreelancerBid is BBFreelancer{
     } else if(bid - lastDeposit > 0) {
       //Storage amount of BBO that Job owner transferred to payment address
       bbs.setUint(BBLib.toB32(jobID,msg.sender,'DEPOSIT'), bid);
-      //Deposit more BBO
-      require(bbo.transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      // eth default address
+      if(tokenAddress==ETH_TOKEN_ADDRESS){
+        require (msg.value == (bid - lastDeposit));
+        address(payment).transfer(msg.value);
+      }else{
+         //Deposit more token
+        require(msg.value==0);
+        require(ERC20(tokenAddress).transferFrom(msg.sender, address(payment), bid - lastDeposit));
+      }
     } 
     emit BidAccepted(jobID, bid ,freelancer);
   }

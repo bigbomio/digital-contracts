@@ -3,15 +3,15 @@
  * @summary: key-value storage
  * @author: Chris Nguyen
  */
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
-import "./zeppelin/ownership/Ownable.sol";
+import "./BBOwnable.sol";
 
 
 /**
  * @title key-value storage contract
  */
-contract BBStorage is Ownable {
+contract BBStorage is BBOwnable {
 
 
     /**** Storage Types *******/

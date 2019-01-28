@@ -10,7 +10,7 @@ import './BBLib.sol';
 import './BBVoting.sol';
 import './BBVotingHelper.sol';
 import './BBTCRHelper.sol';
-import './zeppelin/token/ERC20/ERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 
 
@@ -144,7 +144,7 @@ contract BBUnOrderedTCR is BBStandard{
         if(bbs.getBool(BBLib.toB32('TCR_VOTER_CLAIMED', pollID, voter)) == false){
            uint256 userVotes =  votingHelper.getNumPassingTokens(voter, pollID);
             (bool isFinished,, uint256 winnerVotes,, uint256 quorum) = votingHelper.getPollWinner(pollID);
-            if(isFinished==true && userVotes > 0 && quorum > 50){
+            if(isFinished==true && userVotes > 0 && quorum > 50e18){
                 uint256 rewardPool =  bbs.getUint(BBLib.toB32('TCR_POLL_ID', pollID ));
                 numReward = userVotes.mul(rewardPool).div(winnerVotes); // (vote/totalVotes) * staked
             }
@@ -180,7 +180,7 @@ contract BBUnOrderedTCR is BBStandard{
         (bool isFinished, , uint256 winnerVotes ,, uint256 quorum) = votingHelper.getPollWinner(pollID);
         uint256 initQuorum = bbs.getUint(BBLib.toB32('TCR', listID, 'QUORUM'));
         uint256 reward = determineReward(pollID);
-        if(quorum>= initQuorum && isFinished == true && winnerVotes > 0){
+        if(quorum >= initQuorum && isFinished == true && winnerVotes > 0){
             //pass vote
             whitelistApplication(listID, itemHash);
             uint256 staked = bbs.getUint(BBLib.toB32('TCR', listID, itemHash, 'STAKED'));

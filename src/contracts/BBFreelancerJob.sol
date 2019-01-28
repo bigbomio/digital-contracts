@@ -43,7 +43,6 @@ contract BBFreelancerJob is BBFreelancer {
 
   }
 
-
   /**
    * @dev 
    * @param jobHash Job Hash
@@ -52,7 +51,7 @@ contract BBFreelancerJob is BBFreelancer {
    * @param budget Buget
    * @param category Tag category
    */
-  function createJob(bytes jobHash, uint expired ,uint estimateTime, uint256 budget, bytes32 category) public 
+  function createJob(bytes jobHash, uint expired ,uint estimateTime, uint256 budget, bytes32 category, address tokenAddress) public 
   jobNotExist(jobHash)
   {
     // check jobHash not null
@@ -63,7 +62,7 @@ contract BBFreelancerJob is BBFreelancer {
     require(budget > 0);
 
     require(estimateTime > 0);
-
+    require(payment.isWhiteList(tokenAddress)==true);
     //Save jobHash by jobID
     uint256 jobID = bbs.getUint(BBLib.toB32('JOB_ID'));
     jobID++;
@@ -80,6 +79,8 @@ contract BBFreelancerJob is BBFreelancer {
     bbs.setUint(BBLib.toB32(jobID, 'JOB_ESTIMATE_TIME'), estimateTime);
     // save budget 
     bbs.setUint(BBLib.toB32(jobID, 'JOB_BUDGET'), budget);
+    // save token address
+    bbs.setAddress(BBLib.toB32(jobID, 'TOKEN_ADDRESS'), tokenAddress);
  
     emit JobCreated(jobHash, jobID, msg.sender, expired, category, budget, estimateTime);
   }

@@ -1,4 +1,4 @@
-var Web3 = require('web3');
+var Web3= require('web3');
 var ipfsAPI = require('ipfs-api')
 var Helpers = require('../helpers/helpers.js');
 
@@ -14,7 +14,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 const BBVotingHelper = artifacts.require("BBVotingHelper");
 const BBParams = artifacts.require("BBParams");
@@ -53,9 +53,13 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
 
     // var filesrs = await ipfs.files.add(files);
     // jobHash = filesrs[0].hash;
-    erc20 = await BBOTest.new({
+    erc20 = await BBToken.new('Bigbom', 'BBO', 18, {
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     bboAddress = erc20.address;
 
     // create storage
@@ -163,7 +167,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     await storage.addAdmin(proxyAddressVotingHelper, true, {from: accounts[0] });
 
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
     });
@@ -273,6 +277,11 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
       from: accounts[0]
     });
 
+    await job.setPaymentContract(proxyAddressPayment, {
+      from: accounts[0]
+    });
+    await payment.addToken(bboAddress, true,{ from: accounts[0]});
+    await payment.addToken('0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0', true,{ from: accounts[0]});
   });
 
 
@@ -306,31 +315,31 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
   var pollID;
 
   it("create job with dispute 3", async () => {
-
+    console.log('bboAddress',bboAddress)
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[1];
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
-    let l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    let l = await job.createJob(jobHash4 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
     jobIDA = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
     expiredTime = parseInt(Date.now() / 1000) + 90 * 24 * 3600;
-    l = await job.createJob(jobHash5 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+    l = await job.createJob(jobHash5 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 
     jobIDB = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
-
-    l = await job.createJob(jobHash6 + 'kk', expiredTime, estimatedTime, 500e18, 'banner', {
+// 
+    l = await job.createJob(jobHash6 + 'kk', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
 
     jobIDC = l.logs.find(l => l.event === 'JobCreated').args.jobID;
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let xxx = await bbo.balanceOf(userA, {
       from: userA
     });
@@ -614,7 +623,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     var userD = accounts[5];
     var userE = accounts[6];
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(proxyAddressDispute, 10000000e18, {from:accounts[0]});
     let xxxyc = await bbo.balanceOf(userC, {
       from: userC
@@ -690,7 +699,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     var userD = accounts[5];
     var userE = accounts[6];
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
     let votingRight = await BBVoting.at(proxyAddressVoting);
 
@@ -728,7 +737,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[1];
     var userB = accounts[3];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
@@ -844,7 +853,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     var userC = accounts[4];
     var userD = accounts[5];
     var userE = accounts[6];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
     await voting.commitVote(pollID, web3.utils.soliditySha3(1, 123), 100e18, {
       from: userC
@@ -907,7 +916,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
 
   it("finalizePoll JOB Owner Win ", async () => {
    
-      let bbo = await BBOTest.at(bboAddress);
+      let bbo = await BBToken.at(bboAddress);
       var userA = accounts[1];
       var userB = accounts[3];
 
@@ -944,7 +953,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     let job = await BBFreelancerJob.at(proxyAddressJob);
     var userA = accounts[1];
     var userB = accounts[3];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
 
     let bid = await BBFreelancerBid.at(proxyAddressBid);
@@ -1064,7 +1073,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[4];
     var userD = accounts[5];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     let a = await bbo.balanceOf(userC, {
       from: userC
     });
@@ -1148,7 +1157,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
 
   it("finalizePoll Nobody win", async () => {
     
-      let bbo = await BBOTest.at(bboAddress);
+      let bbo = await BBToken.at(bboAddress);
       var userA = accounts[1];
       var userB = accounts[3];
 
@@ -1172,7 +1181,7 @@ contract('Dispute Test for finalizePoll', async (accounts) => {
 
   it("emergencyERC20Drain", async () => {
     var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
 
     let a = await bbo.balanceOf(userA, {
       from: userA

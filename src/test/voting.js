@@ -14,7 +14,7 @@ const BBFreelancerPayment = artifacts.require("BBFreelancerPayment");
 const BBStorage = artifacts.require("BBStorage");
 const ProxyFactory = artifacts.require("UpgradeabilityProxyFactory");
 const AdminUpgradeabilityProxy = artifacts.require("AdminUpgradeabilityProxy");
-const BBOTest = artifacts.require("BBOTest");
+const BBToken = artifacts.require("BBToken");
 const BBVoting = artifacts.require("BBVoting");
 const BBVotingHelper = artifacts.require("BBVotingHelper");
 const BBParams = artifacts.require("BBParams");
@@ -76,9 +76,13 @@ contract('Dispute Test', async (accounts) => {
 
 
     // jobHash = filesrs[0].hash;
-    erc20 = await BBOTest.new({
+    erc20 = await BBToken.new('Bigbom', 'BBO', 18,{
       from: accounts[0]
     });
+    await erc20.mint(accounts[0], 2000000000 * 1e18, {
+      from: accounts[0]
+    });
+
     bboAddress = erc20.address;
 
     // create storage
@@ -193,7 +197,7 @@ contract('Dispute Test', async (accounts) => {
     await storage.addAdmin(proxyAddressVotingHelper, true, {from: accounts[0] });
 
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(accounts[1], 100000e18, {
       from: accounts[0]
     });
@@ -312,7 +316,11 @@ contract('Dispute Test', async (accounts) => {
     await bid.setPaymentContract(proxyAddressPayment, {
       from: accounts[0]
     });
-
+    await job.setPaymentContract(proxyAddressPayment, {
+      from: accounts[0]
+    });
+    await payment.addToken(bboAddress, true,{ from: accounts[0]});
+    await payment.addToken('0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0', true,{ from: accounts[0]});
   });
 
   var jobIDA;
@@ -326,16 +334,16 @@ contract('Dispute Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
     //Create Job
-    let jobLog = await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', {
+    let jobLog = await job.createJob(jobHash4 + 'd', expiredTime, estimatedTime, 500e18, 'banner', bboAddress,{
       from: userA
     });
     jobIDA = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID
 
-    let l = await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', {
+    let l = await job.createJob(jobHash4 + 'done', expiredTime, estimatedTime, 500e18, 'banner', bboAddress,{
       from: userA
     });
     jobIDB = l.logs.find(l => l.event === 'JobCreated').args.jobID;
-    l = await job.createJob(jobHash4 + 'yes', expiredTime, estimatedTime, 500e18, 'banner', {
+    l = await job.createJob(jobHash4 + 'yes', expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
     jobIDC = l.logs.find(l => l.event === 'JobCreated').args.jobID;
@@ -355,7 +363,7 @@ contract('Dispute Test', async (accounts) => {
       from: userC
     });
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(bid.address, 0, {
       from: userA
     });
@@ -418,7 +426,7 @@ contract('Dispute Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let jobLog = await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', {
+    let jobLog = await job.createJob(jobHash4, expiredTime, estimatedTime, 500e18, 'banner', bboAddress,{
       from: userA
     });
     jobIDD = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID
@@ -431,7 +439,7 @@ contract('Dispute Test', async (accounts) => {
     await bid.createBid(jobIDD, 400e18, timeDone, {
       from: userB
     });
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(bid.address, 0, {
       from: userA
     });
@@ -501,7 +509,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHash';
     var userB = accounts[3];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userB
     });
@@ -526,7 +534,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userB
     });
@@ -541,7 +549,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userA
     });
@@ -561,7 +569,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userA
     });
@@ -587,7 +595,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userA
     });
@@ -614,7 +622,7 @@ contract('Dispute Test', async (accounts) => {
   it("reqest voting rights", async () => {
     let voting = await BBVoting.at(proxyAddressVoting);
     var userC = accounts[1];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userC
     });
@@ -772,7 +780,7 @@ contract('Dispute Test', async (accounts) => {
     var expiredTime = parseInt(Date.now() / 1000) + 7 * 24 * 3600; // expired after 7 days
     var estimatedTime = 3 * 24 * 3600; // 3 days
 
-    let jobLog = await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner', {
+    let jobLog = await job.createJob(jobHash5, expiredTime, estimatedTime, 500e18, 'banner',bboAddress, {
       from: userA
     });
     jobIDE = jobLog.logs.find(l => l.event === 'JobCreated').args.jobID
@@ -784,7 +792,7 @@ contract('Dispute Test', async (accounts) => {
     await bid.createBid(jobIDE, 400e18, timeDone, {
       from: userB
     });
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(bid.address, 0, {
       from: userA
     });
@@ -818,7 +826,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHash';
     var userB = accounts[2];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userB
     });
@@ -838,7 +846,7 @@ contract('Dispute Test', async (accounts) => {
     let voting = await BBDispute.at(proxyAddressDispute);
     let proofHash = 'proofHashAgainst';
     var userA = accounts[0];
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.approve(voting.address, 0, {
       from: userA
     });
@@ -881,7 +889,7 @@ contract('Dispute Test', async (accounts) => {
   });
   it("white-flag Poll when no one commit vote", async () => {
 
-    let bbo = await BBOTest.at(bboAddress);
+    let bbo = await BBToken.at(bboAddress);
     await bbo.transfer(proxyAddressPayment, 100000e18, {
       from: accounts[0]
     });
